@@ -812,4 +812,56 @@ router.get('/saas/churn', tokenOpcional, (req, res) => {
   catch (err) { handleError(req, res, err); }
 });
 
+// ============================================================
+// v4 SERVICES
+// ============================================================
+const legacyService = require('../services/legacyIntegrationService');
+const firmaService = require('../services/firmaDigitalService');
+const pagoService = require('../services/pagoService');
+const mlService = require('../services/mlService');
+const voiceRecService = require('../services/voiceRecognitionService');
+const videoPerService = require('../services/videoPeritacionService');
+const contratosService = require('../services/contratosService');
+
+// Legacy integrations
+router.post('/integraciones/legacy/sincronizar', verificarToken, (req, res) => { try { res.json(legacyService.sincronizar(req.body.adapterId)); } catch(e) { handleError(req,res,e); } });
+router.get('/integraciones/legacy/estado', tokenOpcional, (req, res) => { try { res.json(legacyService.getEstado()); } catch(e) { handleError(req,res,e); } });
+router.post('/integraciones/legacy/importar-excel', verificarToken, (req, res) => { try { res.json(legacyService.importarExcel(req.body)); } catch(e) { handleError(req,res,e); } });
+router.get('/integraciones/legacy/sync-log', tokenOpcional, (req, res) => { try { res.json(legacyService.getSyncLog()); } catch(e) { handleError(req,res,e); } });
+
+// Firma digital
+router.post('/firma/solicitar/:documentoId', verificarToken, (req, res) => { try { res.json(firmaService.solicitarFirma(req.params.documentoId, req.body.clienteId)); } catch(e) { handleError(req,res,e); } });
+router.get('/firma/verificar/:firmaId', tokenOpcional, (req, res) => { try { res.json(firmaService.verificarFirma(req.params.firmaId)); } catch(e) { handleError(req,res,e); } });
+router.get('/firma/documentos/:clienteId', tokenOpcional, (req, res) => { try { res.json(firmaService.getDocumentos(req.params.clienteId)); } catch(e) { handleError(req,res,e); } });
+router.get('/firma/estadisticas', tokenOpcional, (req, res) => { try { res.json(firmaService.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+
+// Pagos
+router.post('/pagos/indemnizacion', verificarToken, (req, res) => { try { res.json(pagoService.procesarIndemnizacion(req.body.siniestroId, req.body.importe, req.body.iban)); } catch(e) { handleError(req,res,e); } });
+router.post('/pagos/prima', verificarToken, (req, res) => { try { res.json(pagoService.cobrarPrima(req.body.clienteId, req.body.polizaId, req.body.importe)); } catch(e) { handleError(req,res,e); } });
+router.get('/pagos/historial/:clienteId', tokenOpcional, (req, res) => { try { res.json(pagoService.getHistorial(req.params.clienteId)); } catch(e) { handleError(req,res,e); } });
+router.get('/pagos/tesoreria/dashboard', tokenOpcional, (req, res) => { try { res.json(pagoService.getDashboardTesoreria()); } catch(e) { handleError(req,res,e); } });
+
+// ML
+router.get('/ml/estadisticas/:tenantId', tokenOpcional, (req, res) => { try { res.json(mlService.getEstadisticas(req.params.tenantId)); } catch(e) { handleError(req,res,e); } });
+router.post('/ml/entrenar/:tenantId', verificarToken, (req, res) => { try { res.json(mlService.entrenar(req.params.tenantId)); } catch(e) { handleError(req,res,e); } });
+router.get('/ml/predicciones/:siniestroId', tokenOpcional, (req, res) => { try { res.json(mlService.getPredicciones(req.params.siniestroId)); } catch(e) { handleError(req,res,e); } });
+router.get('/ml/evolucion/:tenantId', tokenOpcional, (req, res) => { try { res.json(mlService.getEvolucion(req.params.tenantId)); } catch(e) { handleError(req,res,e); } });
+
+// Voice recognition
+router.post('/voz/identificar', verificarToken, (req, res) => { try { res.json(voiceRecService.identificarPorVoz(req.body.audioData)); } catch(e) { handleError(req,res,e); } });
+router.post('/voz/emocion', verificarToken, (req, res) => { try { res.json(voiceRecService.analizarEmocion(req.body.audioData)); } catch(e) { handleError(req,res,e); } });
+router.get('/voz/estadisticas', tokenOpcional, (req, res) => { try { res.json(voiceRecService.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+
+// Video peritacion
+router.post('/videoperitacion/iniciar/:siniestroId', verificarToken, (req, res) => { try { res.json(videoPerService.iniciarSesion(req.params.siniestroId)); } catch(e) { handleError(req,res,e); } });
+router.post('/videoperitacion/analizar-frame', verificarToken, (req, res) => { try { res.json(videoPerService.analizarFrame(req.body.sessionId, req.body.imageData)); } catch(e) { handleError(req,res,e); } });
+router.get('/videoperitacion/informe/:siniestroId', tokenOpcional, (req, res) => { try { res.json(videoPerService.generarInforme(req.params.siniestroId)); } catch(e) { handleError(req,res,e); } });
+router.get('/videoperitacion/ahorro', tokenOpcional, (req, res) => { try { res.json(videoPerService.getAhorro()); } catch(e) { handleError(req,res,e); } });
+
+// Contratos
+router.post('/contratos/generar', verificarToken, (req, res) => { try { res.json(contratosService.generar(req.body.tipo, req.body)); } catch(e) { handleError(req,res,e); } });
+router.get('/contratos/estado/:contratoId', tokenOpcional, (req, res) => { try { res.json(contratosService.getEstado(req.params.contratoId)); } catch(e) { handleError(req,res,e); } });
+router.get('/contratos/lista', tokenOpcional, (req, res) => { try { res.json(contratosService.listar()); } catch(e) { handleError(req,res,e); } });
+router.get('/contratos/estadisticas', tokenOpcional, (req, res) => { try { res.json(contratosService.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+
 module.exports = router;

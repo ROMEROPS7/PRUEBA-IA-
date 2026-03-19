@@ -1,0 +1,14 @@
+{
+  "name": "SiniestrosAI - Gestión de Siniestros",
+  "short_name": "SiniestrosAI",
+  "description": "Sistema autónomo de gestión de siniestros con IA",
+  "start_url": "/app-movil/index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#8b5cf6",
+  "icons": [
+    {"src": "icon-192.svg", "sizes": "192x192", "type": "image/svg+xml"},
+    {"src": "icon-512.svg", "sizes": "512x512", "type": "image/svg+xml"}
+  ]
+}

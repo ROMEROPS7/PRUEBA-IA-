@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#8b5cf6">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.svg">
+<link rel="apple-touch-icon" href="icon-192.svg">
+<title>SiniestrosAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0f172a;--surface:#1e293b;--surface2:#334155;--border:#475569;
+  --purple:#8b5cf6;--purple-light:#a78bfa;--cyan:#06b6d4;--cyan-light:#22d3ee;
+  --red:#ef4444;--green:#22c55e;--yellow:#eab308;--orange:#f97316;
+  --text:#f1f5f9;--text2:#94a3b8;--text3:#64748b;
+  --radius:16px;--radius-sm:12px;
+  --safe-top:env(safe-area-inset-top,20px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+html,body{height:100%;overflow:hidden;font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+.app{height:100%;display:flex;flex-direction:column;position:relative;max-width:430px;margin:0 auto}
+
+/* ===== SPLASH ===== */
+#splash{position:fixed;inset:0;z-index:1000;background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0f172a 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .6s,transform .6s}
+#splash.hide{opacity:0;transform:scale(1.1);pointer-events:none}
+.splash-icon{width:100px;height:100px;border-radius:28px;background:linear-gradient(135deg,var(--purple),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:56px;animation:pulse-icon 1.5s ease-in-out infinite}
+@keyframes pulse-icon{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(139,92,246,.4)}50%{transform:scale(1.08);box-shadow:0 0 40px 10px rgba(139,92,246,.2)}}
+.splash-title{margin-top:24px;font-size:28px;font-weight:800;letter-spacing:-0.5px;overflow:hidden;white-space:nowrap;border-right:2px solid var(--purple);width:0;animation:typing 1.2s steps(12) .3s forwards,blink .6s step-end infinite}
+@keyframes typing{to{width:12ch}}
+@keyframes blink{50%{border-color:transparent}}
+.splash-sub{margin-top:8px;color:var(--text2);font-size:13px;opacity:0;animation:fadeUp .5s .8s forwards}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
+.splash-sub{transform:translateY(8px)}
+.splash-bar{width:200px;height:3px;background:var(--surface2);border-radius:4px;margin-top:40px;overflow:hidden}
+.splash-bar-fill{height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--cyan));border-radius:4px;animation:loadBar 1.8s .2s ease-out forwards}
+@keyframes loadBar{to{width:100%}}
+
+/* ===== SCREENS ===== */
+.screens-wrapper{flex:1;overflow:hidden;position:relative}
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;padding:0 16px 16px;opacity:0;transform:translateX(40px);transition:opacity .35s,transform .35s;pointer-events:none;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
+.screen.active{opacity:1;transform:translateX(0);pointer-events:auto}
+.screen.left{transform:translateX(-40px)}
+.screen-pad{padding-top:calc(var(--safe-top) + 12px)}
+
+/* ===== PULL REFRESH ===== */
+.pull-indicator{text-align:center;padding:12px;color:var(--purple);font-size:13px;font-weight:600;opacity:0;transform:translateY(-40px);transition:opacity .3s,transform .3s}
+.pull-indicator.show{opacity:1;transform:translateY(0)}
+.pull-spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--purple);border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ===== HEADER ===== */
+.header{display:flex;align-items:center;justify-content:space-between;padding:8px 0 16px}
+.header-left{display:flex;align-items:center;gap:12px}
+.avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;flex-shrink:0}
+.greeting{font-size:13px;color:var(--text2)}
+.greeting-name{font-size:20px;font-weight:700;letter-spacing:-0.3px}
+.notif-btn{width:40px;height:40px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;position:relative;cursor:pointer}
+.notif-dot{position:absolute;top:8px;right:8px;width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid var(--bg)}
+
+/* ===== CARDS ===== */
+.section-title{font-size:14px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;transition:transform .15s;cursor:pointer}
+.card:active{transform:scale(0.98)}
+.card-row{display:flex;align-items:center;gap:12px}
+.card-icon{width:44px;height:44px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.card-info{flex:1;min-width:0}
+.card-label{font-size:15px;font-weight:600}
+.card-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.card-badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;white-space:nowrap}
+.badge-green{background:rgba(34,197,94,.15);color:var(--green)}
+.badge-yellow{background:rgba(234,179,8,.15);color:var(--yellow)}
+.badge-purple{background:rgba(139,92,246,.15);color:var(--purple-light)}
+.badge-red{background:rgba(239,68,68,.15);color:var(--red)}
+
+/* ===== PROGRESS ===== */
+.progress-track{width:100%;height:6px;background:var(--surface2);border-radius:4px;margin-top:10px;overflow:hidden}
+.progress-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--purple),var(--cyan));transition:width 1s ease-out}
+
+/* ===== SOS ===== */
+.sos-main-btn{width:100%;padding:18px;border-radius:var(--radius);background:linear-gradient(135deg,var(--red),#dc2626);color:#fff;font-size:18px;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin:20px 0;box-shadow:0 4px 24px rgba(239,68,68,.3);transition:transform .15s}
+.sos-main-btn:active{transform:scale(0.96)}
+.sos-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.sos-option{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px 16px;text-align:center;cursor:pointer;transition:transform .15s,border-color .2s}
+.sos-option:active{transform:scale(0.96)}
+.sos-option.selected{border-color:var(--purple);background:rgba(139,92,246,.1)}
+.sos-option-icon{font-size:40px;margin-bottom:10px}
+.sos-option-label{font-size:14px;font-weight:600}
+.form-group{margin:16px 0}
+.form-label{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:6px;display:block}
+.form-input,.form-textarea{width:100%;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:15px;outline:none;transition:border-color .2s}
+.form-input:focus,.form-textarea:focus{border-color:var(--purple)}
+.form-textarea{min-height:100px;resize:vertical}
+.btn-primary{width:100%;padding:16px;border-radius:var(--radius);background:linear-gradient(135deg,var(--purple),#7c3aed);color:#fff;font-size:16px;font-weight:700;border:none;cursor:pointer;transition:transform .15s}
+.btn-primary:active{transform:scale(0.97)}
+.btn-secondary{width:100%;padding:14px;border-radius:var(--radius);background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px}
+.loc-bar{display:flex;align-items:center;gap:8px;padding:12px;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.2);border-radius:var(--radius-sm);margin:10px 0;font-size:13px;color:var(--cyan-light)}
+
+/* ===== CONFIRMATION ===== */
+.confirm-screen{text-align:center;padding-top:40px}
+.confirm-check{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--green),#16a34a);display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 20px;animation:bounceIn .5s}
+@keyframes bounceIn{0%{transform:scale(0)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+.confirm-title{font-size:22px;font-weight:700;margin-bottom:8px}
+.confirm-sub{color:var(--text2);font-size:14px;margin-bottom:24px}
+.confirm-detail{background:var(--surface);border-radius:var(--radius);padding:16px;text-align:left;margin-bottom:16px}
+.confirm-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--surface2)}
+.confirm-row:last-child{border:none}
+.confirm-row-label{color:var(--text2);font-size:13px}
+.confirm-row-value{font-weight:600;font-size:14px}
+
+/* ===== TRACKER ===== */
+.tracker-map{width:100%;height:200px;background:var(--surface);border-radius:var(--radius);overflow:hidden;position:relative;margin:12px 0;border:1px solid var(--border)}
+.map-grid{position:absolute;inset:0;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(6,1fr)}
+.map-road-h{position:absolute;height:4px;background:var(--surface2);border-radius:2px}
+.map-road-v{position:absolute;width:4px;background:var(--surface2);border-radius:2px}
+.map-vehicle{position:absolute;font-size:28px;transition:left 1s linear,top 1s linear;filter:drop-shadow(0 0 8px rgba(139,92,246,.5));z-index:2}
+.map-dest{position:absolute;font-size:22px;z-index:1}
+.map-route{position:absolute;height:3px;background:linear-gradient(90deg,var(--purple),var(--cyan));border-radius:2px;z-index:0}
+.eta-card{background:linear-gradient(135deg,var(--purple),#6d28d9);border-radius:var(--radius);padding:20px;text-align:center;margin:12px 0;color:#fff}
+.eta-time{font-size:36px;font-weight:800;letter-spacing:-1px}
+.eta-label{font-size:13px;opacity:.8;margin-top:4px}
+.driver-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;align-items:center;gap:14px;margin:12px 0}
+.driver-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--purple));display:flex;align-items:center;justify-content:center;font-size:24px}
+.driver-info{flex:1}
+.driver-name{font-weight:600;font-size:16px}
+.driver-role{color:var(--text2);font-size:13px}
+.driver-rating{color:var(--yellow);font-size:13px;margin-top:2px}
+.status-timeline{margin:16px 0}
+.status-item{display:flex;gap:12px;padding:10px 0;position:relative}
+.status-dot{width:12px;height:12px;border-radius:50%;background:var(--surface2);margin-top:4px;flex-shrink:0;z-index:1}
+.status-dot.done{background:var(--green)}
+.status-dot.active{background:var(--purple);box-shadow:0 0 0 4px rgba(139,92,246,.2)}
+.status-line{position:absolute;left:5px;top:26px;width:2px;height:calc(100% - 12px);background:var(--surface2)}
+.status-item:last-child .status-line{display:none}
+.status-dot.done+.status-text .status-line{background:var(--green)}
+.status-text{font-size:14px}
+.status-time{font-size:12px;color:var(--text2)}
+
+/* ===== CHAT ===== */
+.chat-container{display:flex;flex-direction:column;height:100%}
+.chat-header{padding:calc(var(--safe-top) + 8px) 0 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0}
+.chat-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:18px}
+.chat-name{font-weight:600;font-size:16px}
+.chat-status{font-size:12px;color:var(--green);display:flex;align-items:center;gap:4px}
+.chat-status::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green)}
+.chat-messages{flex:1;overflow-y:auto;padding:16px 0;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:82%;padding:12px 16px;border-radius:18px;font-size:14px;line-height:1.5;animation:msgIn .3s}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg-ai{background:var(--surface);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:6px}
+.msg-user{background:linear-gradient(135deg,var(--purple),#7c3aed);color:#fff;align-self:flex-end;border-bottom-right-radius:6px}
+.msg-time{font-size:11px;color:var(--text3);margin-top:4px}
+.typing-indicator{display:flex;gap:4px;padding:12px 16px;background:var(--surface);border-radius:18px;border-bottom-left-radius:6px;align-self:flex-start;border:1px solid var(--border)}
+.typing-dot{width:7px;height:7px;background:var(--text3);border-radius:50%;animation:typingBounce 1.2s infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes typingBounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+.chat-input-bar{display:flex;gap:8px;padding:12px 0 calc(var(--safe-bottom) + 12px);border-top:1px solid var(--border);flex-shrink:0}
+.chat-input{flex:1;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:24px;color:var(--text);font-family:inherit;font-size:15px;outline:none}
+.chat-input:focus{border-color:var(--purple)}
+.chat-send{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#7c3aed);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s}
+.chat-send:active{transform:scale(0.92)}
+
+/* ===== PROFILE ===== */
+.profile-header{text-align:center;padding:20px 0}
+.profile-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;margin:0 auto 12px;border:3px solid var(--purple)}
+.profile-name{font-size:22px;font-weight:700}
+.profile-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;background:rgba(139,92,246,.15);border-radius:20px;font-size:12px;font-weight:600;color:var(--purple-light);margin-top:6px}
+.profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-radius:var(--radius);overflow:hidden;margin:16px 0}
+.stat{background:var(--surface);padding:16px;text-align:center}
+.stat-value{font-size:22px;font-weight:700;color:var(--purple-light)}
+.stat-label{font-size:11px;color:var(--text2);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface);border-bottom:1px solid var(--surface2)}
+.setting-row:first-child{border-radius:var(--radius) var(--radius) 0 0}
+.setting-row:last-child{border-radius:0 0 var(--radius) var(--radius);border:none}
+.setting-left{display:flex;align-items:center;gap:12px}
+.setting-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.setting-label{font-size:15px;font-weight:500}
+.toggle{width:48px;height:28px;border-radius:14px;background:var(--surface2);position:relative;cursor:pointer;transition:background .3s}
+.toggle.on{background:var(--purple)}
+.toggle-knob{position:absolute;width:22px;height:22px;background:#fff;border-radius:50%;top:3px;left:3px;transition:left .3s}
+.toggle.on .toggle-knob{left:23px}
+.setting-value{color:var(--text2);font-size:14px}
+
+/* ===== NOTIFICATIONS ===== */
+.notif-item{display:flex;gap:12px;padding:12px;background:var(--surface);border-radius:var(--radius-sm);margin-bottom:8px;border:1px solid var(--border)}
+.notif-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.notif-content{flex:1}
+.notif-text{font-size:13px;line-height:1.4}
+.notif-time{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav{display:flex;background:rgba(15,23,42,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:8px 0 calc(var(--safe-bottom) + 8px);flex-shrink:0}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0;cursor:pointer;transition:color .2s;color:var(--text3);-webkit-tap-highlight-color:transparent}
+.nav-item.active{color:var(--purple-light)}
+.nav-icon{font-size:22px;height:26px;display:flex;align-items:center;justify-content:center}
+.nav-label{font-size:10px;font-weight:600}
+.nav-sos .nav-icon{width:44px;height:44px;background:var(--red);border-radius:50%;margin-top:-18px;box-shadow:0 4px 16px rgba(239,68,68,.4);color:#fff;font-size:20px}
+.nav-sos .nav-label{color:var(--red)}
+
+/* ===== CLAIM HISTORY ===== */
+.claim-item{display:flex;align-items:center;gap:12px;padding:14px;background:var(--surface);border-radius:var(--radius-sm);margin-bottom:8px;border:1px solid var(--border)}
+.claim-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.claim-info{flex:1}
+.claim-title{font-size:14px;font-weight:600}
+.claim-date{font-size:12px;color:var(--text2)}
+.claim-amount{font-size:14px;font-weight:700;color:var(--green)}
+
+/* ===== SCROLLBAR ===== */
+.screen::-webkit-scrollbar{width:0}
+</style>
+</head>
+<body>
+
+<!-- ===== SPLASH ===== -->
+<div id="splash">
+  <div class="splash-icon">&#x1f9e0;</div>
+  <div class="splash-title">SiniestrosAI</div>
+  <div class="splash-sub">Gestión inteligente de siniestros</div>
+  <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+</div>
+
+<!-- ===== APP ===== -->
+<div class="app" id="app" style="opacity:0">
+
+  <div class="screens-wrapper">
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="screen screen-pad active" id="screen-dashboard">
+      <div class="pull-indicator" id="pullIndicator"><span class="pull-spinner"></span> Actualizando...</div>
+
+      <div class="header">
+        <div class="header-left">
+          <div class="avatar">MG</div>
+          <div>
+            <div class="greeting">Buenos dias</div>
+            <div class="greeting-name">Hola, Maria</div>
+          </div>
+        </div>
+        <div class="notif-btn" onclick="showNotifications()">
+          <span>&#x1f514;</span>
+          <div class="notif-dot"></div>
+        </div>
+      </div>
+
+      <div class="section-title">Mis Polizas Activas</div>
+
+      <div class="card" onclick="navigateTo('profile')">
+        <div class="card-row">
+          <div class="card-icon" style="background:rgba(139,92,246,.15)">&#x1f697;</div>
+          <div class="card-info">
+            <div class="card-label">Auto Todo Riesgo</div>
+            <div class="card-sub">Poliza AUT-2024-78543 &bull; BMW Serie 3</div>
+          </div>
+          <div class="card-badge badge-green">Activa</div>
+        </div>
+      </div>
+
+      <div class="card" onclick="navigateTo('profile')">
+        <div class="card-row">
+          <div class="card-icon" style="background:rgba(6,182,212,.15)">&#x1f3e0;</div>
+          <div class="card-info">
+            <div class="card-label">Hogar Plus</div>
+            <div class="card-sub">Poliza HOG-2024-34201 &bull; C/ Gran Via 45</div>
+          </div>
+          <div class="card-badge badge-green">Activa</div>
+        </div>
+      </div>
+
+      <div class="section-title">Siniestro en Curso</div>
+
+      <div class="card" onclick="navigateTo('tracker')">
+        <div class="card-row">
+          <div class="card-icon" style="background:rgba(234,179,8,.15)">&#x26a0;&#xfe0f;</div>
+          <div class="card-info">
+            <div class="card-label">Golpe parking - Exp. SIN-2026-11042</div>
+            <div class="card-sub">Perito asignado &bull; Valoracion en curso</div>
+          </div>
+          <div class="card-badge badge-yellow">En proceso</div>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width:65%"></div></div>
+      </div>
+
+      <div class="sos-main-btn" onclick="navigateTo('sos')">
+        <span style="font-size:24px">&#x1f6a8;</span> BOTON SOS - Reportar Siniestro
+      </div>
+
+      <div class="section-title">Notificaciones Recientes</div>
+
+      <div class="notif-item">
+        <div class="notif-icon" style="background:rgba(34,197,94,.15)">&#x2705;</div>
+        <div class="notif-content">
+          <div class="notif-text">Tu reclamacion de luna ha sido <strong>aprobada</strong>. Importe: 450,00 EUR</div>
+          <div class="notif-time">Hace 2 horas</div>
+        </div>
+      </div>
+
+      <div class="notif-item">
+        <div class="notif-icon" style="background:rgba(139,92,246,.15)">&#x1f4cb;</div>
+        <div class="notif-content">
+          <div class="notif-text">El perito <strong>Carlos Mendez</strong> ha actualizado el informe del siniestro SIN-2026-11042</div>
+          <div class="notif-time">Hace 5 horas</div>
+        </div>
+      </div>
+
+      <div class="notif-item">
+        <div class="notif-icon" style="background:rgba(6,182,212,.15)">&#x1f4b3;</div>
+        <div class="notif-content">
+          <div class="notif-text">Proximo recibo: <strong>127,45 EUR</strong> - Poliza Auto, vence el 1 de abril</div>
+          <div class="notif-time">Ayer</div>
+        </div>
+      </div>
+
+      <div style="height:20px"></div>
+    </div>
+
+    <!-- ===== SOS ===== -->
+    <div class="screen screen-pad" id="screen-sos">
+      <div class="header">
+        <div class="header-left">
+          <div style="font-size:24px">&#x1f6a8;</div>
+          <div class="greeting-name">Parte de Urgencia</div>
+        </div>
+        <div class="notif-btn" onclick="navigateTo('dashboard')" style="font-size:14px;font-weight:700">&#x2715;</div>
+      </div>
+
+      <div id="sosForm">
+        <div class="section-title">Que ha ocurrido?</div>
+        <div class="sos-grid">
+          <div class="sos-option" onclick="selectSosType(this,'auto')">
+            <div class="sos-option-icon">&#x1f697;</div>
+            <div class="sos-option-label">Accidente Auto</div>
+          </div>
+          <div class="sos-option" onclick="selectSosType(this,'hogar')">
+            <div class="sos-option-icon">&#x1f3e0;</div>
+            <div class="sos-option-label">Dano Hogar</div>
+          </div>
+          <div class="sos-option" onclick="selectSosType(this,'robo')">
+            <div class="sos-option-icon">&#x1f6a8;</div>
+            <div class="sos-option-label">Robo</div>
+          </div>
+          <div class="sos-option" onclick="selectSosType(this,'salud')">
+            <div class="sos-option-icon">&#x1f3e5;</div>
+            <div class="sos-option-label">Emergencia Salud</div>
+          </div>
+        </div>
+
+        <div class="loc-bar" id="locBar">
+          <span>&#x1f4cd;</span>
+          <span id="locText">Obteniendo ubicacion...</span>
+        </div>
+
+        <div class="btn-secondary" onclick="document.getElementById('photoInput').click()">
+          <span>&#x1f4f7;</span> Tomar / Adjuntar Fotos
+        </div>
+        <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none" onchange="photoAdded(this)">
+        <div id="photoPreview" style="font-size:13px;color:var(--green);margin-bottom:8px"></div>
+
+        <div class="form-group">
+          <label class="form-label">Describe lo sucedido</label>
+          <textarea class="form-textarea" id="sosDesc" placeholder="Ej: Golpe en el lateral derecho al salir del parking..."></textarea>
+        </div>
+
+        <button class="btn-primary" onclick="submitSos()" style="background:linear-gradient(135deg,var(--red),#dc2626)">
+          &#x1f6a8; Enviar Parte de Urgencia
+        </button>
+      </div>
+
+      <div id="sosConfirm" class="confirm-screen" style="display:none">
+        <div class="confirm-check">&#x2713;</div>
+        <div class="confirm-title">Parte Enviado</div>
+        <div class="confirm-sub">Tu parte de urgencia ha sido registrado correctamente</div>
+        <div class="confirm-detail">
+          <div class="confirm-row">
+            <span class="confirm-row-label">N. Expediente</span>
+            <span class="confirm-row-value" id="expNum">SIN-2026-11098</span>
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-row-label">Tipo</span>
+            <span class="confirm-row-value" id="expType">Accidente Auto</span>
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-row-label">Ubicacion</span>
+            <span class="confirm-row-value">Madrid, Espana</span>
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-row-label">ETA Asistencia</span>
+            <span class="confirm-row-value" style="color:var(--green)">~15 minutos</span>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="navigateTo('tracker')">&#x1f4cd; Seguir Asistencia en Vivo</button>
+        <div style="height:12px"></div>
+        <button class="btn-secondary" onclick="navigateTo('dashboard')">Volver al Inicio</button>
+      </div>
+    </div>
+
+    <!-- ===== TRACKER ===== -->
+    <div class="screen screen-pad" id="screen-tracker">
+      <div class="header">
+        <div class="header-left">
+          <div style="font-size:24px">&#x1f4cd;</div>
+          <div class="greeting-name">Seguimiento en Vivo</div>
+        </div>
+        <div class="notif-btn" onclick="navigateTo('dashboard')" style="font-size:14px;font-weight:700">&#x2715;</div>
+      </div>
+
+      <div class="tracker-map" id="trackerMap">
+        <div class="map-road-h" style="top:33%;left:5%;width:90%"></div>
+        <div class="map-road-h" style="top:66%;left:5%;width:90%"></div>
+        <div class="map-road-v" style="left:25%;top:10%;height:80%"></div>
+        <div class="map-road-v" style="left:50%;top:10%;height:80%"></div>
+        <div class="map-road-v" style="left:75%;top:10%;height:80%"></div>
+        <div class="map-route" style="top:33%;left:15%;width:60%"></div>
+        <div class="map-dest" style="right:14%;top:25%">&#x1f4cd;</div>
+        <div class="map-vehicle" id="mapVehicle" style="left:15%;top:25%">&#x1f69a;</div>
+      </div>
+
+      <div class="eta-card">
+        <div class="eta-time" id="etaTime">12:34</div>
+        <div class="eta-label">Tiempo estimado de llegada</div>
+      </div>
+
+      <div class="driver-card">
+        <div class="driver-avatar">&#x1f468;&#x200d;&#x1f527;</div>
+        <div class="driver-info">
+          <div class="driver-name">Carlos Mendez Ruiz</div>
+          <div class="driver-role">Perito Tasador &bull; ID: PER-4521</div>
+          <div class="driver-rating">&#x2b50; 4.9 &bull; 328 valoraciones</div>
+        </div>
+        <div class="notif-btn" style="background:var(--green);border-color:var(--green)">&#x1f4de;</div>
+      </div>
+
+      <div class="section-title">Estado del servicio</div>
+      <div class="status-timeline">
+        <div class="status-item">
+          <div class="status-dot done"></div>
+          <div class="status-line" style="background:var(--green)"></div>
+          <div>
+            <div class="status-text">Parte recibido y procesado</div>
+            <div class="status-time">14:23</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot done"></div>
+          <div class="status-line" style="background:var(--green)"></div>
+          <div>
+            <div class="status-text">Perito asignado: Carlos Mendez</div>
+            <div class="status-time">14:25</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot active"></div>
+          <div class="status-line"></div>
+          <div>
+            <div class="status-text" id="statusCurrent" style="color:var(--purple-light)">En camino - a 8 min</div>
+            <div class="status-time">14:28</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot"></div>
+          <div>
+            <div class="status-text" style="color:var(--text3)">Ha llegado al destino</div>
+            <div class="status-time">--:--</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CHAT ===== -->
+    <div class="screen" id="screen-chat" style="padding:0 16px">
+      <div class="chat-container">
+        <div class="chat-header">
+          <div class="chat-avatar">&#x1f916;</div>
+          <div>
+            <div class="chat-name">Asistente SiniestrosAI</div>
+            <div class="chat-status">En linea</div>
+          </div>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+          <div class="msg msg-ai">
+            Hola Maria, soy tu asistente virtual de SiniestrosAI. Estoy aqui para ayudarte con cualquier consulta sobre tus polizas o siniestros. Como puedo ayudarte hoy?
+            <div class="msg-time">14:20</div>
+          </div>
+          <div class="msg msg-user">
+            Hola! Queria saber el estado de mi reclamacion de la luna del coche.
+            <div class="msg-time">14:21</div>
+          </div>
+          <div class="msg msg-ai">
+            He consultado tu expediente <strong>SIN-2026-10987</strong>. La reclamacion por rotura de luna de tu BMW Serie 3 ha sido <strong>aprobada</strong>. El importe de 450,00 EUR sera abonado en tu cuenta en 2-3 dias habiles. El taller concertado MoonGlass te contactara para agendar la reparacion.
+            <div class="msg-time">14:21</div>
+          </div>
+          <div class="msg msg-user">
+            Perfecto, gracias! Y la del golpe en el parking?
+            <div class="msg-time">14:22</div>
+          </div>
+          <div class="msg msg-ai">
+            El siniestro <strong>SIN-2026-11042</strong> (golpe en parking) esta en fase de valoracion. El perito Carlos Mendez ya ha realizado la inspeccion y su informe esta al 65%. Estimamos tener la resolucion en 3-5 dias. Te notificare en cuanto haya novedades. Algo mas?
+            <div class="msg-time">14:22</div>
+          </div>
+        </div>
+        <div class="chat-input-bar">
+          <input type="text" class="chat-input" id="chatInput" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="chat-send" onclick="sendChat()">&#x27A4;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PROFILE ===== -->
+    <div class="screen screen-pad" id="screen-profile">
+      <div class="profile-header">
+        <div class="profile-avatar">MG</div>
+        <div class="profile-name">Maria Garcia Lopez</div>
+        <div class="profile-badge">&#x2b50; Cliente Premium</div>
+      </div>
+
+      <div class="profile-stats">
+        <div class="stat">
+          <div class="stat-value">2</div>
+          <div class="stat-label">Polizas</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">4</div>
+          <div class="stat-label">Siniestros</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">9.2</div>
+          <div class="stat-label">Valoracion</div>
+        </div>
+      </div>
+
+      <div class="section-title">Mis Polizas</div>
+
+      <div class="card">
+        <div class="card-row">
+          <div class="card-icon" style="background:rgba(139,92,246,.15)">&#x1f697;</div>
+          <div class="card-info">
+            <div class="card-label">Auto Todo Riesgo</div>
+            <div class="card-sub">AUT-2024-78543 &bull; BMW Serie 3 320d</div>
+            <div class="card-sub">Prima: 847,50 EUR/ano &bull; Vence: 15/09/2026</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-row">
+          <div class="card-icon" style="background:rgba(6,182,212,.15)">&#x1f3e0;</div>
+          <div class="card-info">
+            <div class="card-label">Hogar Plus</div>
+            <div class="card-sub">HOG-2024-34201 &bull; C/ Gran Via 45, 3B</div>
+            <div class="card-sub">Prima: 412,00 EUR/ano &bull; Vence: 01/03/2027</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Historial de Siniestros</div>
+
+      <div class="claim-item">
+        <div class="claim-icon" style="background:rgba(234,179,8,.15)">&#x1f6e0;</div>
+        <div class="claim-info">
+          <div class="claim-title">Golpe parking - En proceso</div>
+          <div class="claim-date">12 marzo 2026 &bull; SIN-2026-11042</div>
+        </div>
+        <div class="card-badge badge-yellow">65%</div>
+      </div>
+
+      <div class="claim-item">
+        <div class="claim-icon" style="background:rgba(34,197,94,.15)">&#x2705;</div>
+        <div class="claim-info">
+          <div class="claim-title">Rotura de luna</div>
+          <div class="claim-date">28 febrero 2026 &bull; SIN-2026-10987</div>
+        </div>
+        <div class="claim-amount">+450,00 EUR</div>
+      </div>
+
+      <div class="claim-item">
+        <div class="claim-icon" style="background:rgba(34,197,94,.15)">&#x2705;</div>
+        <div class="claim-info">
+          <div class="claim-title">Inundacion bano</div>
+          <div class="claim-date">15 enero 2026 &bull; SIN-2026-10234</div>
+        </div>
+        <div class="claim-amount">+1.280,00 EUR</div>
+      </div>
+
+      <div class="claim-item">
+        <div class="claim-icon" style="background:rgba(34,197,94,.15)">&#x2705;</div>
+        <div class="claim-info">
+          <div class="claim-title">Accidente leve - Alcance</div>
+          <div class="claim-date">03 noviembre 2025 &bull; SIN-2025-09876</div>
+        </div>
+        <div class="claim-amount">+2.150,00 EUR</div>
+      </div>
+
+      <div class="section-title">Ajustes</div>
+
+      <div>
+        <div class="setting-row">
+          <div class="setting-left">
+            <div class="setting-icon" style="background:rgba(139,92,246,.15)">&#x1f514;</div>
+            <span class="setting-label">Notificaciones</span>
+          </div>
+          <div class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-left">
+            <div class="setting-icon" style="background:rgba(6,182,212,.15)">&#x1f30d;</div>
+            <span class="setting-label">Idioma</span>
+          </div>
+          <span class="setting-value">Espanol &#x25B8;</span>
+        </div>
+        <div class="setting-row">
+          <div class="setting-left">
+            <div class="setting-icon" style="background:rgba(234,179,8,.15)">&#x2753;</div>
+            <span class="setting-label">Centro de ayuda</span>
+          </div>
+          <span class="setting-value">&#x25B8;</span>
+        </div>
+        <div class="setting-row">
+          <div class="setting-left">
+            <div class="setting-icon" style="background:rgba(239,68,68,.15)">&#x1f6aa;</div>
+            <span class="setting-label">Cerrar sesion</span>
+          </div>
+          <span class="setting-value">&#x25B8;</span>
+        </div>
+      </div>
+
+      <div style="height:30px"></div>
+    </div>
+
+  </div>
+
+  <!-- ===== BOTTOM NAV ===== -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="navigateTo('dashboard')" data-nav="dashboard">
+      <div class="nav-icon">&#x1f3e0;</div>
+      <div class="nav-label">Inicio</div>
+    </div>
+    <div class="nav-item nav-sos" onclick="navigateTo('sos')" data-nav="sos">
+      <div class="nav-icon">SOS</div>
+      <div class="nav-label">Emergencia</div>
+    </div>
+    <div class="nav-item" onclick="navigateTo('chat')" data-nav="chat">
+      <div class="nav-icon">&#x1f4ac;</div>
+      <div class="nav-label">Chat</div>
+    </div>
+    <div class="nav-item" onclick="navigateTo('profile')" data-nav="profile">
+      <div class="nav-icon">&#x1f464;</div>
+      <div class="nav-label">Perfil</div>
+    </div>
+  </nav>
+</div>
+
+<script>
+// ===== STATE =====
+let currentScreen = 'dashboard';
+const screenOrder = ['dashboard','sos','chat','profile'];
+let etaSeconds = 754;
+let etaInterval = null;
+let vehicleStep = 0;
+
+// ===== SPLASH =====
+setTimeout(() => {
+  document.getElementById('splash').classList.add('hide');
+  document.getElementById('app').style.opacity = '1';
+  setTimeout(() => document.getElementById('splash').remove(), 600);
+}, 2500);
+
+// ===== NAVIGATION =====
+function navigateTo(screen) {
+  if (screen === currentScreen) return;
+  const prev = document.getElementById('screen-' + currentScreen);
+  const next = document.getElementById('screen-' + screen);
+  const prevIdx = screenOrder.indexOf(currentScreen);
+  const nextIdx = screenOrder.indexOf(screen);
+
+  prev.classList.remove('active');
+  if (nextIdx > prevIdx) {
+    prev.classList.add('left');
+  }
+  setTimeout(() => prev.classList.remove('left'), 350);
+
+  next.classList.add('active');
+  currentScreen = screen;
+
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navItem = document.querySelector('[data-nav="'+screen+'"]');
+  if (navItem) navItem.classList.add('active');
+
+  if (screen === 'tracker') startTracker();
+  if (screen === 'sos') getLocation();
+}
+
+// ===== PULL TO REFRESH =====
+let touchStartY = 0;
+const dashboard = document.getElementById('screen-dashboard');
+dashboard.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, {passive:true});
+dashboard.addEventListener('touchmove', e => {
+  if (dashboard.scrollTop === 0 && e.touches[0].clientY - touchStartY > 60) {
+    document.getElementById('pullIndicator').classList.add('show');
+  }
+}, {passive:true});
+dashboard.addEventListener('touchend', () => {
+  const pi = document.getElementById('pullIndicator');
+  if (pi.classList.contains('show')) {
+    setTimeout(() => pi.classList.remove('show'), 1500);
+  }
+}, {passive:true});
+
+// ===== SOS =====
+let selectedSosType = null;
+function selectSosType(el, type) {
+  document.querySelectorAll('.sos-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedSosType = type;
+}
+
+function getLocation() {
+  const locText = document.getElementById('locText');
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => { locText.textContent = 'Ubicacion: ' + pos.coords.latitude.toFixed(4) + ', ' + pos.coords.longitude.toFixed(4) + ' (Madrid)'; },
+      () => { locText.textContent = 'Ubicacion: 40.4168, -3.7038 (Madrid, Espana)'; }
+    );
+  } else {
+    locText.textContent = 'Ubicacion: 40.4168, -3.7038 (Madrid, Espana)';
+  }
+}
+
+function photoAdded(input) {
+  const preview = document.getElementById('photoPreview');
+  if (input.files.length > 0) {
+    preview.textContent = '&#x2705; ' + input.files.length + ' foto(s) adjuntada(s)';
+    preview.innerHTML = '<span style="color:var(--green)">&#x2705; ' + input.files.length + ' foto(s) adjuntada(s)</span>';
+  }
+}
+
+function submitSos() {
+  const typeNames = { auto:'Accidente Auto', hogar:'Dano Hogar', robo:'Robo', salud:'Emergencia Salud' };
+  const expNum = 'SIN-2026-' + (11000 + Math.floor(Math.random() * 999));
+  document.getElementById('expNum').textContent = expNum;
+  document.getElementById('expType').textContent = typeNames[selectedSosType] || 'Accidente Auto';
+  document.getElementById('sosForm').style.display = 'none';
+  document.getElementById('sosConfirm').style.display = 'block';
+}
+
+function showNotifications() {
+  navigateTo('dashboard');
+  dashboard.scrollTo({ top: dashboard.scrollHeight, behavior: 'smooth' });
+}
+
+// ===== TRACKER =====
+function startTracker() {
+  if (etaInterval) clearInterval(etaInterval);
+  etaSeconds = 754;
+  vehicleStep = 0;
+  updateEta();
+  etaInterval = setInterval(() => {
+    etaSeconds = Math.max(0, etaSeconds - 1);
+    updateEta();
+    vehicleStep++;
+    moveVehicle();
+    updateStatus();
+  }, 1000);
+}
+
+function updateEta() {
+  const m = Math.floor(etaSeconds / 60);
+  const s = etaSeconds % 60;
+  document.getElementById('etaTime').textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+function moveVehicle() {
+  const v = document.getElementById('mapVehicle');
+  const maxLeft = 68;
+  const pct = Math.min(vehicleStep * 0.15, maxLeft);
+  v.style.left = (15 + pct) + '%';
+}
+
+function updateStatus() {
+  const el = document.getElementById('statusCurrent');
+  const mins = Math.floor(etaSeconds / 60);
+  if (mins > 5) el.textContent = 'En camino - a ' + mins + ' min';
+  else if (mins > 0) el.textContent = 'Llegando - a ' + mins + ' min';
+  else el.textContent = 'Ha llegado al destino';
+}
+
+// ===== CHAT =====
+const aiResponses = [
+  'Entiendo tu consulta. Dejame verificar eso en nuestro sistema. Segun tus polizas activas, la cobertura incluye ese tipo de incidencia. Quieres que abra un nuevo parte?',
+  'He revisado tu expediente. El perito tiene prevista la valoracion final para esta semana. Te enviare una notificacion en cuanto se cierre el informe.',
+  'Por supuesto. Tu poliza Auto Todo Riesgo cubre: responsabilidad civil ilimitada, danos propios, robo, incendio, lunas, asistencia en carretera 24h, y vehiculo de sustitucion hasta 30 dias.',
+  'Puedo ayudarte a programar una cita con el taller concertado mas cercano. Tenemos convenio con 3 talleres en tu zona. Quieres que te muestre las opciones?',
+  'Tu proximo recibo de 127,45 EUR se cargara el 1 de abril. Si lo prefieres, puedo gestionar el fraccionamiento en 2 pagos sin intereses.',
+  'He registrado tu solicitud. Un agente especializado te contactara en las proximas 24 horas. Tu numero de referencia es CON-2026-' + Math.floor(Math.random()*9000+1000) + '.',
+];
+let aiResponseIdx = 0;
+
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  const msgs = document.getElementById('chatMessages');
+  const now = new Date();
+  const timeStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+
+  const userMsg = document.createElement('div');
+  userMsg.className = 'msg msg-user';
+  userMsg.innerHTML = text + '<div class="msg-time">' + timeStr + '</div>';
+  msgs.appendChild(userMsg);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  const typing = document.createElement('div');
+  typing.className = 'typing-indicator';
+  typing.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+  msgs.appendChild(typing);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  setTimeout(() => {
+    typing.remove();
+    const aiMsg = document.createElement('div');
+    aiMsg.className = 'msg msg-ai';
+    aiMsg.innerHTML = aiResponses[aiResponseIdx % aiResponses.length] + '<div class="msg-time">' + timeStr + '</div>';
+    msgs.appendChild(aiMsg);
+    msgs.scrollTop = msgs.scrollHeight;
+    aiResponseIdx++;
+  }, 1200 + Math.random() * 800);
+}
+
+// ===== SWIPE NAV =====
+let swipeStartX = 0;
+const wrapper = document.querySelector('.screens-wrapper');
+wrapper.addEventListener('touchstart', e => { swipeStartX = e.touches[0].clientX; }, {passive:true});
+wrapper.addEventListener('touchend', e => {
+  const diff = swipeStartX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) < 60) return;
+  const idx = screenOrder.indexOf(currentScreen);
+  if (diff > 0 && idx < screenOrder.length - 1) navigateTo(screenOrder[idx + 1]);
+  else if (diff < 0 && idx > 0) navigateTo(screenOrder[idx - 1]);
+}, {passive:true});
+
+// ===== GREETING =====
+(function setGreeting() {
+  const h = new Date().getHours();
+  const el = document.querySelector('.greeting');
+  if (h < 12) el.textContent = 'Buenos dias';
+  else if (h < 20) el.textContent = 'Buenas tardes';
+  else el.textContent = 'Buenas noches';
+})();
+
+// ===== PWA =====
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').then(r => console.log('SW registered:', r.scope)).catch(e => console.log('SW error:', e));
+}
+
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel SuperAdmin - SiniestrosAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        /* ===== VARIABLES & RESET ===== */
+        :root {
+            --bg-primary: #0a0a1a;
+            --bg-secondary: #12122a;
+            --bg-card: #1a1a3e;
+            --bg-card-hover: #222255;
+            --border-color: rgba(255, 215, 0, 0.12);
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --text-primary: #f0f0f5;
+            --text-secondary: #a0a0c0;
+            --text-muted: #6a6a8a;
+            --gold: #ffd700;
+            --gold-dark: #b8960f;
+            --gold-light: rgba(255, 215, 0, 0.15);
+            --purple: #8b5cf6;
+            --purple-dark: #7c3aed;
+            --purple-light: rgba(139, 92, 246, 0.15);
+            --cyan: #06b6d4;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --gradient-gold: linear-gradient(135deg, #ffd700, #f59e0b);
+            --gradient-purple: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            --gradient-bg: linear-gradient(135deg, #0a0a1a 0%, #1a1040 50%, #0a1a2e 100%);
+            --radius: 12px;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+            --transition: all 0.3s ease;
+        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--gradient-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        a { color: var(--purple); text-decoration: none; }
+        a:hover { color: var(--cyan); }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeInUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        @keyframes glow { 0%, 100% { box-shadow: 0 0 5px rgba(255,215,0,0.3); } 50% { box-shadow: 0 0 25px rgba(255,215,0,0.6); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        @keyframes slideIn { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes verifyPulse { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); } 70% { box-shadow: 0 0 0 20px rgba(34,197,94,0); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); } }
+        @keyframes typeCode { from { width: 0; } to { width: 100%; } }
+        @keyframes progressBar { from { width: 0; } to { width: 100%; } }
+        .animate-in { animation: fadeInUp 0.5s ease forwards; }
+
+        /* ===== LOGIN SCREEN ===== */
+        .login-screen {
+            position: fixed; inset: 0; z-index: 9999;
+            background: var(--gradient-bg);
+            display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.6s, transform 0.6s;
+        }
+        .login-screen.hidden { opacity: 0; pointer-events: none; transform: scale(1.05); }
+        .login-particles {
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at 30% 40%, rgba(255,215,0,0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 60%, rgba(139,92,246,0.1) 0%, transparent 50%);
+        }
+        .login-box {
+            position: relative; width: 420px; padding: 2.5rem;
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 16px; box-shadow: var(--shadow);
+        }
+        .login-logo { text-align: center; margin-bottom: 2rem; }
+        .login-logo-icon {
+            font-size: 2.5rem; margin-bottom: 0.75rem;
+            background: var(--gradient-gold); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .login-logo h2 { font-size: 1.5rem; font-weight: 800; color: var(--text-primary); }
+        .login-logo h2 small {
+            font-size: 0.55rem; background: var(--gradient-gold); color: #000;
+            padding: 2px 6px; border-radius: 4px; vertical-align: super; font-weight: 700;
+        }
+        .login-logo p { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem; }
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .form-input {
+            width: 100%; padding: 0.75rem 1rem; font-size: 0.9rem; font-family: inherit;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border-subtle);
+            border-radius: 8px; color: var(--text-primary); transition: var(--transition);
+        }
+        .form-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(255,215,0,0.1); }
+        .form-input::placeholder { color: var(--text-muted); }
+        .btn {
+            padding: 0.75rem 1.5rem; font-size: 0.85rem; font-weight: 600; font-family: inherit;
+            border: none; border-radius: 8px; cursor: pointer; transition: var(--transition);
+            display: inline-flex; align-items: center; gap: 0.5rem;
+        }
+        .btn-gold {
+            background: var(--gradient-gold); color: #000; width: 100%; justify-content: center;
+        }
+        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,215,0,0.3); }
+        .btn-purple { background: linear-gradient(135deg, var(--purple), var(--cyan)); color: #fff; }
+        .btn-purple:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(139,92,246,0.3); }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.75rem; }
+        .btn-xs { padding: 0.3rem 0.6rem; font-size: 0.7rem; border-radius: 6px; }
+        .btn-outline {
+            background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);
+        }
+        .btn-outline:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
+        .btn-danger { background: rgba(239,68,68,0.2); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
+        .btn-danger:hover { background: rgba(239,68,68,0.3); }
+        .btn-success { background: rgba(34,197,94,0.2); color: var(--success); border: 1px solid rgba(34,197,94,0.3); }
+        .btn-success:hover { background: rgba(34,197,94,0.3); }
+
+        /* OTP Section */
+        .otp-section { display: none; text-align: center; }
+        .otp-section.active { display: block; animation: fadeIn 0.4s ease; }
+        .otp-inputs { display: flex; gap: 0.5rem; justify-content: center; margin: 1.5rem 0; }
+        .otp-input {
+            width: 48px; height: 56px; text-align: center; font-size: 1.4rem; font-weight: 700;
+            font-family: 'Inter', monospace; background: rgba(255,255,255,0.05);
+            border: 2px solid var(--border-subtle); border-radius: 10px; color: var(--gold);
+            transition: var(--transition);
+        }
+        .otp-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(255,215,0,0.15); }
+        .otp-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.3rem; }
+        .otp-subtitle { font-size: 0.8rem; color: var(--text-muted); }
+        .verify-animation {
+            display: none; text-align: center; padding: 2rem;
+        }
+        .verify-animation.active { display: block; animation: fadeIn 0.5s ease; }
+        .verify-check {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: rgba(34,197,94,0.15); border: 3px solid var(--success);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1rem; font-size: 2rem; color: var(--success);
+            animation: verifyPulse 1.5s infinite;
+        }
+        .verify-spinner {
+            width: 60px; height: 60px; border: 4px solid var(--border-subtle);
+            border-top-color: var(--gold); border-radius: 50%;
+            animation: spin 0.8s linear infinite; margin: 0 auto 1rem;
+        }
+
+        /* ===== MAIN APP ===== */
+        .app-container { display: none; }
+        .app-container.active { display: block; animation: fadeIn 0.5s ease; }
+
+        /* Header */
+        .top-header {
+            position: sticky; top: 0; z-index: 100; padding: 0.75rem 2rem;
+            background: rgba(10,10,26,0.85); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .header-left { display: flex; align-items: center; gap: 1rem; }
+        .header-logo {
+            display: flex; align-items: center; gap: 0.6rem; font-weight: 800; font-size: 1.1rem;
+        }
+        .header-logo-icon {
+            background: var(--gradient-gold); padding: 0.4rem; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            animation: glow 3s infinite;
+        }
+        .header-logo-icon i { color: #000; font-size: 1rem; }
+        .header-badge {
+            font-size: 0.55rem; background: var(--gradient-gold); color: #000;
+            padding: 2px 6px; border-radius: 4px; font-weight: 700;
+        }
+        .header-right { display: flex; align-items: center; gap: 1.5rem; }
+        .header-user { display: flex; align-items: center; gap: 0.6rem; }
+        .user-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: var(--gradient-gold); display: flex; align-items: center;
+            justify-content: center; font-weight: 700; color: #000; font-size: 0.8rem;
+        }
+        .user-info { text-align: right; }
+        .user-name { font-size: 0.8rem; font-weight: 600; }
+        .user-role { font-size: 0.65rem; color: var(--gold); }
+        .nav-links { display: flex; gap: 0.5rem; }
+        .nav-link-app {
+            font-size: 0.75rem; color: var(--text-secondary); padding: 0.3rem 0.6rem;
+            border-radius: 6px; transition: var(--transition);
+        }
+        .nav-link-app:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+
+        /* Tabs */
+        .tabs-nav {
+            display: flex; gap: 0.25rem; padding: 0.75rem 2rem;
+            background: rgba(18,18,42,0.6); border-bottom: 1px solid var(--border-subtle);
+            overflow-x: auto; scrollbar-width: none;
+        }
+        .tabs-nav::-webkit-scrollbar { display: none; }
+        .tab-btn {
+            padding: 0.6rem 1.2rem; font-size: 0.78rem; font-weight: 500; font-family: inherit;
+            color: var(--text-muted); background: transparent; border: none; border-radius: 8px;
+            cursor: pointer; transition: var(--transition); white-space: nowrap;
+            display: flex; align-items: center; gap: 0.4rem;
+        }
+        .tab-btn:hover { color: var(--text-secondary); background: rgba(255,255,255,0.04); }
+        .tab-btn.active {
+            color: var(--gold); background: var(--gold-light);
+            font-weight: 600;
+        }
+        .tab-btn i { font-size: 0.8rem; }
+
+        /* Content */
+        .main-content { padding: 1.5rem 2rem 3rem; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeInUp 0.4s ease; }
+
+        .page-title {
+            font-size: 1.5rem; font-weight: 800; margin-bottom: 0.3rem;
+            background: linear-gradient(90deg, var(--gold), #f59e0b);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .page-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card); border: 1px solid var(--border-subtle);
+            border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem;
+            transition: var(--transition);
+        }
+        .card:hover { border-color: var(--border-color); }
+        .card-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-subtle);
+        }
+        .card-title { font-size: 0.9rem; font-weight: 700; }
+        .card-subtitle { font-size: 0.7rem; color: var(--text-muted); }
+
+        /* KPI Cards */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .kpi-card {
+            background: var(--bg-card); border: 1px solid var(--border-subtle);
+            border-radius: var(--radius); padding: 1.25rem;
+            transition: var(--transition); position: relative; overflow: hidden;
+        }
+        .kpi-card:hover { transform: translateY(-3px); border-color: var(--border-color); box-shadow: var(--shadow); }
+        .kpi-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: var(--gradient-gold);
+        }
+        .kpi-icon {
+            width: 40px; height: 40px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; margin-bottom: 0.75rem;
+        }
+        .kpi-icon.gold { background: var(--gold-light); color: var(--gold); }
+        .kpi-icon.purple { background: var(--purple-light); color: var(--purple); }
+        .kpi-icon.cyan { background: rgba(6,182,212,0.15); color: var(--cyan); }
+        .kpi-icon.green { background: rgba(34,197,94,0.15); color: var(--success); }
+        .kpi-icon.red { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .kpi-value { font-size: 1.6rem; font-weight: 800; margin-bottom: 0.2rem; }
+        .kpi-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+        .kpi-change { font-size: 0.7rem; margin-top: 0.3rem; display: flex; align-items: center; gap: 0.3rem; }
+        .kpi-change.up { color: var(--success); }
+        .kpi-change.down { color: var(--danger); }
+
+        /* Tables */
+        .table-container { overflow-x: auto; border-radius: var(--radius); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        thead { background: rgba(255,215,0,0.05); }
+        th {
+            padding: 0.75rem 1rem; text-align: left; font-weight: 600; font-size: 0.7rem;
+            text-transform: uppercase; letter-spacing: 0.05em; color: var(--gold);
+            border-bottom: 1px solid var(--border-color);
+        }
+        td {
+            padding: 0.7rem 1rem; border-bottom: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+        }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+        .badge {
+            display: inline-block; padding: 0.2rem 0.6rem; border-radius: 20px;
+            font-size: 0.65rem; font-weight: 600;
+        }
+        .badge-starter { background: rgba(100,116,139,0.2); color: #94a3b8; }
+        .badge-pro { background: var(--purple-light); color: var(--purple); }
+        .badge-enterprise { background: var(--gold-light); color: var(--gold); }
+        .badge-active { background: rgba(34,197,94,0.15); color: var(--success); }
+        .badge-suspended { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .badge-trial { background: rgba(245,158,11,0.15); color: var(--warning); }
+        .badge-pagada { background: rgba(34,197,94,0.15); color: var(--success); }
+        .badge-pendiente { background: rgba(245,158,11,0.15); color: var(--warning); }
+        .badge-vencida { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .health-score {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px; border-radius: 50%; font-size: 0.7rem; font-weight: 700;
+        }
+        .health-high { background: rgba(34,197,94,0.15); color: var(--success); }
+        .health-mid { background: rgba(245,158,11,0.15); color: var(--warning); }
+        .health-low { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .actions-cell { display: flex; gap: 0.3rem; }
+
+        /* Plan Cards */
+        .plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+        .plan-card {
+            background: var(--bg-card); border: 1px solid var(--border-subtle);
+            border-radius: 16px; padding: 2rem; text-align: center;
+            transition: var(--transition); position: relative;
+        }
+        .plan-card:hover { transform: translateY(-5px); box-shadow: var(--shadow); }
+        .plan-card.featured { border-color: var(--gold); }
+        .plan-card.featured::before {
+            content: 'POPULAR'; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+            background: var(--gradient-gold); color: #000; font-size: 0.6rem; font-weight: 800;
+            padding: 0.2rem 0.8rem; border-radius: 20px;
+        }
+        .plan-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.3rem; }
+        .plan-price { font-size: 2.2rem; font-weight: 900; margin: 1rem 0 0.2rem; }
+        .plan-price span { font-size: 0.9rem; font-weight: 400; color: var(--text-muted); }
+        .plan-period { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+        .plan-features { list-style: none; text-align: left; margin-bottom: 1.5rem; }
+        .plan-features li {
+            padding: 0.4rem 0; font-size: 0.78rem; color: var(--text-secondary);
+            display: flex; align-items: center; gap: 0.5rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .plan-features li:last-child { border: none; }
+        .plan-features li i { color: var(--success); font-size: 0.7rem; width: 16px; }
+        .plan-features li i.fa-times { color: var(--danger); }
+
+        /* Charts */
+        .chart-container { position: relative; height: 300px; margin-top: 1rem; }
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+        /* Tickets / Support */
+        .chat-box {
+            background: var(--bg-secondary); border: 1px solid var(--border-subtle);
+            border-radius: var(--radius); height: 300px; overflow-y: auto; padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        .chat-msg { margin-bottom: 0.75rem; max-width: 80%; }
+        .chat-msg.sent { margin-left: auto; text-align: right; }
+        .chat-msg .msg-text {
+            display: inline-block; padding: 0.6rem 1rem; border-radius: 12px;
+            font-size: 0.8rem; line-height: 1.4;
+        }
+        .chat-msg.received .msg-text { background: rgba(139,92,246,0.15); color: var(--text-primary); }
+        .chat-msg.sent .msg-text { background: var(--gold-light); color: var(--text-primary); }
+        .chat-msg .msg-time { font-size: 0.6rem; color: var(--text-muted); margin-top: 0.2rem; }
+        .chat-input-row { display: flex; gap: 0.5rem; }
+        .chat-input-row input { flex: 1; }
+
+        /* Deploy */
+        .version-badge {
+            display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px;
+            font-size: 0.7rem; font-weight: 600; font-family: monospace;
+            background: rgba(139,92,246,0.15); color: var(--purple);
+        }
+        .canary-progress { margin: 1rem 0; }
+        .canary-bar {
+            height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px;
+            overflow: hidden; margin-top: 0.5rem;
+        }
+        .canary-fill {
+            height: 100%; border-radius: 4px; transition: width 1s ease;
+            background: linear-gradient(90deg, var(--success), var(--cyan));
+        }
+        .canary-steps { display: flex; justify-content: space-between; margin-top: 0.4rem; }
+        .canary-step {
+            font-size: 0.65rem; color: var(--text-muted); cursor: pointer;
+            padding: 0.2rem 0.5rem; border-radius: 4px; transition: var(--transition);
+        }
+        .canary-step.active { color: var(--success); font-weight: 600; }
+        .canary-step:hover { background: rgba(255,255,255,0.05); }
+
+        /* Discount section */
+        .discount-section { margin-top: 1.5rem; }
+        .discount-row {
+            display: flex; align-items: center; gap: 1rem; padding: 0.75rem;
+            background: rgba(255,255,255,0.02); border-radius: 8px; margin-bottom: 0.5rem;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; z-index: 5000;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 16px; padding: 2rem; width: 440px; max-width: 90vw;
+            animation: fadeInUp 0.3s ease;
+        }
+        .modal-box h3 { margin-bottom: 1rem; font-size: 1.1rem; }
+        .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1.5rem; }
+
+        /* Toast */
+        .toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 9999; }
+        .toast {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 10px; padding: 0.75rem 1.25rem; margin-bottom: 0.5rem;
+            display: flex; align-items: center; gap: 0.6rem; font-size: 0.8rem;
+            animation: slideIn 0.4s ease; box-shadow: var(--shadow); min-width: 280px;
+        }
+        .toast i { font-size: 1rem; }
+        .toast.success i { color: var(--success); }
+        .toast.warning i { color: var(--warning); }
+        .toast.error i { color: var(--danger); }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .plans-grid { grid-template-columns: 1fr; }
+            .charts-grid { grid-template-columns: 1fr; }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 640px) {
+            .main-content { padding: 1rem; }
+            .top-header { padding: 0.75rem 1rem; }
+            .tabs-nav { padding: 0.5rem 1rem; }
+            .kpi-grid { grid-template-columns: 1fr; }
+            .plans-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Severity badges */
+        .severity-critical { background: rgba(239,68,68,0.2); color: var(--danger); }
+        .severity-high { background: rgba(245,158,11,0.2); color: var(--warning); }
+        .severity-medium { background: rgba(59,130,246,0.2); color: var(--info); }
+        .severity-low { background: rgba(34,197,94,0.2); color: var(--success); }
+    </style>
+</head>
+<body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box" id="modalBox">
+            <h3 id="modalTitle">Modal</h3>
+            <div id="modalBody"></div>
+            <div class="modal-actions">
+                <button class="btn btn-outline btn-sm" onclick="closeModal()">Cancelar</button>
+                <button class="btn btn-gold btn-sm" id="modalConfirm" onclick="closeModal()">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== LOGIN SCREEN ========== -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-particles"></div>
+        <div class="login-box">
+            <div class="login-logo">
+                <div class="login-logo-icon"><i class="fas fa-crown"></i></div>
+                <h2>SiniestrosAI <small>SUPERADMIN</small></h2>
+                <p>Acceso exclusivo del propietario</p>
+            </div>
+
+            <!-- Step 1: Credentials -->
+            <div id="loginStep1">
+                <div class="form-group">
+                    <label>Email corporativo</label>
+                    <input type="email" class="form-input" id="loginEmail" placeholder="ceo@siniestrosai.com" value="ceo@siniestrosai.com">
+                </div>
+                <div class="form-group">
+                    <label>Contrasena maestra</label>
+                    <input type="password" class="form-input" id="loginPassword" placeholder="••••••••••" value="superadmin2024">
+                </div>
+                <button class="btn btn-gold" onclick="showOTPStep()">
+                    <i class="fas fa-lock"></i> Acceder con 2FA
+                </button>
+                <p style="text-align:center;margin-top:1rem;font-size:0.7rem;color:var(--text-muted)">
+                    <i class="fas fa-shield-alt"></i> Protegido con autenticacion de dos factores
+                </p>
+            </div>
+
+            <!-- Step 2: OTP -->
+            <div class="otp-section" id="loginStep2">
+                <div class="otp-title"><i class="fas fa-mobile-alt"></i> Verificacion 2FA</div>
+                <p class="otp-subtitle">Introduce el codigo de 6 digitos de tu aplicacion autenticadora</p>
+                <div class="otp-inputs">
+                    <input type="text" class="otp-input" maxlength="1" data-otp="0" autofocus>
+                    <input type="text" class="otp-input" maxlength="1" data-otp="1">
+                    <input type="text" class="otp-input" maxlength="1" data-otp="2">
+                    <input type="text" class="otp-input" maxlength="1" data-otp="3">
+                    <input type="text" class="otp-input" maxlength="1" data-otp="4">
+                    <input type="text" class="otp-input" maxlength="1" data-otp="5">
+                </div>
+                <button class="btn btn-gold" onclick="verifyOTP()">
+                    <i class="fas fa-check-circle"></i> Verificar codigo
+                </button>
+                <p style="margin-top:1rem;font-size:0.7rem;color:var(--text-muted)">
+                    No recibes el codigo? <a href="#" onclick="showToast('Codigo reenviado','success');return false">Reenviar</a>
+                </p>
+            </div>
+
+            <!-- Step 3: Verifying Animation -->
+            <div class="verify-animation" id="loginStep3">
+                <div class="verify-spinner" id="verifySpinner"></div>
+                <div class="verify-check" id="verifyCheck" style="display:none">
+                    <i class="fas fa-check"></i>
+                </div>
+                <p id="verifyText" style="font-size:0.9rem;font-weight:600;">Verificando identidad...</p>
+                <p style="font-size:0.7rem;color:var(--text-muted);margin-top:0.3rem" id="verifySubtext">Comprobando credenciales y token 2FA</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== MAIN APP ========== -->
+    <div class="app-container" id="appContainer">
+        <!-- Header -->
+        <header class="top-header">
+            <div class="header-left">
+                <div class="header-logo">
+                    <div class="header-logo-icon"><i class="fas fa-crown"></i></div>
+                    <span>SiniestrosAI</span>
+                    <span class="header-badge">SUPERADMIN</span>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html" class="nav-link-app"><i class="fas fa-home"></i> App Principal</a>
+                    <a href="help.html" class="nav-link-app"><i class="fas fa-question-circle"></i> Ayuda</a>
+                </div>
+            </div>
+            <div class="header-right">
+                <span style="font-size:0.7rem;color:var(--text-muted)"><i class="fas fa-clock"></i> Ultima sesion: hace 2h</span>
+                <div class="header-user">
+                    <div class="user-info">
+                        <div class="user-name">Carlos Mendez</div>
+                        <div class="user-role">CEO - Fundador SiniestrosAI</div>
+                    </div>
+                    <div class="user-avatar">CM</div>
+                </div>
+                <button class="btn btn-outline btn-xs" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </header>
+
+        <!-- Tabs Navigation -->
+        <nav class="tabs-nav">
+            <button class="tab-btn active" data-tab="clientes"><i class="fas fa-building"></i> Clientes</button>
+            <button class="tab-btn" data-tab="planes"><i class="fas fa-tags"></i> Planes y Precios</button>
+            <button class="tab-btn" data-tab="facturacion"><i class="fas fa-file-invoice-dollar"></i> Facturacion</button>
+            <button class="tab-btn" data-tab="metricas"><i class="fas fa-chart-line"></i> Metricas SaaS</button>
+            <button class="tab-btn" data-tab="soporte"><i class="fas fa-headset"></i> Soporte</button>
+            <button class="tab-btn" data-tab="despliegue"><i class="fas fa-rocket"></i> Despliegue</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- ===== TAB: CLIENTES ===== -->
+            <div class="tab-content active" id="tab-clientes">
+                <h1 class="page-title">Clientes Activos</h1>
+                <p class="page-subtitle">Gestion de las companias de seguros suscritas a SiniestrosAI</p>
+
+                <div class="kpi-grid" style="margin-bottom:1.5rem">
+                    <div class="kpi-card">
+                        <div class="kpi-icon gold"><i class="fas fa-building"></i></div>
+                        <div class="kpi-value">12</div>
+                        <div class="kpi-label">Clientes Totales</div>
+                        <div class="kpi-change up"><i class="fas fa-arrow-up"></i> +2 este trimestre</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon green"><i class="fas fa-check-circle"></i></div>
+                        <div class="kpi-value">10</div>
+                        <div class="kpi-label">Activos</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon purple"><i class="fas fa-gem"></i></div>
+                        <div class="kpi-value">5</div>
+                        <div class="kpi-label">Enterprise</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon cyan"><i class="fas fa-chart-bar"></i></div>
+                        <div class="kpi-value">87.3</div>
+                        <div class="kpi-label">Health Score Medio</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Todas las Companias</div>
+                            <div class="card-subtitle">12 companias de seguros registradas</div>
+                        </div>
+                        <button class="btn btn-gold btn-sm"><i class="fas fa-plus"></i> Nuevo Cliente</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Compania</th>
+                                    <th>Plan</th>
+                                    <th>MRR</th>
+                                    <th>Fecha Inicio</th>
+                                    <th>Siniestros/Mes</th>
+                                    <th>Llamadas IA</th>
+                                    <th>Agentes</th>
+                                    <th>Health</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clientsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== TAB: PLANES Y PRECIOS ===== -->
+            <div class="tab-content" id="tab-planes">
+                <h1 class="page-title">Planes y Precios</h1>
+                <p class="page-subtitle">Configura los planes de suscripcion y gestiona descuentos</p>
+
+                <div class="plans-grid">
+                    <!-- Starter -->
+                    <div class="plan-card">
+                        <div style="font-size:2rem;margin-bottom:0.5rem"><i class="fas fa-rocket" style="color:var(--text-muted)"></i></div>
+                        <div class="plan-name">Starter</div>
+                        <div class="plan-price">8.000<span>&euro;</span></div>
+                        <div class="plan-period">por mes / por aseguradora</div>
+                        <ul class="plan-features">
+                            <li><i class="fas fa-check"></i> Hasta 500 siniestros/mes</li>
+                            <li><i class="fas fa-check"></i> 3 agentes IA</li>
+                            <li><i class="fas fa-check"></i> Dashboard basico</li>
+                            <li><i class="fas fa-check"></i> Soporte email</li>
+                            <li><i class="fas fa-check"></i> API basica</li>
+                            <li><i class="fas fa-times"></i> Anti-fraude avanzado</li>
+                            <li><i class="fas fa-times"></i> Agente negociador</li>
+                            <li><i class="fas fa-times"></i> Despliegue on-premise</li>
+                        </ul>
+                        <button class="btn btn-outline" style="width:100%;justify-content:center" onclick="editPrice('Starter','8000')">
+                            <i class="fas fa-edit"></i> Editar Precio
+                        </button>
+                    </div>
+                    <!-- Pro -->
+                    <div class="plan-card featured">
+                        <div style="font-size:2rem;margin-bottom:0.5rem"><i class="fas fa-gem" style="color:var(--purple)"></i></div>
+                        <div class="plan-name" style="color:var(--purple)">Pro</div>
+                        <div class="plan-price" style="color:var(--purple)">24.000<span>&euro;</span></div>
+                        <div class="plan-period">por mes / por aseguradora</div>
+                        <ul class="plan-features">
+                            <li><i class="fas fa-check"></i> Hasta 2.500 siniestros/mes</li>
+                            <li><i class="fas fa-check"></i> 10 agentes IA</li>
+                            <li><i class="fas fa-check"></i> Dashboard completo</li>
+                            <li><i class="fas fa-check"></i> Soporte prioritario 24/7</li>
+                            <li><i class="fas fa-check"></i> API completa + Webhooks</li>
+                            <li><i class="fas fa-check"></i> Anti-fraude avanzado</li>
+                            <li><i class="fas fa-check"></i> Agente negociador</li>
+                            <li><i class="fas fa-times"></i> Despliegue on-premise</li>
+                        </ul>
+                        <button class="btn btn-purple" style="width:100%;justify-content:center" onclick="editPrice('Pro','24000')">
+                            <i class="fas fa-edit"></i> Editar Precio
+                        </button>
+                    </div>
+                    <!-- Enterprise -->
+                    <div class="plan-card">
+                        <div style="font-size:2rem;margin-bottom:0.5rem"><i class="fas fa-crown" style="color:var(--gold)"></i></div>
+                        <div class="plan-name" style="color:var(--gold)">Enterprise</div>
+                        <div class="plan-price" style="color:var(--gold)">45.000<span>&euro;</span></div>
+                        <div class="plan-period">por mes / por aseguradora</div>
+                        <ul class="plan-features">
+                            <li><i class="fas fa-check"></i> Siniestros ilimitados</li>
+                            <li><i class="fas fa-check"></i> Agentes IA ilimitados</li>
+                            <li><i class="fas fa-check"></i> Dashboard + BI avanzado</li>
+                            <li><i class="fas fa-check"></i> Soporte dedicado + SLA</li>
+                            <li><i class="fas fa-check"></i> API completa + SSO + SAML</li>
+                            <li><i class="fas fa-check"></i> Anti-fraude + ML personalizado</li>
+                            <li><i class="fas fa-check"></i> Todos los agentes autonomos</li>
+                            <li><i class="fas fa-check"></i> Despliegue on-premise / hibrido</li>
+                        </ul>
+                        <button class="btn btn-gold" style="width:100%;justify-content:center" onclick="editPrice('Enterprise','45000')">
+                            <i class="fas fa-edit"></i> Editar Precio
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Discount Management -->
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title"><i class="fas fa-percent"></i> Gestion de Descuentos</div>
+                            <div class="card-subtitle">Descuentos activos para clientes seleccionados</div>
+                        </div>
+                        <button class="btn btn-gold btn-sm" onclick="showToast('Nuevo descuento creado','success')"><i class="fas fa-plus"></i> Nuevo Descuento</button>
+                    </div>
+                    <div class="discount-section">
+                        <div class="discount-row">
+                            <span class="badge badge-enterprise">Enterprise</span>
+                            <span style="flex:1;font-size:0.8rem">Mapfre - Descuento por volumen</span>
+                            <span style="font-size:0.9rem;font-weight:700;color:var(--success)">-15%</span>
+                            <span style="font-size:0.7rem;color:var(--text-muted)">Hasta Dic 2026</span>
+                            <button class="btn btn-xs btn-outline" onclick="showToast('Descuento eliminado','warning')"><i class="fas fa-trash"></i></button>
+                        </div>
+                        <div class="discount-row">
+                            <span class="badge badge-pro">Pro</span>
+                            <span style="flex:1;font-size:0.8rem">Catalana Occidente - Early adopter</span>
+                            <span style="font-size:0.9rem;font-weight:700;color:var(--success)">-10%</span>
+                            <span style="font-size:0.7rem;color:var(--text-muted)">Permanente</span>
+                            <button class="btn btn-xs btn-outline" onclick="showToast('Descuento eliminado','warning')"><i class="fas fa-trash"></i></button>
+                        </div>
+                        <div class="discount-row">
+                            <span class="badge badge-starter">Starter</span>
+                            <span style="flex:1;font-size:0.8rem">Mutua Madrilena - Promo lanzamiento</span>
+                            <span style="font-size:0.9rem;font-weight:700;color:var(--success)">-20%</span>
+                            <span style="font-size:0.7rem;color:var(--text-muted)">Hasta Jun 2026</span>
+                            <button class="btn btn-xs btn-outline" onclick="showToast('Descuento eliminado','warning')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== TAB: FACTURACION ===== -->
+            <div class="tab-content" id="tab-facturacion">
+                <h1 class="page-title">Facturacion</h1>
+                <p class="page-subtitle">Control de facturacion y cobros mensuales</p>
+
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon gold"><i class="fas fa-coins"></i></div>
+                        <div class="kpi-value">284.5K&euro;</div>
+                        <div class="kpi-label">MRR Total</div>
+                        <div class="kpi-change up"><i class="fas fa-arrow-up"></i> +8.2% vs mes anterior</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon green"><i class="fas fa-check-double"></i></div>
+                        <div class="kpi-value">9</div>
+                        <div class="kpi-label">Facturas Pagadas</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon purple"><i class="fas fa-hourglass-half"></i></div>
+                        <div class="kpi-value">2</div>
+                        <div class="kpi-label">Pendientes</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon red"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="kpi-value">1</div>
+                        <div class="kpi-label">Vencida</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Facturas Mensuales</div>
+                            <div class="card-subtitle">Historial de facturacion del ultimo ano</div>
+                        </div>
+                        <button class="btn btn-gold btn-sm"><i class="fas fa-download"></i> Exportar CSV</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Factura</th>
+                                    <th>Periodo</th>
+                                    <th>Cliente</th>
+                                    <th>Plan</th>
+                                    <th>Importe</th>
+                                    <th>Estado</th>
+                                    <th>Fecha Pago</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoicesTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fas fa-chart-bar"></i> Ingresos Mensuales (MRR)</div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== TAB: METRICAS SAAS ===== -->
+            <div class="tab-content" id="tab-metricas">
+                <h1 class="page-title">Metricas SaaS</h1>
+                <p class="page-subtitle">Indicadores clave de negocio y crecimiento</p>
+
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon gold"><i class="fas fa-coins"></i></div>
+                        <div class="kpi-value">284.5K&euro;</div>
+                        <div class="kpi-label">MRR</div>
+                        <div class="kpi-change up"><i class="fas fa-arrow-up"></i> +8.2%</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon purple"><i class="fas fa-chart-line"></i></div>
+                        <div class="kpi-value">3.4M&euro;</div>
+                        <div class="kpi-label">ARR</div>
+                        <div class="kpi-change up"><i class="fas fa-arrow-up"></i> +12.5%</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon red"><i class="fas fa-user-minus"></i></div>
+                        <div class="kpi-value">2.1%</div>
+                        <div class="kpi-label">Churn Rate</div>
+                        <div class="kpi-change up"><i class="fas fa-arrow-down"></i> -0.3pp</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon cyan"><i class="fas fa-gem"></i></div>
+                        <div class="kpi-value">180K&euro;</div>
+                        <div class="kpi-label">LTV</div>
+                        <div class="kpi-change up"><i class="fas fa-arrow-up"></i> +15K</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon green"><i class="fas fa-bullseye"></i></div>
+                        <div class="kpi-value">12K&euro;</div>
+                        <div class="kpi-label">CAC</div>
+                        <div class="kpi-change up"><i class="fas fa-arrow-down"></i> -2K</div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="fas fa-chart-line"></i> Crecimiento MRR (12 meses)</div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="mrrGrowthChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="fas fa-exchange-alt"></i> Nuevos vs Churned</div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="churnChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== TAB: SOPORTE ===== -->
+            <div class="tab-content" id="tab-soporte">
+                <h1 class="page-title">Soporte a Clientes</h1>
+                <p class="page-subtitle">Gestion de tickets y comunicacion directa</p>
+
+                <div class="kpi-grid" style="margin-bottom:1.5rem">
+                    <div class="kpi-card">
+                        <div class="kpi-icon red"><i class="fas fa-fire"></i></div>
+                        <div class="kpi-value">3</div>
+                        <div class="kpi-label">Tickets Criticos</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon gold"><i class="fas fa-ticket-alt"></i></div>
+                        <div class="kpi-value">18</div>
+                        <div class="kpi-label">Tickets Abiertos</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon green"><i class="fas fa-clock"></i></div>
+                        <div class="kpi-value">2.4h</div>
+                        <div class="kpi-label">Tiempo Resp. Medio</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon cyan"><i class="fas fa-smile"></i></div>
+                        <div class="kpi-value">94%</div>
+                        <div class="kpi-label">Satisfaccion</div>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:1rem">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Tickets Recientes</div>
+                            <button class="btn btn-gold btn-sm"><i class="fas fa-plus"></i> Nuevo Ticket</button>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Cliente</th>
+                                        <th>Asunto</th>
+                                        <th>Severidad</th>
+                                        <th>Estado</th>
+                                        <th>Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ticketsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="fas fa-comments"></i> Chat Directo</div>
+                            <select class="form-input" style="width:auto;padding:0.3rem 0.5rem;font-size:0.7rem" id="chatClient">
+                                <option>Mapfre</option>
+                                <option>AXA Espana</option>
+                                <option>Allianz</option>
+                            </select>
+                        </div>
+                        <div class="chat-box" id="chatBox">
+                            <div class="chat-msg received">
+                                <div class="msg-text">Hola, tenemos un problema con la integracion API. Los webhooks no llegan correctamente.</div>
+                                <div class="msg-time">Mapfre - hace 25 min</div>
+                            </div>
+                            <div class="chat-msg sent">
+                                <div class="msg-text">Revisando ahora mismo. Parece ser un tema de certificados SSL. Lo solucionamos en breve.</div>
+                                <div class="msg-time">Tu - hace 20 min</div>
+                            </div>
+                            <div class="chat-msg received">
+                                <div class="msg-text">Perfecto, quedamos a la espera. Es urgente porque afecta a la liquidacion mensual.</div>
+                                <div class="msg-time">Mapfre - hace 15 min</div>
+                            </div>
+                        </div>
+                        <div class="chat-input-row">
+                            <input type="text" class="form-input" id="chatInput" placeholder="Escribe un mensaje..." style="font-size:0.8rem">
+                            <button class="btn btn-gold btn-sm" onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== TAB: DESPLIEGUE ===== -->
+            <div class="tab-content" id="tab-despliegue">
+                <h1 class="page-title">Despliegue y Versiones</h1>
+                <p class="page-subtitle">Control de versiones, canary deployments y rollbacks</p>
+
+                <div class="kpi-grid" style="margin-bottom:1.5rem">
+                    <div class="kpi-card">
+                        <div class="kpi-icon green"><i class="fas fa-code-branch"></i></div>
+                        <div class="kpi-value">v3.8.2</div>
+                        <div class="kpi-label">Version Actual</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon cyan"><i class="fas fa-server"></i></div>
+                        <div class="kpi-value">99.97%</div>
+                        <div class="kpi-label">Uptime</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon purple"><i class="fas fa-rocket"></i></div>
+                        <div class="kpi-value">47</div>
+                        <div class="kpi-label">Deploys este Mes</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon gold"><i class="fas fa-undo"></i></div>
+                        <div class="kpi-value">2</div>
+                        <div class="kpi-label">Rollbacks</div>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Historial de Versiones</div>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Version</th>
+                                        <th>Fecha</th>
+                                        <th>Cambios</th>
+                                        <th>Estado</th>
+                                        <th>Accion</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="versionsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="fas fa-rocket"></i> Deploy Nueva Version</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Version</label>
+                            <input type="text" class="form-input" value="v3.8.3" id="newVersion">
+                        </div>
+                        <div class="form-group">
+                            <label>Descripcion de cambios</label>
+                            <input type="text" class="form-input" placeholder="Mejoras de rendimiento..." id="deployDesc">
+                        </div>
+                        <div class="form-group">
+                            <label>Estrategia de despliegue</label>
+                            <select class="form-input" id="deployStrategy">
+                                <option value="canary">Canary (10% &rarr; 50% &rarr; 100%)</option>
+                                <option value="rolling">Rolling Update</option>
+                                <option value="bluegreen">Blue/Green</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-gold" style="width:100%;justify-content:center" onclick="startDeploy()">
+                            <i class="fas fa-rocket"></i> Iniciar Despliegue
+                        </button>
+
+                        <div class="canary-progress" id="canaryProgress" style="display:none">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1rem">
+                                <span style="font-size:0.8rem;font-weight:600">Progreso Canary</span>
+                                <span style="font-size:0.75rem;color:var(--success)" id="canaryPercent">10%</span>
+                            </div>
+                            <div class="canary-bar">
+                                <div class="canary-fill" id="canaryFill" style="width:10%"></div>
+                            </div>
+                            <div class="canary-steps">
+                                <span class="canary-step active" onclick="setCanary(10)">10%</span>
+                                <span class="canary-step" onclick="setCanary(50)">50%</span>
+                                <span class="canary-step" onclick="setCanary(100)">100%</span>
+                            </div>
+                            <div style="display:flex;gap:0.5rem;margin-top:1rem">
+                                <button class="btn btn-success btn-sm" style="flex:1" onclick="advanceCanary()"><i class="fas fa-forward"></i> Avanzar</button>
+                                <button class="btn btn-danger btn-sm" style="flex:1" onclick="rollbackDeploy()"><i class="fas fa-undo"></i> Rollback</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        /* ========================================================
+           DATA
+           ======================================================== */
+        const clientsData = [
+            { nombre:'Mapfre', plan:'Enterprise', mrr:45000, fecha:'2024-01-15', siniestros:3240, llamadas:12450, agentes:28, health:95, estado:'Activo' },
+            { nombre:'AXA Espana', plan:'Enterprise', mrr:45000, fecha:'2024-02-01', siniestros:2890, llamadas:10230, agentes:24, health:92, estado:'Activo' },
+            { nombre:'Allianz', plan:'Enterprise', mrr:45000, fecha:'2024-03-10', siniestros:2650, llamadas:9870, agentes:22, health:88, estado:'Activo' },
+            { nombre:'Zurich', plan:'Pro', mrr:24000, fecha:'2024-04-05', siniestros:1820, llamadas:6540, agentes:12, health:85, estado:'Activo' },
+            { nombre:'Generali', plan:'Pro', mrr:24000, fecha:'2024-05-20', siniestros:1650, llamadas:5890, agentes:10, health:91, estado:'Activo' },
+            { nombre:'Catalana Occidente', plan:'Pro', mrr:21600, fecha:'2024-03-01', siniestros:1480, llamadas:5210, agentes:8, health:87, estado:'Activo' },
+            { nombre:'Mutua Madrilena', plan:'Starter', mrr:6400, fecha:'2025-01-10', siniestros:420, llamadas:1560, agentes:3, health:78, estado:'Activo' },
+            { nombre:'Santalucia', plan:'Enterprise', mrr:45000, fecha:'2024-06-15', siniestros:2100, llamadas:7830, agentes:18, health:93, estado:'Activo' },
+            { nombre:'Pelayo', plan:'Pro', mrr:24000, fecha:'2024-08-01', siniestros:1350, llamadas:4920, agentes:9, health:82, estado:'Activo' },
+            { nombre:'Liberty Seguros', plan:'Enterprise', mrr:45000, fecha:'2024-07-12', siniestros:2340, llamadas:8760, agentes:20, health:90, estado:'Activo' },
+            { nombre:'Reale Seguros', plan:'Starter', mrr:8000, fecha:'2025-02-01', siniestros:380, llamadas:1240, agentes:3, health:74, estado:'Trial' },
+            { nombre:'Helvetia', plan:'Starter', mrr:8000, fecha:'2024-11-20', siniestros:290, llamadas:980, agentes:3, health:45, estado:'Suspendido' },
+        ];
+
+        const invoicesData = [
+            { id:'INV-2026-001', periodo:'Ene 2026', cliente:'Mapfre', plan:'Enterprise', importe:45000, estado:'Pagada', fecha:'05/01/2026' },
+            { id:'INV-2026-002', periodo:'Ene 2026', cliente:'AXA Espana', plan:'Enterprise', importe:45000, estado:'Pagada', fecha:'03/01/2026' },
+            { id:'INV-2026-003', periodo:'Ene 2026', cliente:'Zurich', plan:'Pro', importe:24000, estado:'Pagada', fecha:'07/01/2026' },
+            { id:'INV-2026-004', periodo:'Feb 2026', cliente:'Mapfre', plan:'Enterprise', importe:45000, estado:'Pagada', fecha:'04/02/2026' },
+            { id:'INV-2026-005', periodo:'Feb 2026', cliente:'AXA Espana', plan:'Enterprise', importe:45000, estado:'Pagada', fecha:'02/02/2026' },
+            { id:'INV-2026-006', periodo:'Feb 2026', cliente:'Generali', plan:'Pro', importe:24000, estado:'Pagada', fecha:'06/02/2026' },
+            { id:'INV-2026-007', periodo:'Feb 2026', cliente:'Santalucia', plan:'Enterprise', importe:45000, estado:'Pagada', fecha:'05/02/2026' },
+            { id:'INV-2026-008', periodo:'Mar 2026', cliente:'Mapfre', plan:'Enterprise', importe:45000, estado:'Pagada', fecha:'03/03/2026' },
+            { id:'INV-2026-009', periodo:'Mar 2026', cliente:'AXA Espana', plan:'Enterprise', importe:45000, estado:'Pagada', fecha:'05/03/2026' },
+            { id:'INV-2026-010', periodo:'Mar 2026', cliente:'Zurich', plan:'Pro', importe:24000, estado:'Pendiente', fecha:'-' },
+            { id:'INV-2026-011', periodo:'Mar 2026', cliente:'Pelayo', plan:'Pro', importe:24000, estado:'Pendiente', fecha:'-' },
+            { id:'INV-2026-012', periodo:'Feb 2026', cliente:'Helvetia', plan:'Starter', importe:8000, estado:'Vencida', fecha:'-' },
+        ];
+
+        const ticketsData = [
+            { id:'TK-1847', cliente:'Mapfre', asunto:'Webhooks no llegan', severidad:'critical', estado:'Abierto', fecha:'18/03/2026' },
+            { id:'TK-1846', cliente:'AXA Espana', asunto:'Error en dashboard metricas', severidad:'high', estado:'En progreso', fecha:'17/03/2026' },
+            { id:'TK-1845', cliente:'Zurich', asunto:'Lentitud en carga de expedientes', severidad:'medium', estado:'Abierto', fecha:'17/03/2026' },
+            { id:'TK-1844', cliente:'Generali', asunto:'Solicitud nuevo campo en API', severidad:'low', estado:'Planificado', fecha:'16/03/2026' },
+            { id:'TK-1843', cliente:'Allianz', asunto:'Agente negociador se detiene', severidad:'critical', estado:'En progreso', fecha:'16/03/2026' },
+            { id:'TK-1842', cliente:'Santalucia', asunto:'Exportar PDF no funciona', severidad:'high', estado:'Abierto', fecha:'15/03/2026' },
+            { id:'TK-1841', cliente:'Liberty', asunto:'SSO configuracion SAML', severidad:'medium', estado:'Resuelto', fecha:'14/03/2026' },
+            { id:'TK-1840', cliente:'Pelayo', asunto:'Limites de llamadas API', severidad:'low', estado:'Resuelto', fecha:'13/03/2026' },
+            { id:'TK-1839', cliente:'Reale', asunto:'Onboarding asistido', severidad:'low', estado:'Abierto', fecha:'13/03/2026' },
+            { id:'TK-1838', cliente:'Catalana Occ.', asunto:'Error anti-fraude falsos positivos', severidad:'critical', estado:'En progreso', fecha:'12/03/2026' },
+        ];
+
+        const versionsData = [
+            { version:'v3.8.2', fecha:'15/03/2026', cambios:'Fix webhooks + mejora rendimiento', estado:'Produccion' },
+            { version:'v3.8.1', fecha:'10/03/2026', cambios:'Nuevo agente recobro', estado:'Anterior' },
+            { version:'v3.8.0', fecha:'01/03/2026', cambios:'Dashboard v2 + SSO SAML', estado:'Anterior' },
+            { version:'v3.7.5', fecha:'20/02/2026', cambios:'Fix anti-fraude ML model', estado:'Anterior' },
+            { version:'v3.7.4', fecha:'15/02/2026', cambios:'Mejora peritacion virtual', estado:'Anterior' },
+            { version:'v3.7.3', fecha:'08/02/2026', cambios:'Hotfix llamadas IA timeout', estado:'Rollback' },
+            { version:'v3.7.2', fecha:'01/02/2026', cambios:'IoT integrations update', estado:'Anterior' },
+            { version:'v3.7.1', fecha:'25/01/2026', cambios:'API rate limiting v2', estado:'Anterior' },
+            { version:'v3.7.0', fecha:'15/01/2026', cambios:'Agente vendedor launch', estado:'Anterior' },
+            { version:'v3.6.9', fecha:'05/01/2026', cambios:'Performance optimization', estado:'Anterior' },
+        ];
+
+        /* ========================================================
+           LOGIN / 2FA FLOW
+           ======================================================== */
+        function showOTPStep() {
+            document.getElementById('loginStep1').style.display = 'none';
+            document.getElementById('loginStep2').classList.add('active');
+            document.querySelector('.otp-input[data-otp="0"]').focus();
+        }
+
+        // OTP auto-advance
+        document.querySelectorAll('.otp-input').forEach((input, idx, inputs) => {
+            input.addEventListener('input', (e) => {
+                if (e.target.value && idx < inputs.length - 1) {
+                    inputs[idx + 1].focus();
+                }
+            });
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && idx > 0) {
+                    inputs[idx - 1].focus();
+                }
+            });
+        });
+
+        function verifyOTP() {
+            document.getElementById('loginStep2').classList.remove('active');
+            document.getElementById('loginStep2').style.display = 'none';
+            document.getElementById('loginStep3').classList.add('active');
+
+            setTimeout(() => {
+                document.getElementById('verifySpinner').style.display = 'none';
+                document.getElementById('verifyCheck').style.display = 'flex';
+                document.getElementById('verifyText').textContent = 'Identidad verificada';
+                document.getElementById('verifyText').style.color = '#22c55e';
+                document.getElementById('verifySubtext').textContent = 'Acceso concedido - Panel SuperAdmin';
+            }, 1800);
+
+            setTimeout(() => {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('appContainer').classList.add('active');
+                initApp();
+            }, 2800);
+        }
+
+        function logout() {
+            document.getElementById('appContainer').classList.remove('active');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('loginStep3').classList.remove('active');
+            document.getElementById('loginStep3').style.display = '';
+            document.getElementById('loginStep2').style.display = '';
+            document.getElementById('loginStep1').style.display = '';
+            document.getElementById('verifySpinner').style.display = '';
+            document.getElementById('verifyCheck').style.display = 'none';
+            document.getElementById('verifyText').textContent = 'Verificando identidad...';
+            document.getElementById('verifyText').style.color = '';
+            document.getElementById('verifySubtext').textContent = 'Comprobando credenciales y token 2FA';
+            document.querySelectorAll('.otp-input').forEach(i => i.value = '');
+        }
+
+        /* ========================================================
+           TABS
+           ======================================================== */
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+            });
+        });
+
+        /* ========================================================
+           INIT APP
+           ======================================================== */
+        let chartsInitialized = false;
+
+        function initApp() {
+            renderClients();
+            renderInvoices();
+            renderTickets();
+            renderVersions();
+            if (!chartsInitialized) {
+                initCharts();
+                chartsInitialized = true;
+            }
+        }
+
+        /* ========================================================
+           RENDER TABLES
+           ======================================================== */
+        function renderClients() {
+            const tbody = document.getElementById('clientsTableBody');
+            tbody.innerHTML = clientsData.map(c => {
+                const planBadge = c.plan === 'Enterprise' ? 'badge-enterprise' : c.plan === 'Pro' ? 'badge-pro' : 'badge-starter';
+                const estadoBadge = c.estado === 'Activo' ? 'badge-active' : c.estado === 'Suspendido' ? 'badge-suspended' : 'badge-trial';
+                const healthClass = c.health >= 80 ? 'health-high' : c.health >= 60 ? 'health-mid' : 'health-low';
+                return `<tr>
+                    <td style="font-weight:600;color:var(--text-primary)">${c.nombre}</td>
+                    <td><span class="badge ${planBadge}">${c.plan}</span></td>
+                    <td>${c.mrr.toLocaleString('es-ES')}&euro;</td>
+                    <td>${c.fecha}</td>
+                    <td>${c.siniestros.toLocaleString('es-ES')}</td>
+                    <td>${c.llamadas.toLocaleString('es-ES')}</td>
+                    <td>${c.agentes}</td>
+                    <td><span class="health-score ${healthClass}">${c.health}</span></td>
+                    <td><span class="badge ${estadoBadge}">${c.estado}</span></td>
+                    <td class="actions-cell">
+                        <button class="btn btn-xs btn-outline" onclick="showToast('Detalles de ${c.nombre}','success')"><i class="fas fa-eye"></i></button>
+                        <button class="btn btn-xs btn-outline" onclick="showToast('Configuracion de ${c.nombre}','success')"><i class="fas fa-cog"></i></button>
+                        <button class="btn btn-xs btn-danger" onclick="confirmSuspend('${c.nombre}')"><i class="fas fa-ban"></i></button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function renderInvoices() {
+            const tbody = document.getElementById('invoicesTableBody');
+            tbody.innerHTML = invoicesData.map(inv => {
+                const badgeClass = inv.estado === 'Pagada' ? 'badge-pagada' : inv.estado === 'Pendiente' ? 'badge-pendiente' : 'badge-vencida';
+                return `<tr>
+                    <td style="font-family:monospace;font-weight:600;color:var(--text-primary)">${inv.id}</td>
+                    <td>${inv.periodo}</td>
+                    <td>${inv.cliente}</td>
+                    <td><span class="badge ${inv.plan === 'Enterprise' ? 'badge-enterprise' : inv.plan === 'Pro' ? 'badge-pro' : 'badge-starter'}">${inv.plan}</span></td>
+                    <td style="font-weight:600">${inv.importe.toLocaleString('es-ES')}&euro;</td>
+                    <td><span class="badge ${badgeClass}">${inv.estado}</span></td>
+                    <td>${inv.fecha}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function renderTickets() {
+            const tbody = document.getElementById('ticketsTableBody');
+            tbody.innerHTML = ticketsData.map(t => {
+                const sevLabel = { critical:'Critico', high:'Alto', medium:'Medio', low:'Bajo' };
+                const estadoColors = { 'Abierto':'var(--warning)', 'En progreso':'var(--info)', 'Planificado':'var(--text-muted)', 'Resuelto':'var(--success)' };
+                return `<tr>
+                    <td style="font-family:monospace;font-weight:600;color:var(--text-primary)">${t.id}</td>
+                    <td>${t.cliente}</td>
+                    <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t.asunto}">${t.asunto}</td>
+                    <td><span class="badge severity-${t.severidad}">${sevLabel[t.severidad]}</span></td>
+                    <td style="color:${estadoColors[t.estado] || 'inherit'};font-weight:500">${t.estado}</td>
+                    <td>${t.fecha}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function renderVersions() {
+            const tbody = document.getElementById('versionsTableBody');
+            tbody.innerHTML = versionsData.map(v => {
+                const statusColor = v.estado === 'Produccion' ? 'var(--success)' : v.estado === 'Rollback' ? 'var(--danger)' : 'var(--text-muted)';
+                return `<tr>
+                    <td><span class="version-badge">${v.version}</span></td>
+                    <td>${v.fecha}</td>
+                    <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.cambios}</td>
+                    <td style="color:${statusColor};font-weight:600;font-size:0.75rem">${v.estado}</td>
+                    <td>${v.estado !== 'Produccion' ? '<button class="btn btn-xs btn-outline" onclick="rollbackTo(\''+v.version+'\')"><i class="fas fa-undo"></i> Rollback</button>' : '<span style="color:var(--success);font-size:0.7rem"><i class="fas fa-check-circle"></i> Activa</span>'}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        /* ========================================================
+           CHARTS
+           ======================================================== */
+        function initCharts() {
+            const months = ['Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic','Ene','Feb','Mar'];
+            const chartDefaults = { color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.08)' };
+
+            // Revenue Bar Chart
+            new Chart(document.getElementById('revenueChart'), {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'MRR (miles EUR)',
+                        data: [168, 180, 195, 205, 218, 225, 235, 248, 255, 262, 275, 284.5],
+                        backgroundColor: 'rgba(255, 215, 0, 0.6)',
+                        borderColor: '#ffd700',
+                        borderWidth: 1, borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: chartDefaults.color } } },
+                    scales: {
+                        x: { ticks: { color: chartDefaults.color }, grid: { color: chartDefaults.borderColor } },
+                        y: { ticks: { color: chartDefaults.color }, grid: { color: chartDefaults.borderColor } }
+                    }
+                }
+            });
+
+            // MRR Growth Line Chart
+            new Chart(document.getElementById('mrrGrowthChart'), {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'MRR (K EUR)',
+                        data: [168, 180, 195, 205, 218, 225, 235, 248, 255, 262, 275, 284.5],
+                        borderColor: '#ffd700', backgroundColor: 'rgba(255,215,0,0.1)',
+                        fill: true, tension: 0.4, pointRadius: 4,
+                        pointBackgroundColor: '#ffd700', borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: chartDefaults.color } } },
+                    scales: {
+                        x: { ticks: { color: chartDefaults.color }, grid: { color: chartDefaults.borderColor } },
+                        y: { ticks: { color: chartDefaults.color }, grid: { color: chartDefaults.borderColor } }
+                    }
+                }
+            });
+
+            // Churn Chart
+            new Chart(document.getElementById('churnChart'), {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [
+                        { label: 'Nuevos', data: [1,0,2,1,1,0,1,1,0,1,1,0], backgroundColor: 'rgba(34,197,94,0.7)', borderRadius: 4 },
+                        { label: 'Churned', data: [0,0,0,-1,0,0,0,0,-1,0,0,0], backgroundColor: 'rgba(239,68,68,0.7)', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: chartDefaults.color } } },
+                    scales: {
+                        x: { ticks: { color: chartDefaults.color }, grid: { color: chartDefaults.borderColor }, stacked: true },
+                        y: { ticks: { color: chartDefaults.color }, grid: { color: chartDefaults.borderColor }, stacked: true }
+                    }
+                }
+            });
+        }
+
+        /* ========================================================
+           ACTIONS
+           ======================================================== */
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const icons = { success:'fa-check-circle', warning:'fa-exclamation-triangle', error:'fa-times-circle' };
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fas ${icons[type] || icons.success}"></i> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(100%)'; setTimeout(() => toast.remove(), 400); }, 3000);
+        }
+
+        function confirmSuspend(name) {
+            document.getElementById('modalTitle').textContent = 'Suspender Cliente';
+            document.getElementById('modalBody').innerHTML = `<p style="font-size:0.85rem;color:var(--text-secondary)">Estas seguro de que quieres suspender a <strong style="color:var(--danger)">${name}</strong>? Se desactivaran todos los agentes IA y el acceso a la plataforma.</p>`;
+            document.getElementById('modalConfirm').onclick = () => { closeModal(); showToast(`${name} ha sido suspendido`, 'warning'); };
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        function editPrice(plan, price) {
+            document.getElementById('modalTitle').textContent = `Editar Precio - ${plan}`;
+            document.getElementById('modalBody').innerHTML = `
+                <div class="form-group">
+                    <label>Precio actual (EUR/mes)</label>
+                    <input type="number" class="form-input" value="${price}" id="editPriceInput">
+                </div>
+                <div class="form-group">
+                    <label>Nuevo precio (EUR/mes)</label>
+                    <input type="number" class="form-input" placeholder="Introduce el nuevo precio" id="newPriceInput">
+                </div>
+                <p style="font-size:0.7rem;color:var(--text-muted);margin-top:0.5rem"><i class="fas fa-info-circle"></i> El cambio se aplicara en el proximo ciclo de facturacion</p>
+            `;
+            document.getElementById('modalConfirm').onclick = () => { closeModal(); showToast(`Precio de ${plan} actualizado`, 'success'); };
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function sendChat() {
+            const input = document.getElementById('chatInput');
+            if (!input.value.trim()) return;
+            const chatBox = document.getElementById('chatBox');
+            const msg = document.createElement('div');
+            msg.className = 'chat-msg sent';
+            msg.innerHTML = `<div class="msg-text">${input.value}</div><div class="msg-time">Tu - ahora</div>`;
+            chatBox.appendChild(msg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            input.value = '';
+
+            setTimeout(() => {
+                const reply = document.createElement('div');
+                reply.className = 'chat-msg received';
+                const client = document.getElementById('chatClient').value;
+                reply.innerHTML = `<div class="msg-text">Gracias por tu respuesta. Nuestro equipo tecnico lo revisara de inmediato.</div><div class="msg-time">${client} - ahora</div>`;
+                chatBox.appendChild(reply);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 1500);
+        }
+
+        document.getElementById('chatInput').addEventListener('keydown', e => { if (e.key === 'Enter') sendChat(); });
+
+        // Deploy
+        let canaryLevel = 0;
+        function startDeploy() {
+            const ver = document.getElementById('newVersion').value;
+            const strategy = document.getElementById('deployStrategy').value;
+            if (strategy === 'canary') {
+                canaryLevel = 10;
+                document.getElementById('canaryProgress').style.display = 'block';
+                document.getElementById('canaryFill').style.width = '10%';
+                document.getElementById('canaryPercent').textContent = '10%';
+                updateCanarySteps();
+                showToast(`Despliegue canary ${ver} iniciado al 10%`, 'success');
+            } else {
+                showToast(`Despliegue ${strategy} de ${ver} completado`, 'success');
+            }
+        }
+
+        function setCanary(pct) {
+            canaryLevel = pct;
+            document.getElementById('canaryFill').style.width = pct + '%';
+            document.getElementById('canaryPercent').textContent = pct + '%';
+            updateCanarySteps();
+            showToast(`Canary avanzado al ${pct}%`, 'success');
+        }
+
+        function advanceCanary() {
+            if (canaryLevel === 10) setCanary(50);
+            else if (canaryLevel === 50) setCanary(100);
+            else showToast('Despliegue completo al 100%', 'success');
+        }
+
+        function updateCanarySteps() {
+            document.querySelectorAll('.canary-step').forEach(s => {
+                const val = parseInt(s.textContent);
+                s.classList.toggle('active', val <= canaryLevel);
+            });
+        }
+
+        function rollbackDeploy() {
+            canaryLevel = 0;
+            document.getElementById('canaryProgress').style.display = 'none';
+            showToast('Rollback ejecutado correctamente', 'warning');
+        }
+
+        function rollbackTo(version) {
+            showToast(`Rollback a ${version} ejecutado`, 'warning');
+        }
+    </script>
+</body>
+</html>
