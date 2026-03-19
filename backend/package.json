@@ -13,16 +13,16 @@
     "health": "curl -s http://localhost:3001/api/health/detailed | node -e \"process.stdin.on('data',d=>console.log(JSON.parse(d)))\""
   },
   "dependencies": {
-    "bcrypt": "^5.1.1",
+    "bcrypt": "^6.0.0",
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "jsonwebtoken": "^9.0.2",
-    "multer": "^1.4.5-lts.1",
+    "multer": "^2.0.0",
     "socket.io": "^4.8.1",
-    "sqlite3": "^5.1.7",
+    "sqlite3": "^6.0.1",
     "twilio": "^5.4.0",
     "uuid": "^11.0.3"
   },
