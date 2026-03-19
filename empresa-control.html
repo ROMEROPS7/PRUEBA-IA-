@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiniestrosAI - Sala de Control Empresarial</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        :root{
+            --bg-primary:#050810;--bg-secondary:#0a0f1e;--bg-card:#0d1428;--bg-card-hover:#111b35;
+            --text-primary:#e8edf5;--text-secondary:#8899b4;--text-muted:#556680;
+            --accent-blue:#3b82f6;--accent-purple:#8b5cf6;--accent-cyan:#06b6d4;--accent-teal:#14b8a6;
+            --accent-gold:#f59e0b;--accent-pink:#ec4899;
+            --gradient-main:linear-gradient(135deg,#3b82f6,#8b5cf6,#06b6d4);
+            --gradient-gold:linear-gradient(135deg,#f59e0b,#d97706);
+            --gradient-green:linear-gradient(135deg,#10b981,#059669);
+            --border-color:rgba(99,130,180,0.08);--radius:12px;--radius-sm:8px;
+            --success:#10b981;--warning:#f59e0b;--danger:#ef4444;--info:#3b82f6;
+        }
+        html,body{height:100%;overflow:hidden;}
+        body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);}
+        ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--accent-purple);border-radius:2px;}
+
+        /* ===== TOP BAR ===== */
+        .top-bar{
+            background:linear-gradient(90deg,rgba(10,15,30,0.98),rgba(13,20,40,0.98));
+            border-bottom:1px solid var(--border-color);
+            padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:52px;
+            position:relative;z-index:100;
+        }
+        .top-bar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:var(--gradient-main);opacity:0.4;}
+        .top-bar-left{display:flex;align-items:center;gap:1rem;}
+        .top-bar-logo{width:32px;height:32px;background:var(--gradient-main);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.85rem;box-shadow:0 2px 12px rgba(59,130,246,0.3);}
+        .top-bar-title{font-size:0.8rem;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .top-bar-center{display:flex;align-items:center;gap:2rem;}
+        .alert-level{display:flex;align-items:center;gap:0.5rem;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;}
+        .alert-dot{width:10px;height:10px;border-radius:50%;background:var(--success);box-shadow:0 0 8px rgba(16,185,129,0.6);animation:pulse-dot 2s infinite;}
+        .health-score{display:flex;align-items:center;gap:0.5rem;font-size:0.75rem;font-weight:700;}
+        .health-score .score-val{font-size:1.1rem;background:var(--gradient-green);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .live-clock{font-size:0.85rem;font-weight:600;font-variant-numeric:tabular-nums;color:var(--accent-cyan);letter-spacing:0.05em;}
+        .top-bar-right{display:flex;align-items:center;gap:1rem;}
+        .top-bar-nav{display:flex;gap:0.3rem;}
+        .top-bar-nav a{color:var(--text-muted);text-decoration:none;padding:0.35rem 0.6rem;border-radius:6px;font-size:0.65rem;font-weight:600;transition:all 0.3s;text-transform:uppercase;letter-spacing:0.05em;}
+        .top-bar-nav a:hover{color:var(--text-primary);background:rgba(59,130,246,0.12);}
+        .user-badge{display:flex;align-items:center;gap:0.5rem;background:rgba(245,158,11,0.08);padding:0.3rem 0.7rem 0.3rem 0.3rem;border-radius:20px;border:1px solid rgba(245,158,11,0.15);}
+        .user-avatar-sm{width:26px;height:26px;background:var(--gradient-gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.55rem;font-weight:800;color:#000;}
+        .user-badge span{font-size:0.65rem;font-weight:600;color:var(--accent-gold);}
+
+        /* ===== MAIN GRID ===== */
+        .control-grid{
+            display:grid;height:calc(100vh - 52px);
+            grid-template-columns:1fr 1fr 1fr 1fr;
+            grid-template-rows:auto auto 1fr auto;
+            gap:6px;padding:6px;
+            grid-template-areas:
+                "depts depts depts depts"
+                "csuite csuite csuite csuite"
+                "valor feed chart expansion"
+                "bottom bottom bottom bottom";
+        }
+
+        /* ===== DEPARTMENT ROW ===== */
+        .dept-row{grid-area:depts;display:grid;grid-template-columns:repeat(8,1fr);gap:5px;}
+        .dept-card{
+            background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-sm);
+            padding:0.55rem 0.5rem;text-align:center;position:relative;overflow:hidden;transition:all 0.3s;
+        }
+        .dept-card:hover{border-color:rgba(59,130,246,0.2);transform:translateY(-1px);}
+        .dept-card .dept-light{width:8px;height:8px;border-radius:50%;margin:0 auto 0.3rem;box-shadow:0 0 6px currentColor;}
+        .dept-card .dept-light.green{background:var(--success);color:var(--success);}
+        .dept-card .dept-light.yellow{background:var(--warning);color:var(--warning);}
+        .dept-card .dept-name{font-size:0.55rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-secondary);margin-bottom:0.2rem;}
+        .dept-card .dept-kpi{font-size:0.95rem;font-weight:800;color:var(--text-primary);}
+        .dept-card .dept-label{font-size:0.5rem;color:var(--text-muted);margin-top:0.1rem;}
+        .dept-card .sparkline{display:flex;align-items:flex-end;justify-content:center;gap:1px;height:16px;margin-top:0.3rem;}
+        .dept-card .sparkline .bar{width:3px;border-radius:1px;background:var(--accent-blue);opacity:0.6;transition:opacity 0.3s;}
+        .dept-card:hover .sparkline .bar{opacity:1;}
+
+        /* ===== C-SUITE ROW ===== */
+        .csuite-row{grid-area:csuite;display:grid;grid-template-columns:repeat(8,1fr);gap:5px;}
+        .csuite-card{
+            background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-sm);
+            padding:0.5rem;display:flex;align-items:center;gap:0.5rem;transition:all 0.3s;
+        }
+        .csuite-card:hover{border-color:rgba(139,92,246,0.2);}
+        .csuite-avatar{
+            width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+            font-size:0.7rem;font-weight:700;color:#000;position:relative;flex-shrink:0;
+        }
+        .csuite-avatar .active-dot{
+            position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;border-radius:50%;
+            background:var(--success);border:2px solid var(--bg-card);animation:pulse-dot 2s infinite;
+        }
+        .csuite-info{min-width:0;flex:1;}
+        .csuite-role{font-size:0.55rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent-purple);}
+        .csuite-name{font-size:0.6rem;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .csuite-metric{font-size:0.55rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+        /* ===== CENTER - VALOR GENERADO ===== */
+        .valor-section{grid-area:valor;display:flex;flex-direction:column;gap:5px;}
+        .valor-card{
+            background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius);
+            padding:1rem;text-align:center;position:relative;overflow:hidden;flex:1;display:flex;flex-direction:column;justify-content:center;
+        }
+        .valor-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(59,130,246,0.05),transparent 70%);pointer-events:none;}
+        .valor-label{font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:var(--accent-cyan);margin-bottom:0.5rem;}
+        .valor-amount{font-size:2.2rem;font-weight:900;background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1;}
+        .valor-currency{font-size:1rem;-webkit-text-fill-color:var(--accent-cyan);}
+        .valor-breakdown{margin-top:0.7rem;display:flex;flex-direction:column;gap:0.3rem;}
+        .valor-item{display:flex;justify-content:space-between;align-items:center;font-size:0.6rem;padding:0.2rem 0;}
+        .valor-item .vi-label{color:var(--text-muted);}
+        .valor-item .vi-amount{font-weight:700;color:var(--text-primary);}
+
+        .alerts-card{
+            background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius);
+            padding:0.7rem;flex:1;display:flex;flex-direction:column;
+        }
+        .alerts-title{font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent-gold);margin-bottom:0.5rem;display:flex;align-items:center;gap:0.4rem;}
+        .alert-item{
+            display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem;border-radius:6px;
+            margin-bottom:0.3rem;background:rgba(255,255,255,0.02);border:1px solid var(--border-color);
+        }
+        .alert-severity{width:6px;height:6px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+        .alert-severity.high{background:var(--danger);box-shadow:0 0 6px rgba(239,68,68,0.5);}
+        .alert-severity.medium{background:var(--warning);box-shadow:0 0 6px rgba(245,158,11,0.5);}
+        .alert-severity.low{background:var(--info);box-shadow:0 0 6px rgba(59,130,246,0.5);}
+        .alert-text{font-size:0.55rem;color:var(--text-secondary);line-height:1.4;}
+        .alert-text strong{color:var(--text-primary);}
+        .alert-time{font-size:0.5rem;color:var(--text-muted);margin-top:0.15rem;}
+
+        /* ===== LIVE FEED ===== */
+        .feed-section{grid-area:feed;display:flex;flex-direction:column;}
+        .feed-card{
+            background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius);
+            padding:0.7rem;flex:1;display:flex;flex-direction:column;overflow:hidden;
+        }
+        .feed-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;}
+        .feed-title{font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent-cyan);display:flex;align-items:center;gap:0.4rem;}
+        .feed-live-dot{width:6px;height:6px;border-radius:50%;background:var(--danger);animation:pulse-dot 1s infinite;}
+        .feed-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:0.25rem;}
+        .feed-entry{
+            display:flex;align-items:flex-start;gap:0.5rem;padding:0.35rem 0.4rem;border-radius:6px;
+            background:rgba(255,255,255,0.015);border-left:2px solid var(--accent-blue);
+            animation:feedSlide 0.5s ease-out;font-size:0.55rem;
+        }
+        .feed-entry.new{border-left-color:var(--accent-cyan);background:rgba(6,182,212,0.04);}
+        .feed-time{color:var(--text-muted);font-variant-numeric:tabular-nums;flex-shrink:0;font-size:0.5rem;margin-top:1px;}
+        .feed-icon{flex-shrink:0;font-size:0.55rem;margin-top:1px;}
+        .feed-msg{color:var(--text-secondary);line-height:1.35;}
+        .feed-dept{font-weight:700;color:var(--accent-purple);font-size:0.5rem;}
+
+        /* ===== CHART ===== */
+        .chart-section{grid-area:chart;}
+        .chart-card{
+            background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius);
+            padding:0.7rem;height:100%;display:flex;flex-direction:column;
+        }
+        .chart-title{font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent-blue);margin-bottom:0.4rem;}
+        .chart-container{flex:1;position:relative;min-height:0;}
+
+        /* ===== EXPANSION MAP ===== */
+        .expansion-section{grid-area:expansion;}
+        .expansion-card{
+            background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius);
+            padding:0.7rem;height:100%;display:flex;flex-direction:column;
+        }
+        .expansion-title{font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent-purple);margin-bottom:0.5rem;}
+        .map-grid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;align-content:start;}
+        .map-country{
+            display:flex;align-items:center;gap:0.5rem;padding:0.45rem 0.5rem;border-radius:6px;
+            background:rgba(255,255,255,0.02);border:1px solid var(--border-color);transition:all 0.3s;
+        }
+        .map-country:hover{border-color:rgba(139,92,246,0.2);background:rgba(139,92,246,0.04);}
+        .map-flag{font-size:1.1rem;flex-shrink:0;}
+        .map-info{flex:1;min-width:0;}
+        .map-name{font-size:0.6rem;font-weight:700;color:var(--text-primary);}
+        .map-status{font-size:0.5rem;color:var(--text-muted);}
+        .map-score{font-size:0.7rem;font-weight:800;}
+        .map-score.high{color:var(--success);}
+        .map-score.mid{color:var(--warning);}
+        .map-legend{display:flex;gap:0.7rem;margin-top:auto;padding-top:0.5rem;border-top:1px solid var(--border-color);}
+        .map-legend-item{display:flex;align-items:center;gap:0.3rem;font-size:0.5rem;color:var(--text-muted);}
+        .map-legend-dot{width:6px;height:6px;border-radius:50%;}
+
+        /* ===== BOTTOM BAR ===== */
+        .bottom-bar{
+            grid-area:bottom;background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-sm);
+            padding:0.5rem 1rem;display:flex;align-items:center;justify-content:space-between;
+        }
+        .bottom-metrics{display:flex;gap:2rem;align-items:center;}
+        .bm-item{display:flex;align-items:center;gap:0.4rem;}
+        .bm-label{font-size:0.55rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;}
+        .bm-value{font-size:0.8rem;font-weight:800;color:var(--text-primary);}
+        .bm-value.accent-blue{color:var(--accent-blue);}
+        .bm-value.accent-cyan{color:var(--accent-cyan);}
+        .bm-value.accent-gold{color:var(--accent-gold);}
+        .bm-value.accent-green{color:var(--success);}
+        .bm-value.accent-purple{color:var(--accent-purple);}
+        .bottom-brand{font-size:0.55rem;color:var(--text-muted);display:flex;align-items:center;gap:0.4rem;}
+        .bottom-brand .powered{font-weight:700;background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes pulse-dot{
+            0%,100%{opacity:1;transform:scale(1);}
+            50%{opacity:0.5;transform:scale(0.85);}
+        }
+        @keyframes feedSlide{
+            from{opacity:0;transform:translateY(-8px);}
+            to{opacity:1;transform:translateY(0);}
+        }
+        @keyframes glow{
+            0%,100%{box-shadow:0 0 5px rgba(59,130,246,0.3);}
+            50%{box-shadow:0 0 20px rgba(59,130,246,0.5);}
+        }
+        @keyframes counter-pulse{
+            0%,100%{transform:scale(1);}
+            50%{transform:scale(1.02);}
+        }
+        .valor-amount{animation:counter-pulse 3s infinite ease-in-out;}
+
+        /* ===== RESPONSIVE ===== */
+        @media(max-width:1400px){
+            .control-grid{
+                grid-template-columns:1fr 1fr;
+                grid-template-rows:auto auto 1fr 1fr auto;
+                grid-template-areas:
+                    "depts depts"
+                    "csuite csuite"
+                    "valor feed"
+                    "chart expansion"
+                    "bottom bottom";
+                overflow-y:auto;
+            }
+            .dept-row{grid-template-columns:repeat(4,1fr);}
+            .csuite-row{grid-template-columns:repeat(4,1fr);}
+            html,body{overflow:auto;}
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== TOP BAR ===== -->
+<div class="top-bar">
+    <div class="top-bar-left">
+        <div class="top-bar-logo"><i class="fas fa-shield-halved"></i></div>
+        <div class="top-bar-title">Sala de Control &mdash; SiniestrosAI</div>
+    </div>
+    <div class="top-bar-center">
+        <div class="alert-level">
+            <div class="alert-dot"></div>
+            <span>Nivel de alerta: <strong style="color:var(--success)">VERDE</strong></span>
+        </div>
+        <div class="health-score">
+            <i class="fas fa-heart-pulse" style="color:var(--success)"></i>
+            <span>Salud global:</span>
+            <span class="score-val">94/100</span>
+        </div>
+        <div class="live-clock" id="liveClock">--:--:--</div>
+    </div>
+    <div class="top-bar-right">
+        <div class="top-bar-nav">
+            <a href="index.html"><i class="fas fa-home"></i> Inicio</a>
+            <a href="vista-direccion.html"><i class="fas fa-chart-line"></i> Direccion</a>
+            <a href="saas-panel.html"><i class="fas fa-cloud"></i> SaaS</a>
+            <a href="superadmin.html"><i class="fas fa-cog"></i> Admin</a>
+            <a href="portal-gestor.html"><i class="fas fa-briefcase"></i> Gestor</a>
+        </div>
+        <div class="user-badge">
+            <div class="user-avatar-sm">DG</div>
+            <span>Director General</span>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MAIN CONTROL GRID ===== -->
+<div class="control-grid">
+
+    <!-- DEPARTMENT STATUS ROW -->
+    <div class="dept-row" id="deptRow"></div>
+
+    <!-- C-SUITE ROW -->
+    <div class="csuite-row" id="csuiteRow"></div>
+
+    <!-- VALOR GENERADO + ALERTS -->
+    <div class="valor-section">
+        <div class="valor-card">
+            <div class="valor-label"><i class="fas fa-bolt"></i> Valor generado por IA hoy</div>
+            <div class="valor-amount" id="valorTotal">47.890<span class="valor-currency">&euro;</span></div>
+            <div class="valor-breakdown">
+                <div class="valor-item"><span class="vi-label"><i class="fas fa-handshake"></i> Ahorro negociacion</span><span class="vi-amount">18.450 &euro;</span></div>
+                <div class="valor-item"><span class="vi-label"><i class="fas fa-robot"></i> Ventas IA</span><span class="vi-amount">12.320 &euro;</span></div>
+                <div class="valor-item"><span class="vi-label"><i class="fas fa-scale-balanced"></i> Recuperacion subrogacion</span><span class="vi-amount">9.870 &euro;</span></div>
+                <div class="valor-item"><span class="vi-label"><i class="fas fa-gears"></i> Ahorro procesos</span><span class="vi-amount">7.250 &euro;</span></div>
+            </div>
+        </div>
+        <div class="alerts-card">
+            <div class="alerts-title"><i class="fas fa-bell"></i> Alertas pendientes</div>
+            <div id="alertsList">
+                <div class="alert-item">
+                    <div class="alert-severity high"></div>
+                    <div>
+                        <div class="alert-text"><strong>Siniestro #4892:</strong> Reclamacion judicial recibida. Importe: 145.000 &euro;. Requiere revision legal inmediata.</div>
+                        <div class="alert-time">Hace 12 min</div>
+                    </div>
+                </div>
+                <div class="alert-item">
+                    <div class="alert-severity medium"></div>
+                    <div>
+                        <div class="alert-text"><strong>Fraude potencial:</strong> Patron anomalo detectado en 3 siniestros del corredor Martinez &amp; Asociados.</div>
+                        <div class="alert-time">Hace 34 min</div>
+                    </div>
+                </div>
+                <div class="alert-item">
+                    <div class="alert-severity medium"></div>
+                    <div>
+                        <div class="alert-text"><strong>SLA en riesgo:</strong> 7 expedientes proximos a vencer plazo de respuesta (24h). Asignar peritos.</div>
+                        <div class="alert-time">Hace 1h 05 min</div>
+                    </div>
+                </div>
+                <div class="alert-item">
+                    <div class="alert-severity low"></div>
+                    <div>
+                        <div class="alert-text"><strong>Actualizacion:</strong> Nueva normativa DGSFP sobre valoracion de danos corporales. Requiere revision de baremos.</div>
+                        <div class="alert-time">Hace 2h 30 min</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIVE FEED -->
+    <div class="feed-section">
+        <div class="feed-card">
+            <div class="feed-header">
+                <div class="feed-title"><div class="feed-live-dot"></div> Feed de decisiones IA en tiempo real</div>
+                <span style="font-size:0.5rem;color:var(--text-muted)" id="feedCount">24 hoy</span>
+            </div>
+            <div class="feed-list" id="feedList"></div>
+        </div>
+    </div>
+
+    <!-- FINANCIAL CHART -->
+    <div class="chart-section">
+        <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-line"></i> Ingresos vs Costes (6 meses)</div>
+            <div class="chart-container">
+                <canvas id="financialChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXPANSION MAP -->
+    <div class="expansion-section">
+        <div class="expansion-card">
+            <div class="expansion-title"><i class="fas fa-globe-europe"></i> Expansion Internacional</div>
+            <div class="map-grid" id="mapGrid"></div>
+            <div class="map-legend">
+                <div class="map-legend-item"><div class="map-legend-dot" style="background:var(--success)"></div> Operativo</div>
+                <div class="map-legend-item"><div class="map-legend-dot" style="background:var(--accent-blue)"></div> Entrada</div>
+                <div class="map-legend-item"><div class="map-legend-dot" style="background:var(--warning)"></div> Planificacion</div>
+                <div class="map-legend-item"><div class="map-legend-dot" style="background:var(--accent-purple)"></div> Analisis</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM BAR -->
+    <div class="bottom-bar">
+        <div class="bottom-metrics">
+            <div class="bm-item">
+                <span class="bm-label">MRR</span>
+                <span class="bm-value accent-green">284K&euro;</span>
+            </div>
+            <div class="bm-item">
+                <span class="bm-label">Clientes</span>
+                <span class="bm-value accent-blue">12</span>
+            </div>
+            <div class="bm-item">
+                <span class="bm-label">Tests Pass</span>
+                <span class="bm-value accent-cyan">253</span>
+            </div>
+            <div class="bm-item">
+                <span class="bm-label">Uptime</span>
+                <span class="bm-value accent-green">99.97%</span>
+            </div>
+            <div class="bm-item">
+                <span class="bm-label">Lineas codigo</span>
+                <span class="bm-value accent-purple">48K</span>
+            </div>
+            <div class="bm-item">
+                <span class="bm-label">Agentes IA</span>
+                <span class="bm-value accent-gold">16</span>
+            </div>
+            <div class="bm-item">
+                <span class="bm-label">Decisiones IA/dia</span>
+                <span class="bm-value accent-cyan">342</span>
+            </div>
+        </div>
+        <div class="bottom-brand">
+            <span>Powered by</span>
+            <span class="powered">SiniestrosAI Engine v3.2</span>
+            <span>&bull; 2026</span>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// =============================================================================
+// SALA DE CONTROL - SISTEMA INTERACTIVO COMPLETO
+// =============================================================================
+
+// --- RELOJ EN VIVO ---
+function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const s = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('liveClock').textContent = `${h}:${m}:${s}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// --- DEPARTAMENTOS ---
+const departamentos = [
+    { name: 'Siniestros', icon: 'fa-car-burst', light: 'green', kpi: '94.2%', label: 'Resolucion auto', sparkline: [8,12,10,14,11,16,13,15,18,14] },
+    { name: 'RRHH', icon: 'fa-users', light: 'green', kpi: '87%', label: 'Satisfaccion', sparkline: [6,7,8,7,9,8,10,9,11,10] },
+    { name: 'Finanzas', icon: 'fa-coins', light: 'green', kpi: '284K', label: 'MRR actual', sparkline: [10,12,11,14,15,16,18,19,21,22] },
+    { name: 'Legal', icon: 'fa-gavel', light: 'yellow', kpi: '12', label: 'Casos abiertos', sparkline: [5,8,6,9,7,10,8,12,9,11] },
+    { name: 'Marketing', icon: 'fa-bullhorn', light: 'green', kpi: '3.2%', label: 'Conversion', sparkline: [4,5,6,5,7,6,8,7,9,8] },
+    { name: 'IT', icon: 'fa-server', light: 'green', kpi: '99.97%', label: 'Uptime', sparkline: [15,15,15,14,15,15,15,15,14,15] },
+    { name: 'Compras', icon: 'fa-cart-shopping', light: 'green', kpi: '18.4%', label: 'Ahorro IA', sparkline: [3,5,4,7,6,8,7,10,9,12] },
+    { name: 'Direccion', icon: 'fa-chess-king', light: 'green', kpi: '94', label: 'Health Score', sparkline: [12,13,12,14,13,15,14,14,15,14] }
+];
+
+function renderDepartments() {
+    const container = document.getElementById('deptRow');
+    container.innerHTML = departamentos.map(d => {
+        const maxBar = Math.max(...d.sparkline);
+        const bars = d.sparkline.map(v => `<div class="bar" style="height:${Math.round((v/maxBar)*14)}px"></div>`).join('');
+        return `
+        <div class="dept-card">
+            <div class="dept-light ${d.light}"></div>
+            <div class="dept-name"><i class="fas ${d.icon}" style="margin-right:3px"></i>${d.name}</div>
+            <div class="dept-kpi">${d.kpi}</div>
+            <div class="dept-label">${d.label}</div>
+            <div class="sparkline">${bars}</div>
+        </div>`;
+    }).join('');
+}
+renderDepartments();
+
+// --- C-SUITE ---
+const cSuite = [
+    { role: 'CFO', name: 'Laura Sanchez', color: 'linear-gradient(135deg,#3b82f6,#2563eb)', initials: 'LS', metric: 'EBITDA +22%', activity: 'Revisando P&L Q1' },
+    { role: 'COO', name: 'Javier Moreno', color: 'linear-gradient(135deg,#10b981,#059669)', initials: 'JM', metric: 'OPS 94.2%', activity: 'Optimizando SLAs' },
+    { role: 'CMO', name: 'Sofia Torres', color: 'linear-gradient(135deg,#ec4899,#db2777)', initials: 'ST', metric: 'CAC 1.240\u20ac', activity: 'Campana Q2 digital' },
+    { role: 'CTO', name: 'Elena Martinez', color: 'linear-gradient(135deg,#8b5cf6,#7c3aed)', initials: 'EM', metric: '48K lineas', activity: 'Deploy v3.2 prod' },
+    { role: 'CLO', name: 'Pedro Navarro', color: 'linear-gradient(135deg,#f59e0b,#d97706)', initials: 'PN', metric: '12 casos', activity: 'Contrato Portugal' },
+    { role: 'CHRO', name: 'Carmen Ruiz', color: 'linear-gradient(135deg,#14b8a6,#0d9488)', initials: 'CR', metric: '34 empleados', activity: 'Hiring plan Q2' },
+    { role: 'CRO', name: 'Andres Vega', color: 'linear-gradient(135deg,#ef4444,#dc2626)', initials: 'AV', metric: 'Risk 0.8%', activity: 'Scoring siniestros' },
+    { role: 'CPO', name: 'Maria Gil', color: 'linear-gradient(135deg,#06b6d4,#0891b2)', initials: 'MG', metric: 'NPS 72', activity: 'Roadmap innovacion' }
+];
+
+function renderCSuite() {
+    const container = document.getElementById('csuiteRow');
+    container.innerHTML = cSuite.map(c => `
+        <div class="csuite-card">
+            <div class="csuite-avatar" style="background:${c.color}">
+                ${c.initials}
+                <div class="active-dot"></div>
+            </div>
+            <div class="csuite-info">
+                <div class="csuite-role">${c.role}</div>
+                <div class="csuite-name">${c.name}</div>
+                <div class="csuite-metric">${c.metric} &bull; ${c.activity}</div>
+            </div>
+        </div>
+    `).join('');
+}
+renderCSuite();
+
+// --- EXPANSION MAP ---
+const expansionCountries = [
+    { flag: '\ud83c\uddf5\ud83c\uddf9', name: 'Portugal', status: 'Planificacion', score: 88, color: 'warning', cls: 'high' },
+    { flag: '\ud83c\uddeb\ud83c\uddf7', name: 'Francia', status: 'Analisis', score: 82, color: 'accent-purple', cls: 'high' },
+    { flag: '\ud83c\uddee\ud83c\uddf9', name: 'Italia', status: 'Analisis', score: 76, color: 'accent-purple', cls: 'mid' },
+    { flag: '\ud83c\udde9\ud83c\uddea', name: 'Alemania', status: 'Analisis', score: 71, color: 'accent-purple', cls: 'mid' },
+    { flag: '\ud83c\uddf2\ud83c\uddfd', name: 'Mexico', status: 'Planificacion', score: 85, color: 'warning', cls: 'high' },
+    { flag: '\ud83c\udde8\ud83c\uddf4', name: 'Colombia', status: 'Analisis', score: 79, color: 'accent-purple', cls: 'mid' }
+];
+
+function renderExpansionMap() {
+    const grid = document.getElementById('mapGrid');
+    grid.innerHTML = expansionCountries.map(c => `
+        <div class="map-country">
+            <div class="map-flag">${c.flag}</div>
+            <div class="map-info">
+                <div class="map-name">${c.name}</div>
+                <div class="map-status">${c.status}</div>
+            </div>
+            <div class="map-score ${c.cls}">${c.score}</div>
+        </div>
+    `).join('');
+}
+renderExpansionMap();
+
+// --- LIVE FEED ---
+const feedTemplates = [
+    { dept: 'Siniestros', icon: 'fa-car-burst', msgs: [
+        'Siniestro #5023 valorado automaticamente: 3.420\u20ac (vehiculo Seat Leon)',
+        'Perito asignado automaticamente al expediente #5018 en Sevilla',
+        'Fraude descartado en siniestro #4991 tras analisis de patrones',
+        'Subrogacion iniciada contra aseguradora contraria (exp. #4987)',
+        'Siniestro #5025 resuelto en 4.2h - pago aprobado: 1.890\u20ac',
+        'Deteccion de dano previo en fotos del siniestro #5019'
+    ]},
+    { dept: 'RRHH', icon: 'fa-users', msgs: [
+        'Encuesta de clima completada: satisfaccion 87% (+3pp)',
+        'Nuevo candidato preseleccionado para Data Scientist Senior',
+        'Plan de formacion Q2 aprobado: 12 cursos, 34 empleados',
+        'Evaluacion 360 completada para equipo de desarrollo'
+    ]},
+    { dept: 'Finanzas', icon: 'fa-coins', msgs: [
+        'Factura #F2026-0342 emitida: Aseguradora Mapfre - 24.500\u20ac',
+        'Prevision de tesoreria actualizada: liquidez 45 dias OK',
+        'Ahorro detectado en proveedores de cloud: 2.100\u20ac/mes',
+        'Cobro confirmado: transferencia Zurich Seguros - 18.300\u20ac'
+    ]},
+    { dept: 'Legal', icon: 'fa-gavel', msgs: [
+        'Contrato SaaS revisado para cliente Catalana Occidente',
+        'Dictamen favorable en reclamacion judicial #RJ-2026-012',
+        'Actualizacion de politica de privacidad completada',
+        'Clausula de subrogacion optimizada con IA juridica'
+    ]},
+    { dept: 'Marketing', icon: 'fa-bullhorn', msgs: [
+        'Campana LinkedIn generando 145 leads cualificados esta semana',
+        'Landing page A/B test: variante B +28% conversion',
+        'Newsletter enviada a 2.340 suscriptores - open rate 34%',
+        'Caso de exito publicado: Grupo Mutua reduccion 40% tiempos'
+    ]},
+    { dept: 'IT', icon: 'fa-server', msgs: [
+        'Deploy v3.2.1 completado: 0 errores, 253 tests pasados',
+        'Latencia API optimizada: 45ms promedio (-12ms)',
+        'Backup automatico completado: 847GB en 3 bases de datos',
+        'Certificado SSL renovado para api.siniestrosai.com',
+        'Escalado automatico activado: 3 instancias adicionales'
+    ]},
+    { dept: 'Compras', icon: 'fa-cart-shopping', msgs: [
+        'Negociacion IA con proveedor de peritos: ahorro 18.4%',
+        'Contrato renegociado con taller Autopremium: -12% coste',
+        'Nuevo proveedor de gruas evaluado: puntuacion 8.7/10'
+    ]},
+    { dept: 'Direccion', icon: 'fa-chess-king', msgs: [
+        'KPIs semanales generados: todos los objetivos en verde',
+        'Reunion de comite de direccion programada para manana 9:00',
+        'Informe de expansion Portugal actualizado con nuevos datos'
+    ]}
+];
+
+let feedCount = 0;
+const feedColors = {
+    'Siniestros': '#3b82f6',
+    'RRHH': '#14b8a6',
+    'Finanzas': '#10b981',
+    'Legal': '#f59e0b',
+    'Marketing': '#ec4899',
+    'IT': '#8b5cf6',
+    'Compras': '#06b6d4',
+    'Direccion': '#f59e0b'
+};
+
+function addFeedEntry(isNew) {
+    const feedList = document.getElementById('feedList');
+    const template = feedTemplates[Math.floor(Math.random() * feedTemplates.length)];
+    const msg = template.msgs[Math.floor(Math.random() * template.msgs.length)];
+    const now = new Date();
+    const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+    const entry = document.createElement('div');
+    entry.className = `feed-entry${isNew ? ' new' : ''}`;
+    entry.style.borderLeftColor = feedColors[template.dept] || '#3b82f6';
+    entry.innerHTML = `
+        <span class="feed-time">${time}</span>
+        <i class="fas ${template.icon} feed-icon" style="color:${feedColors[template.dept]}"></i>
+        <div>
+            <span class="feed-dept">${template.dept}</span>
+            <span class="feed-msg">${msg}</span>
+        </div>
+    `;
+
+    if (isNew) {
+        feedList.insertBefore(entry, feedList.firstChild);
+        if (feedList.children.length > 30) {
+            feedList.removeChild(feedList.lastChild);
+        }
+    } else {
+        feedList.appendChild(entry);
+    }
+
+    feedCount++;
+    const countEl = document.getElementById('feedCount');
+    if (countEl) countEl.textContent = `${feedCount} hoy`;
+}
+
+// Populate initial feed
+for (let i = 0; i < 12; i++) {
+    addFeedEntry(false);
+}
+feedCount = 24;
+document.getElementById('feedCount').textContent = '24 hoy';
+
+// Add new entries every 5 seconds
+setInterval(() => addFeedEntry(true), 5000);
+
+// --- FINANCIAL CHART ---
+function renderFinancialChart() {
+    const ctx = document.getElementById('financialChart').getContext('2d');
+
+    const gradient1 = ctx.createLinearGradient(0, 0, 0, 300);
+    gradient1.addColorStop(0, 'rgba(59, 130, 246, 0.3)');
+    gradient1.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+
+    const gradient2 = ctx.createLinearGradient(0, 0, 0, 300);
+    gradient2.addColorStop(0, 'rgba(239, 68, 68, 0.15)');
+    gradient2.addColorStop(1, 'rgba(239, 68, 68, 0.0)');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Oct 25', 'Nov 25', 'Dic 25', 'Ene 26', 'Feb 26', 'Mar 26'],
+            datasets: [
+                {
+                    label: 'Ingresos',
+                    data: [186000, 205000, 218000, 242000, 267000, 284000],
+                    borderColor: '#3b82f6',
+                    backgroundColor: gradient1,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#3b82f6',
+                    pointBorderColor: '#0a0f1e',
+                    pointBorderWidth: 2,
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                },
+                {
+                    label: 'Costes',
+                    data: [142000, 148000, 151000, 155000, 158000, 162000],
+                    borderColor: '#ef4444',
+                    backgroundColor: gradient2,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#ef4444',
+                    pointBorderColor: '#0a0f1e',
+                    pointBorderWidth: 2,
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                },
+                {
+                    label: 'Beneficio',
+                    data: [44000, 57000, 67000, 87000, 109000, 122000],
+                    borderColor: '#10b981',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    fill: false,
+                    tension: 0.4,
+                    pointBackgroundColor: '#10b981',
+                    pointBorderColor: '#0a0f1e',
+                    pointBorderWidth: 2,
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        color: '#8899b4',
+                        font: { family: 'Inter', size: 10 },
+                        boxWidth: 12,
+                        padding: 10
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#111a2e',
+                    titleColor: '#e8edf5',
+                    bodyColor: '#8899b4',
+                    borderColor: 'rgba(99,130,180,0.15)',
+                    borderWidth: 1,
+                    padding: 10,
+                    titleFont: { family: 'Inter', size: 11, weight: '600' },
+                    bodyFont: { family: 'Inter', size: 10 },
+                    callbacks: {
+                        label: function(ctx) {
+                            return ctx.dataset.label + ': ' + new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(ctx.parsed.y);
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(99,130,180,0.06)' },
+                    ticks: { color: '#556680', font: { family: 'Inter', size: 9 } }
+                },
+                y: {
+                    grid: { color: 'rgba(99,130,180,0.06)' },
+                    ticks: {
+                        color: '#556680',
+                        font: { family: 'Inter', size: 9 },
+                        callback: function(val) { return (val / 1000) + 'K'; }
+                    }
+                }
+            }
+        }
+    });
+}
+renderFinancialChart();
+
+// --- VALOR COUNTER ANIMATION ---
+let currentValor = 47890;
+function updateValor() {
+    const increment = Math.floor(Math.random() * 80) + 10;
+    currentValor += increment;
+    const formatted = new Intl.NumberFormat('es-ES').format(currentValor);
+    document.getElementById('valorTotal').innerHTML = `${formatted}<span class="valor-currency">\u20ac</span>`;
+}
+setInterval(updateValor, 15000);
+
+// --- SPARKLINE ANIMATION ---
+function animateSparklines() {
+    departamentos.forEach((d, idx) => {
+        d.sparkline.shift();
+        d.sparkline.push(d.sparkline[d.sparkline.length - 1] + Math.floor(Math.random() * 5) - 2);
+        if (d.sparkline[d.sparkline.length - 1] < 1) d.sparkline[d.sparkline.length - 1] = 3;
+    });
+    renderDepartments();
+}
+setInterval(animateSparklines, 8000);
+
+// --- PULSE ACTIVE DOTS ON CSUITE ---
+setInterval(() => {
+    const dots = document.querySelectorAll('.csuite-avatar .active-dot');
+    const randomIdx = Math.floor(Math.random() * dots.length);
+    dots.forEach((dot, i) => {
+        if (i === randomIdx) {
+            dot.style.background = '#06b6d4';
+            setTimeout(() => { dot.style.background = 'var(--success)'; }, 2000);
+        }
+    });
+}, 4000);
+
+// --- ALERT ROTATION ---
+const alertRotation = [
+    { severity: 'high', text: '<strong>Siniestro #5031:</strong> Danos corporales graves reportados. Reserva provisional 85.000 \u20ac. Escalado a direccion.', time: 'Hace 5 min' },
+    { severity: 'medium', text: '<strong>Regulatorio:</strong> Nuevo requerimiento DGSFP sobre reporting trimestral de siniestros gestionados con IA.', time: 'Hace 18 min' },
+    { severity: 'high', text: '<strong>Ciberseguridad:</strong> Intento de acceso no autorizado detectado y bloqueado. IP: 185.xx.xx.42. Sin impacto.', time: 'Hace 22 min' },
+    { severity: 'low', text: '<strong>Integracion:</strong> API de Mapfre reporta latencia elevada (320ms). Monitorizando. Sin impacto funcional.', time: 'Hace 45 min' },
+    { severity: 'medium', text: '<strong>Capacidad:</strong> Cola de procesamiento de imagenes al 78%. Considerar escalado si supera 85%.', time: 'Hace 1h 12 min' },
+    { severity: 'low', text: '<strong>Comercial:</strong> Demo programada con Catalana Occidente manana a las 10:00. Preparar entorno staging.', time: 'Hace 1h 30 min' }
+];
+
+let alertIdx = 0;
+function rotateAlerts() {
+    const alertsList = document.getElementById('alertsList');
+    const items = alertsList.querySelectorAll('.alert-item');
+    if (items.length >= 4) {
+        items[items.length - 1].remove();
+    }
+    const alert = alertRotation[alertIdx % alertRotation.length];
+    const entry = document.createElement('div');
+    entry.className = 'alert-item';
+    entry.style.animation = 'feedSlide 0.5s ease-out';
+    entry.innerHTML = `
+        <div class="alert-severity ${alert.severity}"></div>
+        <div>
+            <div class="alert-text">${alert.text}</div>
+            <div class="alert-time">${alert.time}</div>
+        </div>
+    `;
+    alertsList.insertBefore(entry, alertsList.firstChild);
+    alertIdx++;
+}
+setInterval(rotateAlerts, 20000);
+
+// --- HEALTH SCORE MICRO-VARIATION ---
+let healthScore = 94;
+function updateHealth() {
+    const delta = Math.random() > 0.5 ? 1 : -1;
+    healthScore = Math.max(88, Math.min(99, healthScore + delta));
+    const scoreEl = document.querySelector('.health-score .score-val');
+    if (scoreEl) scoreEl.textContent = healthScore + '/100';
+}
+setInterval(updateHealth, 30000);
+
+// --- DEPARTMENT KPI MICRO-UPDATES ---
+function updateDeptKPIs() {
+    const kpiUpdates = {
+        0: () => { const v = (93 + Math.random() * 3).toFixed(1); departamentos[0].kpi = v + '%'; },
+        2: () => { const v = 280 + Math.floor(Math.random() * 8); departamentos[2].kpi = v + 'K'; },
+        5: () => { const opts = ['99.97%','99.98%','99.99%','99.97%']; departamentos[5].kpi = opts[Math.floor(Math.random()*opts.length)]; },
+        7: () => { departamentos[7].kpi = String(healthScore); }
+    };
+    const idx = [0, 2, 5, 7][Math.floor(Math.random() * 4)];
+    kpiUpdates[idx]();
+    renderDepartments();
+}
+setInterval(updateDeptKPIs, 12000);
+
+// --- C-SUITE ACTIVITY UPDATES ---
+const activityPool = {
+    'CFO': ['Revisando P&L Q1', 'Analisis cash flow', 'Board meeting prep', 'Forecast Q2'],
+    'COO': ['Optimizando SLAs', 'Review ops diario', 'Audit ISO 27001', 'Planificacion turnos'],
+    'CMO': ['Campana Q2 digital', 'ROI analisis ads', 'Webinar clientes', 'Brand strategy'],
+    'CTO': ['Deploy v3.2 prod', 'Code review sprint', 'Arquitectura micro', 'Security audit'],
+    'CLO': ['Contrato Portugal', 'RGPD compliance', 'Revision clausulas', 'Due diligence'],
+    'CHRO': ['Hiring plan Q2', 'Onboarding x3', 'Evaluaciones 360', 'Plan formacion'],
+    'CRO': ['Scoring siniestros', 'Risk matrix update', 'Stress testing', 'Compliance check'],
+    'CPO': ['Roadmap innovacion', 'User research', 'Sprint planning', 'Feature prioritization']
+};
+
+function updateCSuiteActivity() {
+    const idx = Math.floor(Math.random() * cSuite.length);
+    const role = cSuite[idx].role;
+    const activities = activityPool[role];
+    cSuite[idx].activity = activities[Math.floor(Math.random() * activities.length)];
+    renderCSuite();
+}
+setInterval(updateCSuiteActivity, 10000);
+
+// --- KEYBOARD SHORTCUT ---
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        window.location.href = 'index.html';
+    }
+    if (e.key === 'f' || e.key === 'F') {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+            document.exitFullscreen().catch(() => {});
+        }
+    }
+});
+
+// --- INITIAL STATE LOG ---
+console.log('%c SALA DE CONTROL - SiniestrosAI ', 'background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:white;font-size:14px;font-weight:bold;padding:8px 16px;border-radius:6px;');
+console.log('%c Sistema de monitorizacion empresarial activo ', 'color:#06b6d4;font-size:11px;');
+console.log('%c Atajos: ESC=Inicio | F=Pantalla completa ', 'color:#8899b4;font-size:10px;');
+</script>
+
+</body>
+</html>

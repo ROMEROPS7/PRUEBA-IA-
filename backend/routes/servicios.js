@@ -864,4 +864,110 @@ router.get('/contratos/estado/:contratoId', tokenOpcional, (req, res) => { try {
 router.get('/contratos/lista', tokenOpcional, (req, res) => { try { res.json(contratosService.listar()); } catch(e) { handleError(req,res,e); } });
 router.get('/contratos/estadisticas', tokenOpcional, (req, res) => { try { res.json(contratosService.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
 
+// ============================================================
+// DEPARTAMENTOS AUTONOMOS + JUNTA DIRECTIVA
+// ============================================================
+const rrhhAgent = require('../agents/rrhhAgent');
+const financieroAgent = require('../agents/financieroAgent');
+const legalAgentDept = require('../agents/legalAgent');
+const marketingAgent = require('../agents/marketingAgent');
+const itAgent = require('../agents/itAgent');
+const comprasAgent = require('../agents/comprasAgent');
+const ceoAgent = require('../agents/ceoAgent');
+const boardAgent = require('../agents/boardAgent');
+const crisisAgent = require('../agents/crisisAgent');
+const expansionAgent = require('../agents/expansionAgent');
+const innovacionAgent = require('../agents/innovacionAgent');
+
+// RRHH
+router.get('/rrhh/estadisticas', tokenOpcional, (req, res) => { try { res.json(rrhhAgent.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+router.get('/rrhh/nominas', tokenOpcional, (req, res) => { try { res.json(rrhhAgent.getNominas(req.query.mes)); } catch(e) { handleError(req,res,e); } });
+router.get('/rrhh/evaluaciones', tokenOpcional, (req, res) => { try { res.json(rrhhAgent.getEvaluaciones()); } catch(e) { handleError(req,res,e); } });
+router.get('/rrhh/vacaciones', tokenOpcional, (req, res) => { try { res.json(rrhhAgent.getVacaciones(req.query.mes)); } catch(e) { handleError(req,res,e); } });
+router.get('/rrhh/formaciones', tokenOpcional, (req, res) => { try { res.json(rrhhAgent.getFormaciones()); } catch(e) { handleError(req,res,e); } });
+router.get('/rrhh/organigrama', tokenOpcional, (req, res) => { try { res.json(rrhhAgent.getOrganigrama()); } catch(e) { handleError(req,res,e); } });
+router.get('/rrhh/coste-productividad', tokenOpcional, (req, res) => { try { res.json(rrhhAgent.getCosteVsProductividad()); } catch(e) { handleError(req,res,e); } });
+
+// Finanzas
+router.get('/finanzas/balance', tokenOpcional, (req, res) => { try { res.json(financieroAgent.getBalance()); } catch(e) { handleError(req,res,e); } });
+router.get('/finanzas/pyl', tokenOpcional, (req, res) => { try { res.json(financieroAgent.getPyL()); } catch(e) { handleError(req,res,e); } });
+router.get('/finanzas/cashflow', tokenOpcional, (req, res) => { try { res.json(financieroAgent.getCashflow()); } catch(e) { handleError(req,res,e); } });
+router.get('/finanzas/presupuesto', tokenOpcional, (req, res) => { try { res.json(financieroAgent.getPresupuesto()); } catch(e) { handleError(req,res,e); } });
+router.get('/finanzas/impuestos', tokenOpcional, (req, res) => { try { res.json(financieroAgent.getImpuestos()); } catch(e) { handleError(req,res,e); } });
+router.get('/finanzas/inversiones', tokenOpcional, (req, res) => { try { res.json(financieroAgent.getInversiones()); } catch(e) { handleError(req,res,e); } });
+router.get('/finanzas/salud', tokenOpcional, (req, res) => { try { res.json(financieroAgent.getSaludFinanciera()); } catch(e) { handleError(req,res,e); } });
+router.get('/finanzas/estadisticas', tokenOpcional, (req, res) => { try { res.json(financieroAgent.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+
+// Legal
+router.get('/legal/contratos', tokenOpcional, (req, res) => { try { res.json(legalAgentDept.getContratosLegales()); } catch(e) { handleError(req,res,e); } });
+router.get('/legal/litigios', tokenOpcional, (req, res) => { try { res.json(legalAgentDept.getLitigios()); } catch(e) { handleError(req,res,e); } });
+router.get('/legal/alertas', tokenOpcional, (req, res) => { try { res.json(legalAgentDept.getAlertasLegales()); } catch(e) { handleError(req,res,e); } });
+router.get('/legal/acuerdos', tokenOpcional, (req, res) => { try { res.json(legalAgentDept.getAcuerdosExtrajudiciales()); } catch(e) { handleError(req,res,e); } });
+router.get('/legal/compliance', tokenOpcional, (req, res) => { try { res.json(legalAgentDept.getComplianceStatus()); } catch(e) { handleError(req,res,e); } });
+router.get('/legal/estadisticas', tokenOpcional, (req, res) => { try { res.json(legalAgentDept.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+
+// Marketing
+router.get('/marketing/campanas', tokenOpcional, (req, res) => { try { res.json(marketingAgent.getCampanas()); } catch(e) { handleError(req,res,e); } });
+router.get('/marketing/contenidos', tokenOpcional, (req, res) => { try { res.json(marketingAgent.getContenidos()); } catch(e) { handleError(req,res,e); } });
+router.get('/marketing/analytics', tokenOpcional, (req, res) => { try { res.json(marketingAgent.getAnalytics()); } catch(e) { handleError(req,res,e); } });
+router.get('/marketing/leads', tokenOpcional, (req, res) => { try { res.json(marketingAgent.getLeadsMarketing()); } catch(e) { handleError(req,res,e); } });
+router.get('/marketing/roi', tokenOpcional, (req, res) => { try { res.json(marketingAgent.getROIPorCanal()); } catch(e) { handleError(req,res,e); } });
+router.get('/marketing/estadisticas', tokenOpcional, (req, res) => { try { res.json(marketingAgent.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+
+// IT
+router.get('/it/estado-sistemas', tokenOpcional, (req, res) => { try { res.json(itAgent.getEstadoSistemas()); } catch(e) { handleError(req,res,e); } });
+router.get('/it/incidencias', tokenOpcional, (req, res) => { try { res.json(itAgent.getIncidencias()); } catch(e) { handleError(req,res,e); } });
+router.get('/it/seguridad', tokenOpcional, (req, res) => { try { res.json(itAgent.getVulnerabilidades()); } catch(e) { handleError(req,res,e); } });
+router.get('/it/metricas', tokenOpcional, (req, res) => { try { res.json(itAgent.getMetricasSistema()); } catch(e) { handleError(req,res,e); } });
+router.get('/it/carga', tokenOpcional, (req, res) => { try { res.json(itAgent.getCargaServidor()); } catch(e) { handleError(req,res,e); } });
+router.get('/it/costes', tokenOpcional, (req, res) => { try { res.json(itAgent.getCostesInfra()); } catch(e) { handleError(req,res,e); } });
+router.get('/it/estadisticas', tokenOpcional, (req, res) => { try { res.json(itAgent.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+
+// Compras
+router.get('/compras/proveedores', tokenOpcional, (req, res) => { try { res.json(comprasAgent.getProveedoresEmpresa()); } catch(e) { handleError(req,res,e); } });
+router.get('/compras/pedidos', tokenOpcional, (req, res) => { try { res.json(comprasAgent.getPedidos()); } catch(e) { handleError(req,res,e); } });
+router.get('/compras/gastos', tokenOpcional, (req, res) => { try { res.json(comprasAgent.getGastos(req.query.mes)); } catch(e) { handleError(req,res,e); } });
+router.get('/compras/contratos', tokenOpcional, (req, res) => { try { res.json(comprasAgent.getContratosCompras()); } catch(e) { handleError(req,res,e); } });
+router.get('/compras/licencias', tokenOpcional, (req, res) => { try { res.json(comprasAgent.getLicencias()); } catch(e) { handleError(req,res,e); } });
+router.get('/compras/ahorro', tokenOpcional, (req, res) => { try { res.json(comprasAgent.getAhorroNegociacion()); } catch(e) { handleError(req,res,e); } });
+router.get('/compras/estadisticas', tokenOpcional, (req, res) => { try { res.json(comprasAgent.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+
+// CEO
+router.get('/ceo/informe-diario', tokenOpcional, (req, res) => { try { res.json(ceoAgent.getInformeDiario()); } catch(e) { handleError(req,res,e); } });
+router.get('/ceo/decisiones', tokenOpcional, (req, res) => { try { res.json(ceoAgent.getDecisiones(req.query.periodo)); } catch(e) { handleError(req,res,e); } });
+router.get('/ceo/alertas-criticas', tokenOpcional, (req, res) => { try { res.json(ceoAgent.getAlertasCriticas()); } catch(e) { handleError(req,res,e); } });
+router.get('/ceo/proyecciones', tokenOpcional, (req, res) => { try { res.json(ceoAgent.getProyecciones()); } catch(e) { handleError(req,res,e); } });
+router.get('/ceo/objetivos', tokenOpcional, (req, res) => { try { res.json(ceoAgent.getObjetivosAnuales()); } catch(e) { handleError(req,res,e); } });
+router.get('/ceo/estadisticas', tokenOpcional, (req, res) => { try { res.json(ceoAgent.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+
+// Board
+router.get('/board/reunion-diaria', tokenOpcional, (req, res) => { try { res.json(boardAgent.getReunionDiaria()); } catch(e) { handleError(req,res,e); } });
+router.get('/board/decisiones', tokenOpcional, (req, res) => { try { res.json(boardAgent.getDecisiones()); } catch(e) { handleError(req,res,e); } });
+router.get('/board/actas', tokenOpcional, (req, res) => { try { res.json(boardAgent.getActas()); } catch(e) { handleError(req,res,e); } });
+router.get('/board/directivos', tokenOpcional, (req, res) => { try { res.json(boardAgent.getDirectivos()); } catch(e) { handleError(req,res,e); } });
+router.get('/board/votaciones', tokenOpcional, (req, res) => { try { res.json(boardAgent.getVotacionesActivas()); } catch(e) { handleError(req,res,e); } });
+router.get('/board/estadisticas', tokenOpcional, (req, res) => { try { res.json(boardAgent.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+router.post('/board/votar', verificarToken, (req, res) => { try { res.json(boardAgent.votar(req.body.decisionId, req.body.directorId, req.body.voto)); } catch(e) { handleError(req,res,e); } });
+
+// Crisis
+router.get('/crisis/activas', tokenOpcional, (req, res) => { try { res.json(crisisAgent.getCrisisActivas()); } catch(e) { handleError(req,res,e); } });
+router.get('/crisis/nivel-alerta', tokenOpcional, (req, res) => { try { res.json(crisisAgent.getNivelAlerta()); } catch(e) { handleError(req,res,e); } });
+router.get('/crisis/protocolos', tokenOpcional, (req, res) => { try { res.json(crisisAgent.getProtocolos()); } catch(e) { handleError(req,res,e); } });
+router.get('/crisis/historial', tokenOpcional, (req, res) => { try { res.json(crisisAgent.getHistorial()); } catch(e) { handleError(req,res,e); } });
+router.get('/crisis/estadisticas', tokenOpcional, (req, res) => { try { res.json(crisisAgent.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+router.post('/crisis/activar-protocolo', verificarToken, (req, res) => { try { res.json(crisisAgent.activarProtocolo(req.body.tipo, req.body.severidad)); } catch(e) { handleError(req,res,e); } });
+
+// Expansion
+router.get('/expansion/oportunidades', tokenOpcional, (req, res) => { try { res.json(expansionAgent.getOportunidades()); } catch(e) { handleError(req,res,e); } });
+router.get('/expansion/analisis/:pais', tokenOpcional, (req, res) => { try { res.json(expansionAgent.getAnalisisPais(req.params.pais)); } catch(e) { handleError(req,res,e); } });
+router.get('/expansion/plan/:pais', tokenOpcional, (req, res) => { try { res.json(expansionAgent.getPlanExpansion(req.params.pais)); } catch(e) { handleError(req,res,e); } });
+router.get('/expansion/estadisticas', tokenOpcional, (req, res) => { try { res.json(expansionAgent.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+
+// Innovacion
+router.get('/innovacion/tendencias', tokenOpcional, (req, res) => { try { res.json(innovacionAgent.getTendencias()); } catch(e) { handleError(req,res,e); } });
+router.get('/innovacion/roadmap', tokenOpcional, (req, res) => { try { res.json(innovacionAgent.getRoadmap()); } catch(e) { handleError(req,res,e); } });
+router.get('/innovacion/ideas', tokenOpcional, (req, res) => { try { res.json(innovacionAgent.getIdeas()); } catch(e) { handleError(req,res,e); } });
+router.get('/innovacion/benchmark', tokenOpcional, (req, res) => { try { res.json(innovacionAgent.getBenchmark()); } catch(e) { handleError(req,res,e); } });
+router.get('/innovacion/estadisticas', tokenOpcional, (req, res) => { try { res.json(innovacionAgent.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+
 module.exports = router;

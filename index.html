@@ -87,19 +87,22 @@
         <li class="nav-item" data-page="integraciones"><i class="fas fa-plug"></i><span>Integraciones</span></li>
         <li class="nav-item" data-page="reportes"><i class="fas fa-file-pdf"></i><span>Reportes</span></li>
         <li class="nav-item" data-page="whitelabel"><i class="fas fa-palette"></i><span>White Label</span></li>
-        <li class="nav-item" data-page="saas"><i class="fas fa-building"></i><span>Panel SaaS</span></li>
-        <li class="nav-item" data-page="cliente"><i class="fas fa-mobile-alt"></i><span>App Cliente</span></li>
         <li class="nav-item" data-page="metricas"><i class="fas fa-chart-bar"></i><span>Metricas</span></li>
         <li class="nav-separator"></li>
-        <li class="nav-label nav-collapse-toggle" onclick="this.classList.toggle('collapsed');this.nextElementSibling&&this.nextElementSibling.classList.toggle('nav-collapsed')" role="button" aria-expanded="true">PORTALES <i class="fas fa-chevron-down nav-chevron"></i></li>
+        <li class="nav-label nav-collapse-toggle" onclick="this.classList.toggle('collapsed');var s=this.nextElementSibling;while(s&&!s.classList.contains('nav-separator')&&!s.classList.contains('nav-label')){s.classList.toggle('nav-collapsed');s=s.nextElementSibling;}" role="button" aria-expanded="true">DEPARTAMENTOS <i class="fas fa-chevron-down nav-chevron"></i></li>
+        <li class="nav-item nav-portal" onclick="window.open('empresa-control.html','_blank')"><i class="fas fa-tv"></i><span>Sala de Control</span><i class="fas fa-external-link-alt nav-ext"></i></li>
+        <li class="nav-item" data-page="saas"><i class="fas fa-building"></i><span>Panel SaaS</span></li>
+        <li class="nav-item" data-page="cliente"><i class="fas fa-mobile-alt"></i><span>App Cliente</span></li>
+        <li class="nav-separator"></li>
+        <li class="nav-label nav-collapse-toggle" onclick="this.classList.toggle('collapsed');var s=this.nextElementSibling;while(s&&!s.classList.contains('nav-separator')&&!s.classList.contains('nav-label')){s.classList.toggle('nav-collapsed');s=s.nextElementSibling;}" role="button" aria-expanded="true">PORTALES <i class="fas fa-chevron-down nav-chevron"></i></li>
         <li class="nav-item nav-portal" onclick="window.open('portal-gestor.html','_blank')"><i class="fas fa-headset"></i><span>Portal Gestor</span><i class="fas fa-external-link-alt nav-ext"></i></li>
         <li class="nav-item nav-portal" onclick="window.open('portal-perito.html','_blank')"><i class="fas fa-user-tie"></i><span>Portal Perito</span><i class="fas fa-external-link-alt nav-ext"></i></li>
         <li class="nav-item nav-portal" onclick="window.open('portal-cliente.html','_blank')"><i class="fas fa-user"></i><span>Portal Cliente</span><i class="fas fa-external-link-alt nav-ext"></i></li>
         <li class="nav-item nav-portal" onclick="window.open('portal-taller.html','_blank')"><i class="fas fa-wrench"></i><span>Portal Taller</span><i class="fas fa-external-link-alt nav-ext"></i></li>
         <li class="nav-item nav-portal" onclick="window.open('vista-direccion.html','_blank')"><i class="fas fa-crown"></i><span>Vista Direccion</span><i class="fas fa-external-link-alt nav-ext"></i></li>
         <li class="nav-item nav-portal" onclick="window.open('portal-reparador.html','_blank')"><i class="fas fa-tools"></i><span>Portal Reparador</span><i class="fas fa-external-link-alt nav-ext"></i></li>
-        <li class="nav-item nav-portal" onclick="window.open('saas-panel.html','_blank')"><i class="fas fa-rocket"></i><span>Panel SaaS CEO</span><i class="fas fa-external-link-alt nav-ext"></i></li>
         <li class="nav-item nav-portal" onclick="window.open('superadmin.html','_blank')"><i class="fas fa-shield-alt"></i><span>SuperAdmin</span><i class="fas fa-external-link-alt nav-ext"></i></li>
+        <li class="nav-item nav-portal" onclick="window.open('saas-panel.html','_blank')"><i class="fas fa-rocket"></i><span>Panel SaaS CEO</span><i class="fas fa-external-link-alt nav-ext"></i></li>
         <li class="nav-item nav-portal" onclick="window.open('app-movil/index.html','_blank')"><i class="fas fa-mobile-alt"></i><span>App Movil PWA</span><i class="fas fa-external-link-alt nav-ext"></i></li>
         <li class="nav-item nav-portal" onclick="window.open('help.html','_blank')"><i class="fas fa-question-circle"></i><span>Centro de Ayuda</span><i class="fas fa-external-link-alt nav-ext"></i></li>
     </ul>
