@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiniestrosAI - Dashboard Ejecutivo | Vista Direccion</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        :root{
+            --bg-primary:#060a13;--bg-secondary:#0d1321;--bg-card:#111a2e;--bg-card-hover:#162040;
+            --text-primary:#f1f5f9;--text-secondary:#94a3b8;--text-muted:#64748b;
+            --accent-blue:#3b82f6;--accent-purple:#8b5cf6;--accent-cyan:#06b6d4;--accent-gold:#f59e0b;
+            --gradient-main:linear-gradient(135deg,#3b82f6,#8b5cf6,#06b6d4);
+            --gradient-gold:linear-gradient(135deg,#f59e0b,#d97706);
+            --border-color:rgba(148,163,184,0.08);--radius:14px;--radius-sm:10px;
+            --success:#10b981;--warning:#f59e0b;--danger:#ef4444;
+        }
+        body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;overflow-x:hidden;}
+        ::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:var(--bg-secondary);}::-webkit-scrollbar-thumb{background:var(--accent-purple);border-radius:3px;}
+
+        /* TOP NAV */
+        .top-nav{background:rgba(13,19,33,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border-color);padding:0 2.5rem;display:flex;align-items:center;justify-content:space-between;height:70px;position:sticky;top:0;z-index:100;}
+        .nav-brand{display:flex;align-items:center;gap:1rem;}
+        .nav-brand .logo-icon{width:44px;height:44px;background:var(--gradient-main);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;box-shadow:0 4px 15px rgba(59,130,246,0.3);}
+        .nav-brand h1{font-size:1.15rem;font-weight:700;background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .nav-brand .exec-badge{background:var(--gradient-gold);color:#000;font-size:.6rem;font-weight:800;padding:3px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.1em;-webkit-text-fill-color:#000;}
+        .nav-links{display:flex;gap:.5rem;align-items:center;}
+        .nav-links a{color:var(--text-secondary);text-decoration:none;padding:.5rem 1rem;border-radius:var(--radius-sm);font-size:.85rem;transition:all .3s;display:flex;align-items:center;gap:.5rem;}
+        .nav-links a:hover,.nav-links a.active{color:var(--text-primary);background:rgba(59,130,246,0.12);}
+        .nav-user{display:flex;align-items:center;gap:1rem;}
+        .nav-user .user-avatar{width:42px;height:42px;background:var(--gradient-gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#000;box-shadow:0 3px 12px rgba(245,158,11,0.3);}
+        .nav-user .user-name{font-size:.9rem;font-weight:700;}
+        .nav-user .user-role{font-size:.7rem;color:var(--accent-gold);}
+        .nav-user .last-update{font-size:.65rem;color:var(--text-muted);}
+
+        /* CONTENT */
+        .content{max-width:1440px;margin:0 auto;padding:2rem 2.5rem;}
+        .page-header{margin-bottom:2rem;display:flex;justify-content:space-between;align-items:flex-end;}
+        .page-header h1{font-size:1.8rem;font-weight:800;}
+        .page-header .date-range{display:flex;gap:.5rem;align-items:center;}
+        .page-header .date-range select{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-sm);color:var(--text-primary);padding:.5rem 1rem;font-family:'Inter',sans-serif;font-size:.8rem;}
+
+        /* EXECUTIVE KPIs */
+        .exec-kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:1rem;margin-bottom:2rem;}
+        .exec-kpi{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius);padding:1.5rem;text-align:center;position:relative;overflow:hidden;transition:all .4s;}
+        .exec-kpi:hover{transform:translateY(-3px);border-color:rgba(59,130,246,0.25);box-shadow:0 8px 30px rgba(0,0,0,.3);}
+        .exec-kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--radius) var(--radius) 0 0;}
+        .exec-kpi:nth-child(1)::before{background:var(--accent-blue);}
+        .exec-kpi:nth-child(2)::before{background:var(--success);}
+        .exec-kpi:nth-child(3)::before{background:var(--accent-purple);}
+        .exec-kpi:nth-child(4)::before{background:var(--accent-cyan);}
+        .exec-kpi:nth-child(5)::before{background:var(--accent-gold);}
+        .exec-kpi:nth-child(6)::before{background:var(--danger);}
+        .exec-kpi .kpi-icon{font-size:1.5rem;margin-bottom:.75rem;opacity:.6;}
+        .exec-kpi .kpi-value{font-size:2rem;font-weight:900;margin-bottom:.25rem;line-height:1;}
+        .exec-kpi .kpi-label{font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem;}
+        .exec-kpi .kpi-trend{font-size:.75rem;font-weight:600;}
+        .kpi-trend.up{color:var(--success);}
+        .kpi-trend.down{color:var(--danger);}
+
+        /* CARDS */
+        .card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius);padding:1.75rem;margin-bottom:1.5rem;}
+        .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;}
+        .card-header h3{font-size:1.05rem;font-weight:700;}
+        .card-header .card-badge{background:rgba(59,130,246,0.12);color:var(--accent-blue);font-size:.7rem;font-weight:600;padding:4px 10px;border-radius:6px;}
+
+        /* GRID LAYOUTS */
+        .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+        .grid-3{display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;}
+
+        /* CHART CONTAINERS */
+        .chart-container{position:relative;height:300px;}
+
+        /* RISK HEAT MAP */
+        .heatmap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.75rem;}
+        .heatmap-cell{border-radius:var(--radius-sm);padding:1rem;text-align:center;transition:all .3s;cursor:default;}
+        .heatmap-cell:hover{transform:scale(1.03);}
+        .heatmap-cell .region-name{font-size:.8rem;font-weight:700;margin-bottom:.25rem;}
+        .heatmap-cell .region-count{font-size:1.3rem;font-weight:900;}
+        .heatmap-cell .region-label{font-size:.65rem;opacity:.8;}
+        .heat-verde{background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.25);color:var(--success);}
+        .heat-amarillo{background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.25);color:var(--warning);}
+        .heat-rojo{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.25);color:var(--danger);}
+
+        /* BENCHMARK TABLE */
+        .benchmark-table{width:100%;border-collapse:collapse;}
+        .benchmark-table th{text-align:left;padding:.75rem 1rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);border-bottom:1px solid var(--border-color);font-weight:600;}
+        .benchmark-table td{padding:.75rem 1rem;font-size:.85rem;border-bottom:1px solid var(--border-color);color:var(--text-secondary);}
+        .benchmark-table tr:hover td{background:rgba(59,130,246,0.03);}
+        .benchmark-table .col-empresa{color:var(--accent-cyan);font-weight:700;}
+        .benchmark-table .col-media{color:var(--text-secondary);}
+        .benchmark-table .col-mejor{color:var(--success);font-weight:600;}
+        .benchmark-table .metric-name{color:var(--text-primary);font-weight:600;}
+        .bar-visual{height:6px;border-radius:3px;background:var(--bg-secondary);margin-top:4px;overflow:hidden;}
+        .bar-visual .bar-fill{height:100%;border-radius:3px;}
+
+        /* REPORTS */
+        .reports-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;}
+        .report-card{background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-sm);padding:1.25rem;text-align:center;transition:all .3s;cursor:pointer;}
+        .report-card:hover{border-color:rgba(59,130,246,0.3);transform:translateY(-2px);}
+        .report-card .report-icon{font-size:1.8rem;margin-bottom:.75rem;opacity:.7;}
+        .report-card .report-name{font-size:.85rem;font-weight:600;margin-bottom:.25rem;}
+        .report-card .report-desc{font-size:.7rem;color:var(--text-muted);margin-bottom:1rem;}
+        .btn{padding:.5rem 1rem;border:none;border-radius:var(--radius-sm);cursor:pointer;font-family:'Inter',sans-serif;font-size:.8rem;font-weight:600;transition:all .3s;display:inline-flex;align-items:center;gap:.4rem;}
+        .btn-primary{background:var(--gradient-main);color:#fff;}
+        .btn-primary:hover{opacity:.9;transform:translateY(-1px);}
+        .btn-secondary{background:rgba(148,163,184,0.08);color:var(--text-primary);border:1px solid var(--border-color);}
+        .btn-sm{padding:.35rem .7rem;font-size:.75rem;}
+        .btn-gold{background:var(--gradient-gold);color:#000;font-weight:700;}
+
+        /* REPORT ANIMATION */
+        .report-generating{position:relative;}
+        .report-generating::after{content:'';position:absolute;inset:0;background:rgba(6,10,19,0.85);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;}
+        .report-overlay{position:absolute;inset:0;background:rgba(6,10,19,0.9);border-radius:var(--radius-sm);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;z-index:2;}
+        .report-overlay .spinner{width:32px;height:32px;border:3px solid var(--border-color);border-top-color:var(--accent-cyan);border-radius:50%;animation:spin 1s linear infinite;}
+        .report-overlay .done-icon{font-size:2rem;color:var(--success);animation:scaleIn .3s ease;}
+        @keyframes spin{to{transform:rotate(360deg);}}
+        @keyframes scaleIn{from{transform:scale(0);}to{transform:scale(1);}}
+
+        /* AI INSIGHTS */
+        .ai-insight-box{background:linear-gradient(135deg,rgba(139,92,246,0.08),rgba(6,182,212,0.08));border:1px solid rgba(139,92,246,0.2);border-radius:var(--radius);padding:1.75rem;position:relative;overflow:hidden;}
+        .ai-insight-box::before{content:'';position:absolute;top:-50%;right:-50%;width:100%;height:100%;background:radial-gradient(circle,rgba(139,92,246,0.05) 0%,transparent 70%);pointer-events:none;}
+        .ai-insight-box .ai-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;}
+        .ai-insight-box .ai-icon{width:40px;height:40px;background:var(--gradient-main);border-radius:10px;display:flex;align-items:center;justify-content:center;}
+        .ai-insight-box h3{font-size:1rem;font-weight:700;}
+        .ai-insight-box .ai-tag{background:rgba(139,92,246,0.2);color:var(--accent-purple);font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:.5rem;text-transform:uppercase;}
+        .insight-section{margin-bottom:1.25rem;}
+        .insight-section h4{font-size:.85rem;font-weight:600;margin-bottom:.5rem;color:var(--accent-cyan);}
+        .insight-section p{font-size:.85rem;line-height:1.6;color:var(--text-secondary);}
+        .insight-section ul{list-style:none;padding:0;}
+        .insight-section ul li{padding:.35rem 0;font-size:.85rem;color:var(--text-secondary);display:flex;align-items:flex-start;gap:.5rem;}
+        .insight-section ul li i{color:var(--accent-purple);margin-top:3px;flex-shrink:0;}
+        .risk-tag{display:inline-block;padding:3px 8px;border-radius:4px;font-size:.7rem;font-weight:600;margin-right:.5rem;margin-bottom:.25rem;}
+        .risk-high{background:rgba(239,68,68,0.15);color:var(--danger);}
+        .risk-medium{background:rgba(245,158,11,0.15);color:var(--warning);}
+        .risk-opportunity{background:rgba(16,185,129,0.15);color:var(--success);}
+
+        /* RESPONSIVE */
+        @media(max-width:1200px){.exec-kpi-grid{grid-template-columns:repeat(3,1fr);}.grid-2,.grid-3{grid-template-columns:1fr;}}
+        @media(max-width:768px){.top-nav{padding:0 1rem;}.content{padding:1rem;}.exec-kpi-grid{grid-template-columns:1fr 1fr;}.nav-links{display:none;}.heatmap-grid{grid-template-columns:repeat(2,1fr);}}
+    </style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+    <div class="nav-brand">
+        <div class="logo-icon"><i class="fas fa-brain"></i></div>
+        <div>
+            <h1>SiniestrosAI <span class="exec-badge">Ejecutivo</span></h1>
+        </div>
+    </div>
+    <div class="nav-links">
+        <a href="index.html"><i class="fas fa-desktop"></i> Plataforma</a>
+        <a href="portal-taller.html"><i class="fas fa-wrench"></i> Taller</a>
+        <a href="vista-direccion.html" class="active"><i class="fas fa-chart-line"></i> Direccion</a>
+    </div>
+    <div class="nav-user">
+        <div style="text-align:right;">
+            <div class="user-name">Manuel Rodriguez</div>
+            <div class="user-role">Director General</div>
+            <div class="last-update"><i class="fas fa-sync-alt"></i> Actualizado: hace 3 min</div>
+        </div>
+        <div class="user-avatar">MR</div>
+    </div>
+</nav>
+
+<!-- CONTENT -->
+<div class="content">
+    <div class="page-header">
+        <div>
+            <h1>Dashboard Ejecutivo</h1>
+            <p style="color:var(--text-muted);font-size:.9rem;margin-top:.25rem;">Vision global del negocio asegurador - Datos en tiempo real</p>
+        </div>
+        <div class="date-range">
+            <select id="periodFilter">
+                <option value="mes" selected>Este mes</option>
+                <option value="trimestre">Este trimestre</option>
+                <option value="semestre">Este semestre</option>
+                <option value="anual">Este ano</option>
+            </select>
+            <button class="btn btn-secondary btn-sm"><i class="fas fa-download"></i> Exportar</button>
+        </div>
+    </div>
+
+    <!-- ============ EXECUTIVE KPIs ============ -->
+    <div class="exec-kpi-grid">
+        <div class="exec-kpi">
+            <div class="kpi-icon" style="color:var(--accent-blue);"><i class="fas fa-file-alt"></i></div>
+            <div class="kpi-value">4.287</div>
+            <div class="kpi-label">Total Siniestros</div>
+            <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> 8.3% vs mes anterior</div>
+        </div>
+        <div class="exec-kpi">
+            <div class="kpi-icon" style="color:var(--success);"><i class="fas fa-check-circle"></i></div>
+            <div class="kpi-value">91.4%</div>
+            <div class="kpi-label">Tasa de Resolucion</div>
+            <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> 3.2% vs mes anterior</div>
+        </div>
+        <div class="exec-kpi">
+            <div class="kpi-icon" style="color:var(--accent-purple);"><i class="fas fa-euro-sign"></i></div>
+            <div class="kpi-value">2.340 EUR</div>
+            <div class="kpi-label">Coste Medio / Siniestro</div>
+            <div class="kpi-trend down"><i class="fas fa-arrow-down"></i> 5.1% (mejora)</div>
+        </div>
+        <div class="exec-kpi">
+            <div class="kpi-icon" style="color:var(--accent-cyan);"><i class="fas fa-smile"></i></div>
+            <div class="kpi-value">8.9/10</div>
+            <div class="kpi-label">Satisfaccion Cliente</div>
+            <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> 0.4 puntos</div>
+        </div>
+        <div class="exec-kpi">
+            <div class="kpi-icon" style="color:var(--accent-gold);"><i class="fas fa-shield-alt"></i></div>
+            <div class="kpi-value">1.8M EUR</div>
+            <div class="kpi-label">Ahorro Anti-Fraude</div>
+            <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> 340K vs trimestre ant.</div>
+        </div>
+        <div class="exec-kpi">
+            <div class="kpi-icon" style="color:var(--danger);"><i class="fas fa-robot"></i></div>
+            <div class="kpi-value">78.6%</div>
+            <div class="kpi-label">Tasa Automatizacion</div>
+            <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> 12.4% vs Q4 2025</div>
+        </div>
+    </div>
+
+    <!-- ============ FORECAST + PROFITABILITY ============ -->
+    <div class="grid-2">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-chart-line" style="color:var(--accent-cyan);margin-right:.5rem;"></i> Forecast de Siniestralidad</h3>
+                <span class="card-badge"><i class="fas fa-brain"></i> IA Predictiva</span>
+            </div>
+            <div class="chart-container"><canvas id="forecastChart"></canvas></div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-chart-bar" style="color:var(--accent-purple);margin-right:.5rem;"></i> Rentabilidad por Linea</h3>
+                <select id="profitView" style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);padding:4px 8px;font-size:.75rem;">
+                    <option value="producto">Por producto</option>
+                    <option value="region">Por region</option>
+                </select>
+            </div>
+            <div class="chart-container"><canvas id="profitChart"></canvas></div>
+        </div>
+    </div>
+
+    <!-- ============ RISK HEAT MAP ============ -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-map-marked-alt" style="color:var(--warning);margin-right:.5rem;"></i> Mapa de Riesgo por Comunidad Autonoma</h3>
+            <div style="display:flex;gap:1rem;align-items:center;font-size:.7rem;">
+                <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:rgba(16,185,129,0.4);border-radius:3px;display:inline-block;"></span> Bajo</span>
+                <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:rgba(245,158,11,0.4);border-radius:3px;display:inline-block;"></span> Medio</span>
+                <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:rgba(239,68,68,0.4);border-radius:3px;display:inline-block;"></span> Alto</span>
+            </div>
+        </div>
+        <div class="heatmap-grid" id="heatmapGrid"></div>
+    </div>
+
+    <!-- ============ BENCHMARKING + REPORTS ============ -->
+    <div class="grid-2">
+        <!-- BENCHMARKING -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-trophy" style="color:var(--accent-gold);margin-right:.5rem;"></i> Benchmarking Sectorial</h3>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="benchmark-table">
+                    <thead>
+                        <tr><th>Metrica</th><th>Tu Empresa</th><th>Media Sector</th><th>Mejor Sector</th></tr>
+                    </thead>
+                    <tbody id="benchmarkBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- AUTO REPORTS -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-file-pdf" style="color:var(--danger);margin-right:.5rem;"></i> Informes Automaticos</h3>
+            </div>
+            <div class="reports-grid" id="reportsGrid"></div>
+        </div>
+    </div>
+
+    <!-- ============ AI INSIGHTS ============ -->
+    <div class="ai-insight-box">
+        <div class="ai-header">
+            <div class="ai-icon"><i class="fas fa-brain"></i></div>
+            <h3>Resumen Ejecutivo IA <span class="ai-tag">GPT-4 Turbo</span></h3>
+            <div style="margin-left:auto;font-size:.7rem;color:var(--text-muted);"><i class="fas fa-clock"></i> Generado: 19 Mar 2026, 08:45</div>
+        </div>
+
+        <div class="insight-section">
+            <h4><i class="fas fa-bullseye"></i> Resumen del Periodo</h4>
+            <p>La compania ha procesado <strong>4.287 siniestros</strong> en marzo con una tasa de resolucion del <strong>91.4%</strong>, mejorando 3.2 puntos respecto a febrero. El coste medio por siniestro se ha reducido un 5.1% gracias a la optimizacion de la red de talleres y la negociacion automatizada de presupuestos por IA. La satisfaccion del cliente alcanza un historico de <strong>8.9/10</strong>, impulsada por la reduccion del tiempo medio de resolucion a <strong>2.3 dias</strong>. El sistema anti-fraude ha evitado perdidas por <strong>1.8M EUR</strong> en el trimestre, un 23% mas que el periodo anterior.</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+            <div class="insight-section">
+                <h4><i class="fas fa-exclamation-triangle" style="color:var(--danger);"></i> Riesgos Identificados</h4>
+                <ul>
+                    <li><i class="fas fa-arrow-right"></i><div><span class="risk-tag risk-high">ALTO</span> Incremento del 34% en siniestros por fenomenos climaticos en la zona del Levante. Prevision AEMET indica continuidad en abril.</div></li>
+                    <li><i class="fas fa-arrow-right"></i><div><span class="risk-tag risk-high">ALTO</span> Red de talleres en Valencia saturada al 92% de capacidad. Riesgo de incumplimiento de SLAs en 2-3 semanas.</div></li>
+                    <li><i class="fas fa-arrow-right"></i><div><span class="risk-tag risk-medium">MEDIO</span> Detectado patron de fraude organizado en polizas de hogar en Barcelona. 12 expedientes bajo investigacion.</div></li>
+                    <li><i class="fas fa-arrow-right"></i><div><span class="risk-tag risk-medium">MEDIO</span> Coste de piezas de recambio incrementado un 8% interanual. Impacto estimado: 420K EUR/ano.</div></li>
+                </ul>
+            </div>
+            <div class="insight-section">
+                <h4><i class="fas fa-lightbulb" style="color:var(--success);"></i> Oportunidades</h4>
+                <ul>
+                    <li><i class="fas fa-arrow-right"></i><div><span class="risk-tag risk-opportunity">OPORTUNIDAD</span> La tasa de automatizacion del 78.6% permite reducir 4 FTEs adicionales en Q2 (ahorro: 180K EUR/ano).</div></li>
+                    <li><i class="fas fa-arrow-right"></i><div><span class="risk-tag risk-opportunity">OPORTUNIDAD</span> Cross-selling detectado: 2.340 clientes de auto sin poliza de hogar. Potencial de prima: 890K EUR.</div></li>
+                    <li><i class="fas fa-arrow-right"></i><div><span class="risk-tag risk-opportunity">OPORTUNIDAD</span> Expansion de modelo predictivo a linea Salud podria reducir siniestralidad un 12% (450K EUR/ano).</div></li>
+                    <li><i class="fas fa-arrow-right"></i><div><span class="risk-tag risk-opportunity">OPORTUNIDAD</span> NPS de 72 (vs 45 del sector) posiciona para campana de captacion agresiva en Q2.</div></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// RISK HEAT MAP
+// ============================================================
+const REGIONS = [
+    {name:'Madrid',count:487,level:'rojo'},
+    {name:'Cataluna',count:412,level:'rojo'},
+    {name:'C. Valenciana',count:389,level:'rojo'},
+    {name:'Andalucia',count:356,level:'rojo'},
+    {name:'Pais Vasco',count:198,level:'amarillo'},
+    {name:'Galicia',count:176,level:'amarillo'},
+    {name:'Castilla y Leon',count:145,level:'amarillo'},
+    {name:'Aragon',count:132,level:'amarillo'},
+    {name:'Castilla-La Mancha',count:121,level:'verde'},
+    {name:'Murcia',count:156,level:'amarillo'},
+    {name:'Canarias',count:134,level:'amarillo'},
+    {name:'Baleares',count:98,level:'verde'},
+    {name:'Asturias',count:87,level:'verde'},
+    {name:'Navarra',count:76,level:'verde'},
+    {name:'Extremadura',count:65,level:'verde'},
+    {name:'Cantabria',count:54,level:'verde'},
+    {name:'La Rioja',count:38,level:'verde'},
+];
+
+function renderHeatmap() {
+    const grid = document.getElementById('heatmapGrid');
+    grid.innerHTML = REGIONS.map(r => `
+        <div class="heatmap-cell heat-${r.level}">
+            <div class="region-name">${r.name}</div>
+            <div class="region-count">${r.count}</div>
+            <div class="region-label">siniestros</div>
+        </div>
+    `).join('');
+}
+
+// ============================================================
+// BENCHMARK TABLE
+// ============================================================
+const BENCHMARKS = [
+    {metric:'Tiempo medio resolucion',empresa:'2.3 dias',media:'6.8 dias',mejor:'1.9 dias',pctEmpresa:85,pctMedia:40,pctMejor:90},
+    {metric:'Tasa de resolucion',empresa:'91.4%',media:'74.2%',mejor:'93.1%',pctEmpresa:91,pctMedia:74,pctMejor:93},
+    {metric:'Satisfaccion cliente (NPS)',empresa:'72',media:'45',mejor:'78',pctEmpresa:72,pctMedia:45,pctMejor:78},
+    {metric:'Coste medio por siniestro',empresa:'2.340 EUR',media:'3.120 EUR',mejor:'2.100 EUR',pctEmpresa:75,pctMedia:55,pctMejor:80},
+    {metric:'Tasa de fraude detectado',empresa:'94.2%',media:'67.5%',mejor:'96.0%',pctEmpresa:94,pctMedia:67,pctMejor:96},
+    {metric:'Automatizacion procesos',empresa:'78.6%',media:'32.4%',mejor:'82.0%',pctEmpresa:78,pctMedia:32,pctMejor:82},
+    {metric:'Ratio combinado',empresa:'95.2%',media:'101.3%',mejor:'93.8%',pctEmpresa:80,pctMedia:45,pctMejor:85},
+    {metric:'Retencion de clientes',empresa:'89.3%',media:'76.1%',mejor:'91.5%',pctEmpresa:89,pctMedia:76,pctMejor:91},
+];
+
+function renderBenchmark() {
+    const tbody = document.getElementById('benchmarkBody');
+    tbody.innerHTML = BENCHMARKS.map(b => `
+        <tr>
+            <td class="metric-name">${b.metric}</td>
+            <td class="col-empresa">
+                ${b.empresa}
+                <div class="bar-visual"><div class="bar-fill" style="width:${b.pctEmpresa}%;background:var(--accent-cyan);"></div></div>
+            </td>
+            <td class="col-media">
+                ${b.media}
+                <div class="bar-visual"><div class="bar-fill" style="width:${b.pctMedia}%;background:var(--text-muted);"></div></div>
+            </td>
+            <td class="col-mejor">
+                ${b.mejor}
+                <div class="bar-visual"><div class="bar-fill" style="width:${b.pctMejor}%;background:var(--success);"></div></div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// ============================================================
+// REPORTS
+// ============================================================
+const REPORTS = [
+    {icon:'fa-calendar-week',name:'Informe Semanal',desc:'Resumen ejecutivo de la semana',color:'var(--accent-blue)'},
+    {icon:'fa-shield-alt',name:'Informe de Fraude',desc:'Deteccion y prevencion mensual',color:'var(--danger)'},
+    {icon:'fa-robot',name:'Rendimiento IA',desc:'Metricas de automatizacion',color:'var(--accent-purple)'},
+    {icon:'fa-landmark',name:'Regulador DGSFP',desc:'Informe normativo trimestral',color:'var(--accent-gold)'},
+    {icon:'fa-chart-pie',name:'Siniestralidad',desc:'Analisis por linea de negocio',color:'var(--accent-cyan)'},
+    {icon:'fa-users',name:'RRHH & Productividad',desc:'Impacto IA en plantilla',color:'var(--success)'},
+];
+
+function renderReports() {
+    const grid = document.getElementById('reportsGrid');
+    grid.innerHTML = REPORTS.map((r, i) => `
+        <div class="report-card" id="report-${i}" onclick="generateReport(${i})">
+            <div class="report-icon" style="color:${r.color};"><i class="fas ${r.icon}"></i></div>
+            <div class="report-name">${r.name}</div>
+            <div class="report-desc">${r.desc}</div>
+            <button class="btn btn-primary btn-sm"><i class="fas fa-file-pdf"></i> Generar PDF</button>
+        </div>
+    `).join('');
+}
+
+function generateReport(index) {
+    const card = document.getElementById('report-' + index);
+    if (card.querySelector('.report-overlay')) return;
+    const overlay = document.createElement('div');
+    overlay.className = 'report-overlay';
+    overlay.innerHTML = '<div class="spinner"></div><span style="font-size:.8rem;color:var(--text-secondary);">Generando informe...</span>';
+    card.style.position = 'relative';
+    card.appendChild(overlay);
+
+    setTimeout(() => {
+        overlay.innerHTML = '<div class="done-icon"><i class="fas fa-check-circle"></i></div><span style="font-size:.8rem;color:var(--success);font-weight:600;">Enviado a direccion</span>';
+        setTimeout(() => overlay.remove(), 2500);
+    }, 2200);
+}
+
+// ============================================================
+// CHARTS
+// ============================================================
+function initCharts() {
+    // FORECAST CHART
+    const fCtx = document.getElementById('forecastChart').getContext('2d');
+    const months = ['Oct','Nov','Dic','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep'];
+    const actual = [3820,3950,4100,4050,3960,4287,null,null,null,null,null,null];
+    const predicted = [null,null,null,null,null,4287,4350,4420,4180,3950,3700,3890];
+    const upperBand = [null,null,null,null,null,null,4580,4690,4450,4230,3980,4180];
+    const lowerBand = [null,null,null,null,null,null,4120,4150,3910,3670,3420,3600];
+
+    new Chart(fCtx, {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [
+                {
+                    label: 'Real',
+                    data: actual,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59,130,246,0.1)',
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#3b82f6',
+                    fill: false,
+                    tension: 0.3,
+                    spanGaps: false
+                },
+                {
+                    label: 'Prediccion IA',
+                    data: predicted,
+                    borderColor: '#8b5cf6',
+                    borderWidth: 2,
+                    borderDash: [6, 3],
+                    pointRadius: 3,
+                    pointBackgroundColor: '#8b5cf6',
+                    fill: false,
+                    tension: 0.3,
+                    spanGaps: false
+                },
+                {
+                    label: 'Banda superior (95%)',
+                    data: upperBand,
+                    borderColor: 'transparent',
+                    backgroundColor: 'rgba(139,92,246,0.08)',
+                    fill: '+1',
+                    pointRadius: 0,
+                    tension: 0.3,
+                    spanGaps: false
+                },
+                {
+                    label: 'Banda inferior (95%)',
+                    data: lowerBand,
+                    borderColor: 'transparent',
+                    backgroundColor: 'rgba(139,92,246,0.08)',
+                    fill: '-1',
+                    pointRadius: 0,
+                    tension: 0.3,
+                    spanGaps: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 }, usePointStyle: true, pointStyle: 'circle' } },
+                tooltip: { backgroundColor: '#1a2035', titleColor: '#f1f5f9', bodyColor: '#94a3b8', borderColor: 'rgba(59,130,246,0.3)', borderWidth: 1 }
+            },
+            scales: {
+                x: { grid: { color: 'rgba(148,163,184,0.06)' }, ticks: { color: '#64748b', font: { family: 'Inter', size: 11 } } },
+                y: { grid: { color: 'rgba(148,163,184,0.06)' }, ticks: { color: '#64748b', font: { family: 'Inter', size: 11 } } }
+            }
+        }
+    });
+
+    // PROFITABILITY CHART
+    const pCtx = document.getElementById('profitChart').getContext('2d');
+    new Chart(pCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Auto', 'Hogar', 'Salud', 'Comercial'],
+            datasets: [
+                {
+                    label: 'Primas (M EUR)',
+                    data: [12.4, 8.7, 6.2, 4.8],
+                    backgroundColor: 'rgba(59,130,246,0.7)',
+                    borderColor: '#3b82f6',
+                    borderWidth: 1,
+                    borderRadius: 6,
+                    barPercentage: 0.5
+                },
+                {
+                    label: 'Siniestralidad (M EUR)',
+                    data: [8.1, 5.2, 4.8, 3.1],
+                    backgroundColor: 'rgba(239,68,68,0.5)',
+                    borderColor: '#ef4444',
+                    borderWidth: 1,
+                    borderRadius: 6,
+                    barPercentage: 0.5
+                },
+                {
+                    label: 'Beneficio (M EUR)',
+                    data: [4.3, 3.5, 1.4, 1.7],
+                    backgroundColor: 'rgba(16,185,129,0.6)',
+                    borderColor: '#10b981',
+                    borderWidth: 1,
+                    borderRadius: 6,
+                    barPercentage: 0.5
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 }, usePointStyle: true, pointStyle: 'rect' } },
+                tooltip: { backgroundColor: '#1a2035', titleColor: '#f1f5f9', bodyColor: '#94a3b8', borderColor: 'rgba(59,130,246,0.3)', borderWidth: 1 }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: '#64748b', font: { family: 'Inter', size: 12, weight: 600 } } },
+                y: { grid: { color: 'rgba(148,163,184,0.06)' }, ticks: { color: '#64748b', font: { family: 'Inter', size: 11 }, callback: v => v + 'M' } }
+            }
+        }
+    });
+
+    // Switch profitability view
+    document.getElementById('profitView').addEventListener('change', function() {
+        const chart = Chart.getChart('profitChart');
+        if (this.value === 'region') {
+            chart.data.labels = ['Madrid', 'Cataluna', 'Andalucia', 'C. Valenciana', 'Pais Vasco'];
+            chart.data.datasets[0].data = [9.8, 7.6, 5.4, 4.9, 3.2];
+            chart.data.datasets[1].data = [6.2, 5.1, 3.8, 3.9, 1.9];
+            chart.data.datasets[2].data = [3.6, 2.5, 1.6, 1.0, 1.3];
+        } else {
+            chart.data.labels = ['Auto', 'Hogar', 'Salud', 'Comercial'];
+            chart.data.datasets[0].data = [12.4, 8.7, 6.2, 4.8];
+            chart.data.datasets[1].data = [8.1, 5.2, 4.8, 3.1];
+            chart.data.datasets[2].data = [4.3, 3.5, 1.4, 1.7];
+        }
+        chart.update();
+    });
+}
+
+// ============================================================
+// INIT
+// ============================================================
+renderHeatmap();
+renderBenchmark();
+renderReports();
+initCharts();
+</script>
+</body>
+</html>

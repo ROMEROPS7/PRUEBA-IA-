@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiniestrosAI - Panel SaaS Administracion</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --primary:#1a56db;--primary-dark:#1242a8;--primary-light:#e8effd;
+            --success:#16a34a;--success-light:#dcfce7;--warning:#f59e0b;--warning-light:#fef3c7;
+            --danger:#dc2626;--danger-light:#fee2e2;--info:#2563eb;--info-light:#dbeafe;
+            --ai-purple:#8b5cf6;--ai-purple-dark:#7c3aed;--ai-cyan:#06b6d4;
+            --ai-gradient:linear-gradient(135deg,#8b5cf6 0%,#06b6d4 100%);
+            --gold:#d4a017;--gold-light:rgba(212,160,23,.1);--gold-gradient:linear-gradient(135deg,#d4a017,#f5c842);
+            --bg-dark:#0a0a12;--bg-card:#12121e;--bg-card-hover:#1a1a2e;--bg-sidebar:#0d0d18;
+            --border:rgba(255,255,255,.06);--border-gold:rgba(212,160,23,.25);
+            --text-primary:#e8e8f0;--text-secondary:#8888a0;--text-muted:#5a5a72;
+            --radius:12px;
+            --shadow:0 2px 8px rgba(0,0,0,.3);--shadow-lg:0 10px 30px rgba(0,0,0,.4);
+            --transition:all 0.2s ease;
+        }
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Inter',sans-serif;background:var(--bg-dark);color:var(--text-primary);min-height:100vh;display:flex;}
+
+        @keyframes livePulse{0%,100%{opacity:1}50%{opacity:.4}}
+        @keyframes aiGlow{0%,100%{box-shadow:0 0 5px rgba(139,92,246,.3)}50%{box-shadow:0 0 20px rgba(139,92,246,.6),0 0 40px rgba(6,182,212,.3)}}
+        @keyframes fadeInUp{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+        @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+        @keyframes goldPulse{0%,100%{box-shadow:0 0 8px rgba(212,160,23,.2)}50%{box-shadow:0 0 20px rgba(212,160,23,.4)}}
+
+        /* ===== SIDEBAR ===== */
+        .sidebar{width:260px;min-width:260px;background:var(--bg-sidebar);height:100vh;position:fixed;left:0;top:0;z-index:100;display:flex;flex-direction:column;border-right:1px solid var(--border);overflow-y:auto;}
+        .sidebar-header{padding:1.25rem;border-bottom:1px solid var(--border);}
+        .logo{display:flex;align-items:center;gap:.6rem;color:#fff;font-size:1rem;font-weight:700;}
+        .logo-icon{font-size:1.1rem;background:var(--ai-gradient);padding:.45rem;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;}
+        .ai-tag{font-size:.55rem;background:var(--ai-gradient);color:#fff;padding:1px 5px;border-radius:4px;vertical-align:super;}
+        .sidebar-user{padding:1rem 1.25rem;border-bottom:1px solid var(--border);}
+        .user-info{display:flex;align-items:center;gap:.6rem;}
+        .user-avatar{width:36px;height:36px;border-radius:10px;background:var(--gold-gradient);display:flex;align-items:center;justify-content:center;color:#000;font-weight:700;font-size:.85rem;}
+        .user-name{color:#fff;font-size:.8rem;font-weight:600;}
+        .user-role{color:var(--gold);font-size:.65rem;font-weight:600;}
+        .nav-menu{list-style:none;padding:.75rem 0;flex:1;}
+        .nav-item{display:flex;align-items:center;gap:.6rem;padding:.65rem 1.25rem;color:var(--text-secondary);cursor:pointer;transition:var(--transition);border-left:3px solid transparent;font-size:.8rem;text-decoration:none;}
+        .nav-item:hover{color:#fff;background:rgba(255,255,255,.03);}
+        .nav-item.active{color:var(--gold);background:var(--gold-light);border-left-color:var(--gold);}
+        .nav-item i{width:18px;text-align:center;font-size:.9rem;}
+        .nav-separator{height:1px;background:var(--border);margin:.5rem 1.25rem;}
+        .nav-label{font-size:.6rem;font-weight:700;color:var(--text-muted);padding:.5rem 1.25rem;letter-spacing:.08em;text-transform:uppercase;}
+        .nav-ext{font-size:.6rem;margin-left:auto;opacity:.4;}
+        .nav-badge{font-size:.5rem;background:var(--gold);color:#000;padding:1px 5px;border-radius:8px;margin-left:auto;font-weight:700;}
+        .sidebar-footer{padding:.75rem 1.25rem;border-top:1px solid var(--border);}
+        .sidebar-footer-text{color:var(--text-muted);font-size:.6rem;text-align:center;}
+
+        /* ===== MAIN ===== */
+        .main{margin-left:260px;flex:1;padding:1.5rem;overflow-y:auto;min-height:100vh;}
+
+        /* ===== TOP HEADER ===== */
+        .top-header{background:var(--bg-card);border-radius:16px;padding:1.25rem 1.75rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);}
+        .header-left h1{font-size:1.3rem;font-weight:800;color:#fff;}
+        .header-left h1 i{color:var(--gold);margin-right:.4rem;}
+        .header-left p{font-size:.78rem;color:var(--text-secondary);margin-top:.15rem;}
+        .header-right{display:flex;align-items:center;gap:.75rem;}
+        .header-badge{display:inline-flex;align-items:center;gap:.35rem;font-size:.7rem;font-weight:600;padding:.35rem .75rem;border-radius:8px;}
+        .badge-gold{background:var(--gold-light);color:var(--gold);border:1px solid var(--border-gold);}
+        .badge-live{background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.2);}
+        .live-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;animation:livePulse 1.5s infinite;}
+
+        /* ===== KPI CARDS ===== */
+        .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:1.5rem;}
+        .kpi-card{background:var(--bg-card);border-radius:var(--radius);padding:1.25rem;border:1px solid var(--border);transition:var(--transition);position:relative;overflow:hidden;}
+        .kpi-card:hover{border-color:var(--border-gold);transform:translateY(-2px);}
+        .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--radius) var(--radius) 0 0;}
+        .kpi-card:nth-child(1)::before{background:var(--gold-gradient);}
+        .kpi-card:nth-child(2)::before{background:linear-gradient(90deg,var(--ai-purple),var(--ai-cyan));}
+        .kpi-card:nth-child(3)::before{background:linear-gradient(90deg,#3b82f6,#60a5fa);}
+        .kpi-card:nth-child(4)::before{background:linear-gradient(90deg,#22c55e,#4ade80);}
+        .kpi-card:nth-child(5)::before{background:linear-gradient(90deg,#f59e0b,#fbbf24);}
+        .kpi-label{font-size:.7rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem;}
+        .kpi-value{font-size:1.6rem;font-weight:800;color:#fff;}
+        .kpi-value.gold{background:var(--gold-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .kpi-value.gradient{background:var(--ai-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .kpi-change{font-size:.65rem;font-weight:600;margin-top:.3rem;display:flex;align-items:center;gap:.25rem;}
+        .kpi-change.up{color:#22c55e;}
+        .kpi-change.down{color:var(--danger);}
+        .kpi-change.neutral{color:var(--text-secondary);}
+
+        /* ===== PANELS ===== */
+        .panel{background:var(--bg-card);border-radius:16px;padding:1.5rem;border:1px solid var(--border);margin-bottom:1.5rem;animation:fadeInUp .4s ease;}
+        .panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+        .panel-title{font-size:1rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:.5rem;}
+        .panel-title i{color:var(--gold);font-size:.9rem;}
+        .panel-subtitle{font-size:.7rem;color:var(--text-secondary);}
+
+        /* ===== GRID LAYOUTS ===== */
+        .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+        .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;}
+
+        /* ===== TABLE ===== */
+        .saas-table{width:100%;border-collapse:separate;border-spacing:0;}
+        .saas-table th{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);text-align:left;padding:.6rem .75rem;border-bottom:1px solid var(--border);}
+        .saas-table td{font-size:.78rem;padding:.65rem .75rem;border-bottom:1px solid rgba(255,255,255,.03);color:var(--text-primary);}
+        .saas-table tr:hover td{background:rgba(255,255,255,.02);}
+        .saas-table .company-name{font-weight:600;color:#fff;}
+        .plan-badge{font-size:.6rem;font-weight:700;padding:.2rem .5rem;border-radius:6px;text-transform:uppercase;}
+        .plan-enterprise{background:var(--gold-light);color:var(--gold);border:1px solid var(--border-gold);}
+        .plan-professional{background:rgba(139,92,246,.1);color:var(--ai-purple);border:1px solid rgba(139,92,246,.2);}
+        .plan-starter{background:rgba(99,102,241,.1);color:#818cf8;border:1px solid rgba(99,102,241,.2);}
+        .status-active{color:#22c55e;font-weight:600;font-size:.75rem;}
+        .status-trial{color:var(--warning);font-weight:600;font-size:.75rem;}
+        .status-risk{color:var(--danger);font-weight:600;font-size:.75rem;}
+        .trend-up{color:#22c55e;font-size:.75rem;}
+        .trend-down{color:var(--danger);font-size:.75rem;}
+        .trend-flat{color:var(--text-muted);font-size:.75rem;}
+        .usage-bar{width:80px;height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:.4rem;}
+        .usage-bar-fill{height:100%;border-radius:3px;}
+        .usage-high .usage-bar-fill{background:var(--gold-gradient);}
+        .usage-mid .usage-bar-fill{background:var(--ai-gradient);}
+        .usage-low .usage-bar-fill{background:linear-gradient(90deg,var(--warning),var(--danger));}
+
+        /* ===== CHART CONTAINERS ===== */
+        .chart-container{position:relative;height:280px;}
+
+        /* ===== ALERTS ===== */
+        .alert-item{display:flex;align-items:flex-start;gap:.75rem;padding:.75rem;border-radius:10px;margin-bottom:.6rem;border:1px solid;}
+        .alert-item.warning{background:rgba(245,158,11,.05);border-color:rgba(245,158,11,.15);}
+        .alert-item.danger{background:rgba(220,38,38,.05);border-color:rgba(220,38,38,.15);}
+        .alert-item.info{background:rgba(139,92,246,.05);border-color:rgba(139,92,246,.15);}
+        .alert-item.success{background:rgba(34,197,94,.05);border-color:rgba(34,197,94,.15);}
+        .alert-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;}
+        .alert-icon.warning{background:rgba(245,158,11,.1);color:var(--warning);}
+        .alert-icon.danger{background:rgba(220,38,38,.1);color:var(--danger);}
+        .alert-icon.info{background:rgba(139,92,246,.1);color:var(--ai-purple);}
+        .alert-icon.success{background:rgba(34,197,94,.1);color:#22c55e;}
+        .alert-content{flex:1;min-width:0;}
+        .alert-title{font-size:.78rem;font-weight:600;color:#fff;margin-bottom:.15rem;}
+        .alert-desc{font-size:.7rem;color:var(--text-secondary);line-height:1.4;}
+        .alert-time{font-size:.6rem;color:var(--text-muted);white-space:nowrap;}
+
+        /* ===== BILLING TABLE ===== */
+        .invoice-status{font-size:.6rem;font-weight:700;padding:.2rem .5rem;border-radius:6px;}
+        .invoice-paid{background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.2);}
+        .invoice-pending{background:rgba(245,158,11,.1);color:var(--warning);border:1px solid rgba(245,158,11,.2);}
+        .invoice-overdue{background:rgba(220,38,38,.1);color:var(--danger);border:1px solid rgba(220,38,38,.2);}
+
+        /* ===== SUPPORT TICKETS ===== */
+        .ticket-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;}
+        .ticket-card{background:rgba(255,255,255,.02);border-radius:10px;padding:.75rem;border:1px solid var(--border);text-align:center;}
+        .ticket-card-company{font-size:.7rem;font-weight:600;color:var(--text-primary);margin-bottom:.35rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .ticket-card-count{font-size:1.3rem;font-weight:800;color:#fff;}
+        .ticket-card-label{font-size:.6rem;color:var(--text-muted);margin-top:.15rem;}
+        .ticket-card.critical .ticket-card-count{color:var(--danger);}
+        .ticket-card.warning .ticket-card-count{color:var(--warning);}
+        .ticket-card.ok .ticket-card-count{color:#22c55e;}
+
+        /* ===== BUTTONS ===== */
+        .btn{padding:.5rem 1rem;border:none;border-radius:8px;font-family:inherit;font-size:.75rem;font-weight:600;cursor:pointer;transition:var(--transition);display:inline-flex;align-items:center;gap:.4rem;}
+        .btn-gold{background:var(--gold-gradient);color:#000;}
+        .btn-gold:hover{opacity:.9;}
+        .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text-secondary);}
+        .btn-outline:hover{border-color:var(--gold);color:var(--gold);}
+
+        /* ===== RESPONSIVE ===== */
+        @media(max-width:1400px){.kpi-grid{grid-template-columns:repeat(3,1fr);}.ticket-grid{grid-template-columns:repeat(3,1fr);}}
+        @media(max-width:1000px){.grid-2{grid-template-columns:1fr;}.kpi-grid{grid-template-columns:repeat(2,1fr);}}
+        @media(max-width:768px){.sidebar{display:none;}.main{margin-left:0;}.kpi-grid{grid-template-columns:1fr;}.ticket-grid{grid-template-columns:repeat(2,1fr);}}
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">
+            <div class="logo-icon"><i class="fas fa-brain"></i></div>
+            <span>SiniestrosAI <small class="ai-tag">IA</small></span>
+        </div>
+    </div>
+    <div class="sidebar-user">
+        <div class="user-info">
+            <div class="user-avatar">CEO</div>
+            <div>
+                <div class="user-name">CEO - SiniestrosAI</div>
+                <div class="user-role"><i class="fas fa-crown" style="font-size:.55rem;margin-right:.2rem;"></i> Administrador</div>
+            </div>
+        </div>
+    </div>
+    <ul class="nav-menu">
+        <li class="nav-label">Panel SaaS</li>
+        <li class="nav-item active"><i class="fas fa-chart-pie"></i><span>Dashboard</span></li>
+        <li class="nav-item" onclick="scrollTo('clients-section')"><i class="fas fa-building"></i><span>Clientes</span><span class="nav-badge">12</span></li>
+        <li class="nav-item" onclick="scrollTo('revenue-section')"><i class="fas fa-chart-line"></i><span>Ingresos</span></li>
+        <li class="nav-item" onclick="scrollTo('alerts-section')"><i class="fas fa-bell"></i><span>Alertas</span><span class="nav-badge" style="background:var(--danger);color:#fff;">5</span></li>
+        <li class="nav-item" onclick="scrollTo('billing-section')"><i class="fas fa-file-invoice-dollar"></i><span>Facturacion</span></li>
+        <li class="nav-item" onclick="scrollTo('projection-section')"><i class="fas fa-rocket"></i><span>Proyecciones</span></li>
+        <li class="nav-item" onclick="scrollTo('support-section')"><i class="fas fa-headset"></i><span>Soporte</span></li>
+        <li class="nav-separator"></li>
+        <li class="nav-label">Portales</li>
+        <li class="nav-item" onclick="window.open('index.html','_blank')"><i class="fas fa-brain"></i><span>App Principal</span><i class="fas fa-external-link-alt nav-ext"></i></li>
+        <li class="nav-item" onclick="window.open('portal-gestor.html','_blank')"><i class="fas fa-headset"></i><span>Portal Gestor</span><i class="fas fa-external-link-alt nav-ext"></i></li>
+        <li class="nav-item" onclick="window.open('portal-perito.html','_blank')"><i class="fas fa-user-tie"></i><span>Portal Perito</span><i class="fas fa-external-link-alt nav-ext"></i></li>
+        <li class="nav-item" onclick="window.open('portal-reparador.html','_blank')"><i class="fas fa-tools"></i><span>Portal Reparador</span><i class="fas fa-external-link-alt nav-ext"></i></li>
+        <li class="nav-item" onclick="window.open('portal-cliente.html','_blank')"><i class="fas fa-mobile-alt"></i><span>Portal Cliente</span><i class="fas fa-external-link-alt nav-ext"></i></li>
+    </ul>
+    <div class="sidebar-footer">
+        <div class="sidebar-footer-text">SiniestrosAI v3.2 &middot; Panel SaaS</div>
+    </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+    <!-- TOP HEADER -->
+    <div class="top-header">
+        <div class="header-left">
+            <h1><i class="fas fa-crown"></i> Panel SaaS - Administracion del Producto</h1>
+            <p>Vision ejecutiva del negocio &middot; Datos en tiempo real &middot; Marzo 2026</p>
+        </div>
+        <div class="header-right">
+            <span class="header-badge badge-live"><span class="live-dot"></span> Sistema operativo</span>
+            <span class="header-badge badge-gold"><i class="fas fa-crown"></i> CEO Access</span>
+        </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-label">MRR (Ingresos Mensuales Recurrentes)</div>
+            <div class="kpi-value gold">284.500 &euro;</div>
+            <div class="kpi-change up"><i class="fas fa-arrow-up"></i> +8,3% vs mes anterior</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">ARR (Ingresos Anuales Recurrentes)</div>
+            <div class="kpi-value gradient">3,4M &euro;</div>
+            <div class="kpi-change up"><i class="fas fa-arrow-up"></i> +42% interanual</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Clientes Activos</div>
+            <div class="kpi-value">12</div>
+            <div class="kpi-change up"><i class="fas fa-arrow-up"></i> +2 este trimestre</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Uptime SLA</div>
+            <div class="kpi-value" style="color:#22c55e;">98,7%</div>
+            <div class="kpi-change neutral"><i class="fas fa-minus"></i> Objetivo: 99,5%</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Churn Rate</div>
+            <div class="kpi-value" style="color:var(--warning);">2,1%</div>
+            <div class="kpi-change down"><i class="fas fa-arrow-down"></i> -0,4% vs anterior (mejora)</div>
+        </div>
+    </div>
+
+    <!-- CLIENTS TABLE -->
+    <div class="panel" id="clients-section">
+        <div class="panel-header">
+            <div class="panel-title"><i class="fas fa-building"></i> Cartera de Clientes</div>
+            <div class="panel-subtitle">12 aseguradoras &middot; Contrato medio: 23.700 &euro;/mes</div>
+        </div>
+        <div style="overflow-x:auto;">
+        <table class="saas-table">
+            <thead>
+                <tr>
+                    <th>Aseguradora</th>
+                    <th>Plan</th>
+                    <th>MRR</th>
+                    <th>Uso plataforma</th>
+                    <th>Siniestros/mes</th>
+                    <th>Tendencia</th>
+                    <th>Desde</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="company-name">Mapfre</td>
+                    <td><span class="plan-badge plan-enterprise">Enterprise</span></td>
+                    <td style="font-weight:700;color:var(--gold);">52.000 &euro;</td>
+                    <td><span class="usage-bar usage-high"><span class="usage-bar-fill" style="width:92%;"></span></span>92%</td>
+                    <td>4.320</td>
+                    <td><span class="trend-up"><i class="fas fa-arrow-up"></i> +12%</span></td>
+                    <td>Ene 2024</td>
+                    <td><span class="status-active"><i class="fas fa-circle" style="font-size:.35rem;vertical-align:middle;margin-right:.2rem;"></i>Activo</span></td>
+                </tr>
+                <tr>
+                    <td class="company-name">AXA Espana</td>
+                    <td><span class="plan-badge plan-enterprise">Enterprise</span></td>
+                    <td style="font-weight:700;color:var(--gold);">48.500 &euro;</td>
+                    <td><span class="usage-bar usage-high"><span class="usage-bar-fill" style="width:88%;"></span></span>88%</td>
+                    <td>3.890</td>
+                    <td><span class="trend-up"><i class="fas fa-arrow-up"></i> +8%</span></td>
+                    <td>Mar 2024</td>
+                    <td><span class="status-active"><i class="fas fa-circle" style="font-size:.35rem;vertical-align:middle;margin-right:.2rem;"></i>Activo</span></td>
+                </tr>
+                <tr>
+                    <td class="company-name">Allianz</td>
+                    <td><span class="plan-badge plan-enterprise">Enterprise</span></td>
+                    <td style="font-weight:700;color:var(--gold);">45.000 &euro;</td>
+                    <td><span class="usage-bar usage-high"><span class="usage-bar-fill" style="width:85%;"></span></span>85%</td>
+                    <td>3.650</td>
+                    <td><span class="trend-up"><i class="fas fa-arrow-up"></i> +5%</span></td>
+                    <td>Feb 2024</td>
+                    <td><span class="status-active"><i class="fas fa-circle" style="font-size:.35rem;vertical-align:middle;margin-right:.2rem;"></i>Activo</span></td>
+                </tr>
+                <tr>
+                    <td class="company-name">Generali</td>
+                    <td><span class="plan-badge plan-professional">Professional</span></td>
+                    <td style="font-weight:700;">32.000 &euro;</td>
+                    <td><span class="usage-bar usage-mid"><span class="usage-bar-fill" style="width:74%;"></span></span>74%</td>
+                    <td>2.780</td>
+                    <td><span class="trend-up"><i class="fas fa-arrow-up"></i> +3%</span></td>
+                    <td>Jun 2024</td>
+                    <td><span class="status-active"><i class="fas fa-circle" style="font-size:.35rem;vertical-align:middle;margin-right:.2rem;"></i>Activo</span></td>
+                </tr>
+                <tr>
+                    <td class="company-name">Zurich</td>
+                    <td><span class="plan-badge plan-professional">Professional</span></td>
+                    <td style="font-weight:700;">28.000 &euro;</td>
+                    <td><span class="usage-bar usage-mid"><span class="usage-bar-fill" style="width:68%;"></span></span>68%</td>
+                    <td>2.150</td>
+                    <td><span class="trend-flat"><i class="fas fa-minus"></i> 0%</span></td>
+                    <td>Sep 2024</td>
+                    <td><span class="status-active"><i class="fas fa-circle" style="font-size:.35rem;vertical-align:middle;margin-right:.2rem;"></i>Activo</span></td>
+                </tr>
+                <tr>
+                    <td class="company-name">Mutua Madrilena</td>
+                    <td><span class="plan-badge plan-professional">Professional</span></td>
+                    <td style="font-weight:700;">24.000 &euro;</td>
+                    <td><span class="usage-bar usage-mid"><span class="usage-bar-fill" style="width:71%;"></span></span>71%</td>
+                    <td>1.920</td>
+                    <td><span class="trend-up"><i class="fas fa-arrow-up"></i> +6%</span></td>
+                    <td>Nov 2024</td>
+                    <td><span class="status-active"><i class="fas fa-circle" style="font-size:.35rem;vertical-align:middle;margin-right:.2rem;"></i>Activo</span></td>
+                </tr>
+                <tr>
+                    <td class="company-name">Linea Directa</td>
+                    <td><span class="plan-badge plan-professional">Professional</span></td>
+                    <td style="font-weight:700;">18.500 &euro;</td>
+                    <td><span class="usage-bar usage-low"><span class="usage-bar-fill" style="width:42%;"></span></span>42%</td>
+                    <td>980</td>
+                    <td><span class="trend-down"><i class="fas fa-arrow-down"></i> -4%</span></td>
+                    <td>Ene 2025</td>
+                    <td><span class="status-risk"><i class="fas fa-exclamation-triangle" style="font-size:.55rem;margin-right:.2rem;"></i>Riesgo</span></td>
+                </tr>
+                <tr>
+                    <td class="company-name">Pelayo</td>
+                    <td><span class="plan-badge plan-starter">Starter</span></td>
+                    <td style="font-weight:700;">12.000 &euro;</td>
+                    <td><span class="usage-bar usage-mid"><span class="usage-bar-fill" style="width:65%;"></span></span>65%</td>
+                    <td>890</td>
+                    <td><span class="trend-up"><i class="fas fa-arrow-up"></i> +15%</span></td>
+                    <td>May 2025</td>
+                    <td><span class="status-active"><i class="fas fa-circle" style="font-size:.35rem;vertical-align:middle;margin-right:.2rem;"></i>Activo</span></td>
+                </tr>
+                <tr>
+                    <td class="company-name">Catalana Occidente</td>
+                    <td><span class="plan-badge plan-starter">Starter</span></td>
+                    <td style="font-weight:700;">9.500 &euro;</td>
+                    <td><span class="usage-bar usage-mid"><span class="usage-bar-fill" style="width:58%;"></span></span>58%</td>
+                    <td>720</td>
+                    <td><span class="trend-up"><i class="fas fa-arrow-up"></i> +9%</span></td>
+                    <td>Jul 2025</td>
+                    <td><span class="status-active"><i class="fas fa-circle" style="font-size:.35rem;vertical-align:middle;margin-right:.2rem;"></i>Activo</span></td>
+                </tr>
+                <tr>
+                    <td class="company-name">Santalucia</td>
+                    <td><span class="plan-badge plan-starter">Starter</span></td>
+                    <td style="font-weight:700;">7.500 &euro;</td>
+                    <td><span class="usage-bar usage-low"><span class="usage-bar-fill" style="width:35%;"></span></span>35%</td>
+                    <td>420</td>
+                    <td><span class="trend-down"><i class="fas fa-arrow-down"></i> -2%</span></td>
+                    <td>Oct 2025</td>
+                    <td><span class="status-trial"><i class="fas fa-clock" style="font-size:.55rem;margin-right:.2rem;"></i>Trial ext.</span></td>
+                </tr>
+                <tr>
+                    <td class="company-name">Reale Seguros</td>
+                    <td><span class="plan-badge plan-starter">Starter</span></td>
+                    <td style="font-weight:700;">4.500 &euro;</td>
+                    <td><span class="usage-bar usage-mid"><span class="usage-bar-fill" style="width:52%;"></span></span>52%</td>
+                    <td>310</td>
+                    <td><span class="trend-up"><i class="fas fa-arrow-up"></i> +22%</span></td>
+                    <td>Ene 2026</td>
+                    <td><span class="status-active"><i class="fas fa-circle" style="font-size:.35rem;vertical-align:middle;margin-right:.2rem;"></i>Activo</span></td>
+                </tr>
+                <tr>
+                    <td class="company-name">Liberty Seguros</td>
+                    <td><span class="plan-badge plan-starter">Starter</span></td>
+                    <td style="font-weight:700;">3.000 &euro;</td>
+                    <td><span class="usage-bar usage-low"><span class="usage-bar-fill" style="width:28%;"></span></span>28%</td>
+                    <td>180</td>
+                    <td><span class="trend-flat"><i class="fas fa-minus"></i> 0%</span></td>
+                    <td>Feb 2026</td>
+                    <td><span class="status-trial"><i class="fas fa-clock" style="font-size:.55rem;margin-right:.2rem;"></i>Trial</span></td>
+                </tr>
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+    <!-- CHARTS ROW -->
+    <div class="grid-2" id="revenue-section">
+        <!-- MRR CHART -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title"><i class="fas fa-chart-line"></i> Evolucion MRR</div>
+                <div class="panel-subtitle">Ultimos 12 meses</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="mrrChart"></canvas>
+            </div>
+        </div>
+
+        <!-- PROJECTION CHART -->
+        <div class="panel" id="projection-section">
+            <div class="panel-header">
+                <div class="panel-title"><i class="fas fa-rocket"></i> Proyeccion 12 Meses</div>
+                <div class="panel-subtitle">Escenarios conservador / base / optimista</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="projectionChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ALERTS -->
+    <div class="panel" id="alerts-section">
+        <div class="panel-header">
+            <div class="panel-title"><i class="fas fa-bell"></i> Alertas y Oportunidades</div>
+            <span class="header-badge" style="background:rgba(220,38,38,.1);color:var(--danger);border:1px solid rgba(220,38,38,.2);">5 pendientes</span>
+        </div>
+        <div class="alert-item danger">
+            <div class="alert-icon danger"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="alert-content">
+                <div class="alert-title">Linea Directa: Uso bajo persistente</div>
+                <div class="alert-desc">Uso de la plataforma al 42% y bajando. Solo procesan 980 siniestros/mes de los 3.000 contratados. Riesgo alto de churn. Programar reunion con su CTO.</div>
+            </div>
+            <div class="alert-time">Hace 2h</div>
+        </div>
+        <div class="alert-item warning">
+            <div class="alert-icon warning"><i class="fas fa-clock"></i></div>
+            <div class="alert-content">
+                <div class="alert-title">Santalucia: Renovacion en 45 dias</div>
+                <div class="alert-desc">Periodo de trial extendido finaliza el 03/05/2026. Uso al 35%. Necesitan demostracion de ROI para conversion a plan de pago.</div>
+            </div>
+            <div class="alert-time">Hace 5h</div>
+        </div>
+        <div class="alert-item warning">
+            <div class="alert-icon warning"><i class="fas fa-clock"></i></div>
+            <div class="alert-content">
+                <div class="alert-title">Liberty Seguros: Trial expira en 30 dias</div>
+                <div class="alert-desc">Periodo de prueba finaliza el 18/04/2026. Uso muy bajo (28%). Requiere onboarding personalizado urgente.</div>
+            </div>
+            <div class="alert-time">Hace 1d</div>
+        </div>
+        <div class="alert-item info">
+            <div class="alert-icon info"><i class="fas fa-arrow-up"></i></div>
+            <div class="alert-content">
+                <div class="alert-title">Oportunidad upsell: Pelayo</div>
+                <div class="alert-desc">Crecimiento del 15% mensual. Uso al 65% y subiendo. Candidato ideal para upgrade de Starter a Professional (+8.000 &euro;/mes).</div>
+            </div>
+            <div class="alert-time">Hace 1d</div>
+        </div>
+        <div class="alert-item info">
+            <div class="alert-icon info"><i class="fas fa-arrow-up"></i></div>
+            <div class="alert-content">
+                <div class="alert-title">Oportunidad upsell: Catalana Occidente</div>
+                <div class="alert-desc">Crecimiento sostenido del 9%. Interesados en modulos de IA antifraude y prediccion. Potencial upgrade a Professional.</div>
+            </div>
+            <div class="alert-time">Hace 2d</div>
+        </div>
+        <div class="alert-item success">
+            <div class="alert-icon success"><i class="fas fa-handshake"></i></div>
+            <div class="alert-content">
+                <div class="alert-title">Reale Seguros: Conversion exitosa</div>
+                <div class="alert-desc">Crecimiento del 22% en uso. Confirmada conversion a plan anual. Incremento de MRR previsto: +2.500 &euro;/mes a partir de abril.</div>
+            </div>
+            <div class="alert-time">Hace 3d</div>
+        </div>
+    </div>
+
+    <!-- BILLING -->
+    <div class="panel" id="billing-section">
+        <div class="panel-header">
+            <div class="panel-title"><i class="fas fa-file-invoice-dollar"></i> Facturacion Reciente</div>
+            <button class="btn btn-outline"><i class="fas fa-download"></i> Exportar</button>
+        </div>
+        <table class="saas-table">
+            <thead>
+                <tr>
+                    <th>Factura</th>
+                    <th>Cliente</th>
+                    <th>Concepto</th>
+                    <th>Importe</th>
+                    <th>Fecha</th>
+                    <th>Vencimiento</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="font-weight:600;">FAC-2026-0341</td>
+                    <td>Mapfre</td>
+                    <td>Licencia Enterprise - Marzo 2026</td>
+                    <td style="font-weight:700;">52.000 &euro;</td>
+                    <td>01/03/2026</td>
+                    <td>31/03/2026</td>
+                    <td><span class="invoice-status invoice-paid">Pagada</span></td>
+                </tr>
+                <tr>
+                    <td style="font-weight:600;">FAC-2026-0342</td>
+                    <td>AXA Espana</td>
+                    <td>Licencia Enterprise - Marzo 2026</td>
+                    <td style="font-weight:700;">48.500 &euro;</td>
+                    <td>01/03/2026</td>
+                    <td>31/03/2026</td>
+                    <td><span class="invoice-status invoice-paid">Pagada</span></td>
+                </tr>
+                <tr>
+                    <td style="font-weight:600;">FAC-2026-0343</td>
+                    <td>Allianz</td>
+                    <td>Licencia Enterprise - Marzo 2026</td>
+                    <td style="font-weight:700;">45.000 &euro;</td>
+                    <td>01/03/2026</td>
+                    <td>31/03/2026</td>
+                    <td><span class="invoice-status invoice-paid">Pagada</span></td>
+                </tr>
+                <tr>
+                    <td style="font-weight:600;">FAC-2026-0344</td>
+                    <td>Generali</td>
+                    <td>Licencia Professional - Marzo 2026</td>
+                    <td style="font-weight:700;">32.000 &euro;</td>
+                    <td>01/03/2026</td>
+                    <td>31/03/2026</td>
+                    <td><span class="invoice-status invoice-pending">Pendiente</span></td>
+                </tr>
+                <tr>
+                    <td style="font-weight:600;">FAC-2026-0345</td>
+                    <td>Zurich</td>
+                    <td>Licencia Professional - Marzo 2026</td>
+                    <td style="font-weight:700;">28.000 &euro;</td>
+                    <td>01/03/2026</td>
+                    <td>31/03/2026</td>
+                    <td><span class="invoice-status invoice-pending">Pendiente</span></td>
+                </tr>
+                <tr>
+                    <td style="font-weight:600;">FAC-2026-0346</td>
+                    <td>Mutua Madrilena</td>
+                    <td>Licencia Professional - Marzo 2026</td>
+                    <td style="font-weight:700;">24.000 &euro;</td>
+                    <td>01/03/2026</td>
+                    <td>31/03/2026</td>
+                    <td><span class="invoice-status invoice-paid">Pagada</span></td>
+                </tr>
+                <tr>
+                    <td style="font-weight:600;">FAC-2026-0330</td>
+                    <td>Linea Directa</td>
+                    <td>Licencia Professional - Febrero 2026</td>
+                    <td style="font-weight:700;">18.500 &euro;</td>
+                    <td>01/02/2026</td>
+                    <td>28/02/2026</td>
+                    <td><span class="invoice-status invoice-overdue">Vencida</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- SUPPORT TICKETS -->
+    <div class="panel" id="support-section">
+        <div class="panel-header">
+            <div class="panel-title"><i class="fas fa-headset"></i> Tickets de Soporte por Cliente</div>
+            <div class="panel-subtitle">Marzo 2026 &middot; Total: 47 tickets &middot; Tiempo medio resolucion: 4,2h</div>
+        </div>
+        <div class="ticket-grid">
+            <div class="ticket-card ok">
+                <div class="ticket-card-company">Mapfre</div>
+                <div class="ticket-card-count">3</div>
+                <div class="ticket-card-label">tickets abiertos</div>
+            </div>
+            <div class="ticket-card ok">
+                <div class="ticket-card-company">AXA Espana</div>
+                <div class="ticket-card-count">5</div>
+                <div class="ticket-card-label">tickets abiertos</div>
+            </div>
+            <div class="ticket-card ok">
+                <div class="ticket-card-company">Allianz</div>
+                <div class="ticket-card-count">2</div>
+                <div class="ticket-card-label">tickets abiertos</div>
+            </div>
+            <div class="ticket-card warning">
+                <div class="ticket-card-company">Generali</div>
+                <div class="ticket-card-count">8</div>
+                <div class="ticket-card-label">tickets abiertos</div>
+            </div>
+            <div class="ticket-card ok">
+                <div class="ticket-card-company">Zurich</div>
+                <div class="ticket-card-count">4</div>
+                <div class="ticket-card-label">tickets abiertos</div>
+            </div>
+            <div class="ticket-card ok">
+                <div class="ticket-card-company">Mutua Madrilena</div>
+                <div class="ticket-card-count">3</div>
+                <div class="ticket-card-label">tickets abiertos</div>
+            </div>
+            <div class="ticket-card critical">
+                <div class="ticket-card-company">Linea Directa</div>
+                <div class="ticket-card-count">12</div>
+                <div class="ticket-card-label">tickets abiertos</div>
+            </div>
+            <div class="ticket-card ok">
+                <div class="ticket-card-company">Pelayo</div>
+                <div class="ticket-card-count">2</div>
+                <div class="ticket-card-label">tickets abiertos</div>
+            </div>
+            <div class="ticket-card ok">
+                <div class="ticket-card-company">Catalana Occ.</div>
+                <div class="ticket-card-count">1</div>
+                <div class="ticket-card-label">tickets abiertos</div>
+            </div>
+            <div class="ticket-card warning">
+                <div class="ticket-card-company">Santalucia</div>
+                <div class="ticket-card-count">5</div>
+                <div class="ticket-card-label">tickets abiertos</div>
+            </div>
+            <div class="ticket-card ok">
+                <div class="ticket-card-company">Reale Seguros</div>
+                <div class="ticket-card-count">1</div>
+                <div class="ticket-card-label">tickets abiertos</div>
+            </div>
+            <div class="ticket-card ok">
+                <div class="ticket-card-company">Liberty Seguros</div>
+                <div class="ticket-card-count">1</div>
+                <div class="ticket-card-label">tickets abiertos</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Smooth scroll
+    function scrollTo(id) {
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Chart.js defaults for dark theme
+    Chart.defaults.color = '#8888a0';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.04)';
+
+    // MRR Chart
+    const mrrCtx = document.getElementById('mrrChart').getContext('2d');
+    const mrrGradient = mrrCtx.createLinearGradient(0, 0, 0, 280);
+    mrrGradient.addColorStop(0, 'rgba(212,160,23,0.3)');
+    mrrGradient.addColorStop(1, 'rgba(212,160,23,0)');
+
+    new Chart(mrrCtx, {
+        type: 'line',
+        data: {
+            labels: ['Abr 25','May 25','Jun 25','Jul 25','Ago 25','Sep 25','Oct 25','Nov 25','Dic 25','Ene 26','Feb 26','Mar 26'],
+            datasets: [{
+                label: 'MRR (euros)',
+                data: [145000,158000,172000,185000,195000,208000,222000,238000,248000,262000,272000,284500],
+                borderColor: '#d4a017',
+                backgroundColor: mrrGradient,
+                borderWidth: 2.5,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#d4a017',
+                pointBorderColor: '#0a0a12',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1a1a2e',
+                    titleColor: '#fff',
+                    bodyColor: '#d4a017',
+                    borderColor: 'rgba(212,160,23,.3)',
+                    borderWidth: 1,
+                    padding: 12,
+                    callbacks: {
+                        label: ctx => ctx.parsed.y.toLocaleString('es-ES') + ' \u20ac'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    grid: { color: 'rgba(255,255,255,0.03)' },
+                    ticks: { callback: v => (v/1000).toFixed(0) + 'K \u20ac' }
+                },
+                x: {
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+
+    // Projection Chart
+    const projCtx = document.getElementById('projectionChart').getContext('2d');
+
+    const baseData = [284500,295000,308000,320000,335000,348000,362000,378000,395000,410000,428000,445000];
+    const optimData = [284500,302000,322000,345000,370000,398000,428000,460000,495000,532000,572000,615000];
+    const conservData = [284500,288000,292000,296000,300000,305000,310000,316000,322000,328000,335000,342000];
+
+    const projGradient = projCtx.createLinearGradient(0, 0, 0, 280);
+    projGradient.addColorStop(0, 'rgba(139,92,246,0.15)');
+    projGradient.addColorStop(1, 'rgba(139,92,246,0)');
+
+    new Chart(projCtx, {
+        type: 'line',
+        data: {
+            labels: ['Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic','Ene 27','Feb','Mar'],
+            datasets: [
+                {
+                    label: 'Optimista',
+                    data: optimData,
+                    borderColor: '#22c55e',
+                    borderWidth: 1.5,
+                    borderDash: [5,3],
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 2
+                },
+                {
+                    label: 'Base',
+                    data: baseData,
+                    borderColor: '#8b5cf6',
+                    backgroundColor: projGradient,
+                    borderWidth: 2.5,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#8b5cf6'
+                },
+                {
+                    label: 'Conservador',
+                    data: conservData,
+                    borderColor: '#f59e0b',
+                    borderWidth: 1.5,
+                    borderDash: [5,3],
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { usePointStyle: true, pointStyle: 'line', padding: 16, font: { size: 11 } }
+                },
+                tooltip: {
+                    backgroundColor: '#1a1a2e',
+                    titleColor: '#fff',
+                    borderColor: 'rgba(139,92,246,.3)',
+                    borderWidth: 1,
+                    padding: 12,
+                    callbacks: {
+                        label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString('es-ES') + ' \u20ac'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    grid: { color: 'rgba(255,255,255,0.03)' },
+                    ticks: { callback: v => (v/1000).toFixed(0) + 'K \u20ac' }
+                },
+                x: {
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html>

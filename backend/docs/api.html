@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiniestrosAI API Documentation v1</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#0f1117;--bg2:#161822;--bg3:#1e2030;--bg4:#252840;
+--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+--blue:#3b82f6;--purple:#8b5cf6;--cyan:#06b6d4;
+--green:#10b981;--orange:#f59e0b;--red:#ef4444;
+--border:#2a2d42;
+}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;display:flex;min-height:100vh}
+/* Sidebar */
+.sidebar{width:280px;background:var(--bg2);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:10}
+.sidebar-header{padding:24px 20px;border-bottom:1px solid var(--border)}
+.sidebar-header h1{font-size:18px;font-weight:700;background:linear-gradient(135deg,var(--blue),var(--purple),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sidebar-header .version{font-size:11px;color:var(--text3);margin-top:4px}
+.sidebar-search{padding:12px 16px}
+.sidebar-search input{width:100%;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;outline:none}
+.sidebar-search input:focus{border-color:var(--blue)}
+.sidebar-search input::placeholder{color:var(--text3)}
+.nav-group{padding:8px 0}
+.nav-group-title{padding:8px 20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text3)}
+.nav-item{display:flex;align-items:center;gap:8px;padding:6px 20px;font-size:13px;color:var(--text2);cursor:pointer;transition:all .15s}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{color:var(--blue);background:rgba(59,130,246,.08);border-right:2px solid var(--blue)}
+.method-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.method-dot.get{background:var(--green)}.method-dot.post{background:var(--blue)}.method-dot.put{background:var(--orange)}.method-dot.delete{background:var(--red)}
+/* Main */
+.main{margin-left:280px;flex:1;padding:32px 48px;max-width:960px}
+.section{margin-bottom:48px;scroll-margin-top:20px}
+.section h2{font-size:24px;font-weight:700;margin-bottom:8px;color:var(--text)}
+.section h3{font-size:18px;font-weight:600;margin:32px 0 12px;color:var(--text)}
+.section p,.section li{color:var(--text2);font-size:14px}
+.section ul{padding-left:20px;margin:8px 0}
+.section ul li{margin:4px 0}
+/* Endpoint card */
+.endpoint{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin:20px 0;overflow:hidden}
+.endpoint-header{display:flex;align-items:center;gap:12px;padding:16px 20px;cursor:pointer;user-select:none}
+.endpoint-header:hover{background:var(--bg3)}
+.method-badge{padding:4px 10px;border-radius:4px;font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;color:#fff;text-transform:uppercase;flex-shrink:0}
+.method-badge.get{background:var(--green)}.method-badge.post{background:var(--blue)}.method-badge.put{background:var(--orange)}.method-badge.delete{background:var(--red)}
+.endpoint-path{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--text)}
+.endpoint-desc{font-size:12px;color:var(--text3);margin-left:auto;text-align:right;max-width:250px}
+.endpoint-body{display:none;padding:0 20px 20px;border-top:1px solid var(--border)}
+.endpoint-body.open{display:block}
+.endpoint-body .info-row{display:flex;gap:20px;margin:12px 0;flex-wrap:wrap}
+.endpoint-body .info-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:4px}
+.auth-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:500}
+.auth-badge.required{background:rgba(239,68,68,.15);color:var(--red)}
+.auth-badge.optional{background:rgba(245,158,11,.15);color:var(--orange)}
+.auth-badge.none{background:rgba(16,185,129,.15);color:var(--green)}
+.status-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.status-code{padding:2px 8px;border-radius:4px;font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:600}
+.status-code.s2{background:rgba(16,185,129,.15);color:var(--green)}
+.status-code.s4{background:rgba(239,68,68,.15);color:var(--red)}
+.status-code.s5{background:rgba(139,92,246,.15);color:var(--purple)}
+/* Code blocks */
+.code-block{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px;margin:8px 0;overflow-x:auto;position:relative}
+.code-block pre{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;color:var(--text2);white-space:pre}
+.code-block .label{position:absolute;top:6px;right:8px;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase}
+.code-tabs{display:flex;gap:0;margin-top:12px}
+.code-tab{padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);color:var(--text3);background:var(--bg)}
+.code-tab:first-child{border-radius:6px 0 0 0}
+.code-tab:last-child{border-radius:0 6px 0 0}
+.code-tab.active{background:var(--bg2);color:var(--text);border-bottom-color:var(--bg2)}
+.curl-block{background:var(--bg);border:1px solid var(--border);border-radius:0 6px 6px 6px;padding:12px;margin-top:-1px}
+.curl-block pre{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cyan);white-space:pre-wrap;word-break:break-all}
+/* Info boxes */
+.info-box{padding:14px 16px;border-radius:8px;margin:16px 0;font-size:13px;border-left:3px solid}
+.info-box.blue{background:rgba(59,130,246,.08);border-color:var(--blue);color:var(--blue)}
+.info-box.orange{background:rgba(245,158,11,.08);border-color:var(--orange);color:var(--orange)}
+.info-box.green{background:rgba(16,185,129,.08);border-color:var(--green);color:var(--green)}
+.info-box.red{background:rgba(239,68,68,.08);border-color:var(--red);color:var(--red)}
+.info-box strong{font-weight:600}
+/* Table */
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th{text-align:left;padding:8px 12px;background:var(--bg3);color:var(--text3);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text2)}
+td code{background:var(--bg3);padding:1px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan)}
+/* Responsive */
+@media(max-width:900px){
+.sidebar{display:none}
+.main{margin-left:0;padding:20px}
+}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h1>SiniestrosAI API</h1>
+    <div class="version">v1.0.0 &middot; REST API</div>
+  </div>
+  <div class="sidebar-search">
+    <input type="text" id="searchInput" placeholder="Buscar endpoint..." autocomplete="off">
+  </div>
+  <div id="navContainer">
+    <div class="nav-group">
+      <div class="nav-group-title">General</div>
+      <div class="nav-item" data-target="overview">Introduccion</div>
+      <div class="nav-item" data-target="auth-info">Autenticacion</div>
+      <div class="nav-item" data-target="rate-limit">Rate Limiting</div>
+      <div class="nav-item" data-target="versioning">Versionado</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Auth</div>
+      <div class="nav-item" data-target="ep-auth-login"><span class="method-dot post"></span>Login</div>
+      <div class="nav-item" data-target="ep-auth-registro"><span class="method-dot post"></span>Registro</div>
+      <div class="nav-item" data-target="ep-auth-perfil"><span class="method-dot get"></span>Perfil</div>
+      <div class="nav-item" data-target="ep-auth-password"><span class="method-dot put"></span>Cambiar Password</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Siniestros</div>
+      <div class="nav-item" data-target="ep-sin-listar"><span class="method-dot get"></span>Listar</div>
+      <div class="nav-item" data-target="ep-sin-buscar"><span class="method-dot get"></span>Buscar</div>
+      <div class="nav-item" data-target="ep-sin-obtener"><span class="method-dot get"></span>Obtener</div>
+      <div class="nav-item" data-target="ep-sin-crear"><span class="method-dot post"></span>Crear</div>
+      <div class="nav-item" data-target="ep-sin-actualizar"><span class="method-dot put"></span>Actualizar</div>
+      <div class="nav-item" data-target="ep-sin-eliminar"><span class="method-dot delete"></span>Eliminar</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Clientes</div>
+      <div class="nav-item" data-target="ep-cli-listar"><span class="method-dot get"></span>Listar</div>
+      <div class="nav-item" data-target="ep-cli-obtener"><span class="method-dot get"></span>Obtener</div>
+      <div class="nav-item" data-target="ep-cli-crear"><span class="method-dot post"></span>Crear</div>
+      <div class="nav-item" data-target="ep-cli-actualizar"><span class="method-dot put"></span>Actualizar</div>
+      <div class="nav-item" data-target="ep-cli-eliminar"><span class="method-dot delete"></span>Eliminar</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Metricas</div>
+      <div class="nav-item" data-target="ep-met-dashboard"><span class="method-dot get"></span>Dashboard</div>
+      <div class="nav-item" data-target="ep-met-tipo"><span class="method-dot get"></span>Por Tipo</div>
+      <div class="nav-item" data-target="ep-met-estado"><span class="method-dot get"></span>Por Estado</div>
+      <div class="nav-item" data-target="ep-met-zona"><span class="method-dot get"></span>Por Zona</div>
+      <div class="nav-item" data-target="ep-met-tendencia"><span class="method-dot get"></span>Tendencia</div>
+      <div class="nav-item" data-target="ep-met-peritos"><span class="method-dot get"></span>Ranking Peritos</div>
+      <div class="nav-item" data-target="ep-met-ia"><span class="method-dot get"></span>Rendimiento IA</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Agentes</div>
+      <div class="nav-item" data-target="ep-agt-listar"><span class="method-dot get"></span>Listar</div>
+      <div class="nav-item" data-target="ep-agt-obtener"><span class="method-dot get"></span>Obtener</div>
+      <div class="nav-item" data-target="ep-agt-crear"><span class="method-dot post"></span>Crear</div>
+      <div class="nav-item" data-target="ep-agt-actualizar"><span class="method-dot put"></span>Actualizar</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Fraude</div>
+      <div class="nav-item" data-target="ep-fraude-analizar"><span class="method-dot post"></span>Analizar</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Agente IA</div>
+      <div class="nav-item" data-target="ep-ia-clasificar"><span class="method-dot post"></span>Clasificar</div>
+      <div class="nav-item" data-target="ep-ia-consultar"><span class="method-dot post"></span>Consultar</div>
+      <div class="nav-item" data-target="ep-ia-resumen"><span class="method-dot get"></span>Resumen</div>
+      <div class="nav-item" data-target="ep-ia-chat"><span class="method-dot post"></span>Chat</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Upload</div>
+      <div class="nav-item" data-target="ep-upload"><span class="method-dot post"></span>Subir Archivos</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Webhooks</div>
+      <div class="nav-item" data-target="ep-wh-whatsapp"><span class="method-dot post"></span>WhatsApp</div>
+      <div class="nav-item" data-target="ep-wh-voz"><span class="method-dot post"></span>Voz Entrante</div>
+      <div class="nav-item" data-target="ep-wh-voz-input"><span class="method-dot post"></span>Procesar Input</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Admin</div>
+      <div class="nav-item" data-target="ep-adm-users"><span class="method-dot get"></span>Listar Usuarios</div>
+      <div class="nav-item" data-target="ep-adm-user-toggle"><span class="method-dot put"></span>Activar/Desactivar</div>
+      <div class="nav-item" data-target="ep-adm-stats"><span class="method-dot get"></span>Estadisticas</div>
+      <div class="nav-item" data-target="ep-adm-logs"><span class="method-dot get"></span>Logs</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Health</div>
+      <div class="nav-item" data-target="ep-health"><span class="method-dot get"></span>Health Check</div>
+      <div class="nav-item" data-target="ep-health-detail"><span class="method-dot get"></span>Health Detallado</div>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="main" id="mainContent">
+
+<!-- Overview -->
+<div class="section" id="overview">
+  <h2>SiniestrosAI API</h2>
+  <p>API REST completa para la plataforma de gestion inteligente de siniestros con agentes IA.</p>
+  <div class="info-box blue">
+    <strong>Base URL:</strong> <code>http://localhost:3001/api</code>
+  </div>
+  <h3>Caracteristicas principales</h3>
+  <ul>
+    <li>Gestion completa de siniestros (CRUD)</li>
+    <li>Sistema anti-fraude con scoring multidimensional</li>
+    <li>Agente IA para clasificacion, resumen y chat</li>
+    <li>Metricas y analytics en tiempo real</li>
+    <li>Integracion WhatsApp y voz via Twilio</li>
+    <li>WebSockets para actualizaciones en tiempo real</li>
+    <li>Gestion de clientes, peritos y agentes</li>
+  </ul>
+  <h3>Formato de respuesta</h3>
+  <p>Todas las respuestas son JSON. Los errores devuelven <code>{"error": "mensaje"}</code>.</p>
+</div>
+
+<!-- Auth Info -->
+<div class="section" id="auth-info">
+  <h2>Autenticacion</h2>
+  <p>La API utiliza JWT (JSON Web Tokens) para autenticacion. Existen tres niveles de acceso:</p>
+  <table>
+    <tr><th>Nivel</th><th>Descripcion</th><th>Ejemplo</th></tr>
+    <tr><td><span class="auth-badge none">Publico</span></td><td>No requiere autenticacion</td><td>Health check</td></tr>
+    <tr><td><span class="auth-badge optional">Opcional</span></td><td>Token opcional, funciona sin el</td><td>Listar siniestros</td></tr>
+    <tr><td><span class="auth-badge required">Requerido</span></td><td>Token obligatorio en header</td><td>Eliminar siniestro</td></tr>
+  </table>
+  <h3>Obtener Token</h3>
+  <p>Realiza login en <code>POST /api/auth/login</code> para obtener un JWT.</p>
+  <h3>Usar Token</h3>
+  <div class="code-block"><pre>Authorization: Bearer eyJhbGciOiJIUzI1NiIs...</pre></div>
+  <h3>API Keys</h3>
+  <p>Para integraciones servidor-a-servidor, se puede usar una API Key en lugar de JWT:</p>
+  <div class="code-block"><pre>X-API-Key: sai_live_xxxxxxxxxxxxxxxxxxxx</pre></div>
+  <div class="info-box orange"><strong>Importante:</strong> Las API Keys se generan desde el panel de administracion y tienen los mismos permisos que el usuario que las crea.</div>
+  <h3>Roles</h3>
+  <table>
+    <tr><th>Rol</th><th>Permisos</th></tr>
+    <tr><td><code>admin</code></td><td>Acceso total: crear, leer, actualizar, eliminar todo</td></tr>
+    <tr><td><code>gestor</code></td><td>CRUD siniestros y clientes, no puede eliminar ni acceder a admin</td></tr>
+    <tr><td><code>perito</code></td><td>Ver y actualizar siniestros asignados</td></tr>
+  </table>
+</div>
+
+<!-- Rate Limiting -->
+<div class="section" id="rate-limit">
+  <h2>Rate Limiting</h2>
+  <p>La API implementa limites de tasa para proteger contra abuso:</p>
+  <table>
+    <tr><th>Tipo</th><th>Limite</th><th>Ventana</th></tr>
+    <tr><td>General</td><td>100 requests</td><td>15 minutos</td></tr>
+    <tr><td>Auth (login)</td><td>10 requests</td><td>15 minutos</td></tr>
+    <tr><td>Upload</td><td>20 requests</td><td>15 minutos</td></tr>
+    <tr><td>IA endpoints</td><td>30 requests</td><td>15 minutos</td></tr>
+  </table>
+  <p>Los headers de respuesta incluyen:</p>
+  <div class="code-block"><pre>X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1703001200</pre></div>
+  <div class="info-box red"><strong>429 Too Many Requests:</strong> Se devuelve cuando se excede el limite. Espera el tiempo indicado en <code>Retry-After</code>.</div>
+</div>
+
+<!-- Versioning -->
+<div class="section" id="versioning">
+  <h2>Versionado</h2>
+  <table>
+    <tr><th>Version</th><th>Estado</th><th>Base URL</th></tr>
+    <tr><td><code>v1</code></td><td><span class="auth-badge none">Actual</span></td><td><code>/api/</code></td></tr>
+    <tr><td><code>v2</code></td><td><span class="auth-badge optional">Planificada</span></td><td><code>/api/v2/</code></td></tr>
+  </table>
+  <h3>Cambios planificados v2</h3>
+  <ul>
+    <li>GraphQL support</li>
+    <li>Paginacion cursor-based</li>
+    <li>Webhooks salientes configurables</li>
+    <li>API Key scopes granulares</li>
+    <li>Batch operations</li>
+  </ul>
+</div>
+
+<!-- ==================== AUTH ENDPOINTS ==================== -->
+
+<div class="section" id="ep-auth-login">
+  <h2>Auth</h2>
+  <div class="endpoint" data-search="login autenticacion">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge post">POST</span>
+      <span class="endpoint-path">/api/auth/login</span>
+      <span class="endpoint-desc">Iniciar sesion y obtener JWT</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge none">Publico</span></div></div>
+      <div class="info-label">Request Body</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "email": "ana@siniestrosai.com",
+  "password": "admin123"
+}</pre></div>
+      <div class="info-label">Response 200</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "usuario": {
+    "id": "uuid-001",
+    "nombre": "Ana Martinez",
+    "email": "ana@siniestrosai.com",
+    "rol": "admin"
+  }
+}</pre></div>
+      <div class="info-label">Status Codes</div>
+      <div class="status-list">
+        <span class="status-code s2">200 OK</span>
+        <span class="status-code s4">400 Bad Request</span>
+        <span class="status-code s4">401 Unauthorized</span>
+      </div>
+      <div class="info-label" style="margin-top:12px">cURL</div>
+      <div class="curl-block"><pre>curl -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"ana@siniestrosai.com","password":"admin123"}'</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-auth-registro">
+  <div class="endpoint" data-search="registro crear cuenta usuario">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge post">POST</span>
+      <span class="endpoint-path">/api/auth/registro</span>
+      <span class="endpoint-desc">Registrar nuevo usuario</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge none">Publico</span></div></div>
+      <div class="info-label">Request Body</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "nombre": "Pedro Lopez",
+  "email": "pedro@email.com",
+  "password": "securepass123",
+  "rol": "gestor"
+}</pre></div>
+      <div class="info-label">Response 201</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "token": "eyJhbGci...",
+  "usuario": {
+    "id": "uuid-new",
+    "nombre": "Pedro Lopez",
+    "email": "pedro@email.com",
+    "rol": "gestor"
+  }
+}</pre></div>
+      <div class="status-list">
+        <span class="status-code s2">201 Created</span>
+        <span class="status-code s4">400 Bad Request</span>
+        <span class="status-code s4">409 Conflict</span>
+      </div>
+      <div class="info-label" style="margin-top:12px">cURL</div>
+      <div class="curl-block"><pre>curl -X POST http://localhost:3001/api/auth/registro \
+  -H "Content-Type: application/json" \
+  -d '{"nombre":"Pedro Lopez","email":"pedro@email.com","password":"securepass123"}'</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-auth-perfil">
+  <div class="endpoint" data-search="perfil usuario me">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/auth/perfil</span>
+      <span class="endpoint-desc">Obtener perfil del usuario autenticado</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge required">Token requerido</span></div></div>
+      <div class="info-label">Response 200</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "id": "uuid-001",
+  "nombre": "Ana Martinez",
+  "email": "ana@siniestrosai.com",
+  "rol": "admin",
+  "creado_en": "2024-12-01T10:00:00.000Z",
+  "ultimo_login": "2024-12-18T09:15:00.000Z"
+}</pre></div>
+      <div class="status-list">
+        <span class="status-code s2">200 OK</span>
+        <span class="status-code s4">401 Unauthorized</span>
+        <span class="status-code s4">404 Not Found</span>
+      </div>
+      <div class="curl-block"><pre>curl http://localhost:3001/api/auth/perfil \
+  -H "Authorization: Bearer YOUR_TOKEN"</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-auth-password">
+  <div class="endpoint" data-search="cambiar password contrasena">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge put">PUT</span>
+      <span class="endpoint-path">/api/auth/password</span>
+      <span class="endpoint-desc">Cambiar contrasena</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge required">Token requerido</span></div></div>
+      <div class="info-label">Request Body</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "password_actual": "admin123",
+  "password_nuevo": "newSecurePass456"
+}</pre></div>
+      <div class="info-label">Response 200</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "mensaje": "Password actualizado correctamente"
+}</pre></div>
+      <div class="status-list">
+        <span class="status-code s2">200 OK</span>
+        <span class="status-code s4">400 Bad Request</span>
+        <span class="status-code s4">401 Unauthorized</span>
+      </div>
+      <div class="curl-block"><pre>curl -X PUT http://localhost:3001/api/auth/password \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"password_actual":"admin123","password_nuevo":"newpass"}'</pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SINIESTROS ENDPOINTS ==================== -->
+
+<div class="section" id="ep-sin-listar">
+  <h2>Siniestros</h2>
+  <div class="endpoint" data-search="listar siniestros expedientes filtros">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/siniestros</span>
+      <span class="endpoint-desc">Listar siniestros con filtros</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="info-label">Query Parameters</div>
+      <table>
+        <tr><th>Param</th><th>Tipo</th><th>Descripcion</th></tr>
+        <tr><td><code>estado</code></td><td>string</td><td>Abierto, En gestion, Perito asignado, Resuelto, Cerrado, Fraude</td></tr>
+        <tr><td><code>tipo</code></td><td>string</td><td>coche, hogar, salud, robo, otro</td></tr>
+        <tr><td><code>urgencia_min</code></td><td>int</td><td>Urgencia minima (1-10)</td></tr>
+        <tr><td><code>orden</code></td><td>string</td><td>fecha-asc, urgencia-desc, fraude-desc</td></tr>
+        <tr><td><code>limite</code></td><td>int</td><td>Resultados por pagina (default 50)</td></tr>
+        <tr><td><code>offset</code></td><td>int</td><td>Offset para paginacion</td></tr>
+      </table>
+      <div class="info-label">Response 200</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "siniestros": [
+    {
+      "id": "SIN-001",
+      "expediente": "EXP-2024-0891",
+      "cliente_id": "CLI-001",
+      "cliente_nombre": "Maria Garcia Lopez",
+      "tipo": "coche",
+      "estado": "Abierto",
+      "urgencia": 9,
+      "score_fraude": 12,
+      "zona": "Madrid",
+      "fecha_creacion": "2024-12-18T09:15:00.000Z"
+    }
+  ],
+  "total": 15
+}</pre></div>
+      <div class="curl-block"><pre>curl "http://localhost:3001/api/siniestros?estado=Abierto&tipo=coche&limite=10"</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-sin-buscar">
+  <div class="endpoint" data-search="buscar search siniestros">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/siniestros/buscar</span>
+      <span class="endpoint-desc">Buscar siniestros por texto</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="info-label">Query Parameters</div>
+      <table>
+        <tr><th>Param</th><th>Tipo</th><th>Descripcion</th></tr>
+        <tr><td><code>q</code></td><td>string</td><td>Termino de busqueda (min 2 chars). Busca en expediente, cliente, descripcion, poliza.</td></tr>
+      </table>
+      <div class="info-label">Response 200</div>
+      <div class="code-block"><span class="label">JSON</span><pre>[
+  {
+    "id": "SIN-001",
+    "expediente": "EXP-2024-0891",
+    "cliente_nombre": "Maria Garcia Lopez",
+    "descripcion": "Colision frontal en M-30...",
+    "estado": "Abierto"
+  }
+]</pre></div>
+      <div class="status-list">
+        <span class="status-code s2">200 OK</span>
+        <span class="status-code s4">400 q menor a 2 chars</span>
+      </div>
+      <div class="curl-block"><pre>curl "http://localhost:3001/api/siniestros/buscar?q=colision"</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-sin-obtener">
+  <div class="endpoint" data-search="obtener detalle siniestro expediente">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/siniestros/:id</span>
+      <span class="endpoint-desc">Obtener detalle de siniestro</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <p style="font-size:13px;color:var(--text2);margin:8px 0">Acepta ID del siniestro o numero de expediente.</p>
+      <div class="info-label">Response 200</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "id": "SIN-001",
+  "expediente": "EXP-2024-0891",
+  "cliente_nombre": "Maria Garcia Lopez",
+  "cliente_telefono": "612345678",
+  "cliente_email": "maria.garcia@email.com",
+  "tipo": "coche",
+  "descripcion": "Colision frontal en M-30...",
+  "estado": "Abierto",
+  "urgencia": 9,
+  "score_fraude": 12,
+  "ia_confianza": 94,
+  "timeline": [...],
+  "documentos": [...],
+  "llamadas": [...],
+  "mensajes": [...]
+}</pre></div>
+      <div class="status-list">
+        <span class="status-code s2">200 OK</span>
+        <span class="status-code s4">404 Not Found</span>
+      </div>
+      <div class="curl-block"><pre>curl http://localhost:3001/api/siniestros/SIN-001</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-sin-crear">
+  <div class="endpoint" data-search="crear nuevo siniestro parte">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge post">POST</span>
+      <span class="endpoint-path">/api/siniestros</span>
+      <span class="endpoint-desc">Crear nuevo siniestro</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="info-label">Request Body</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "cliente_id": "CLI-001",
+  "tipo": "coche",
+  "descripcion": "Colision frontal en autopista A-6 km 15",
+  "urgencia": 8,
+  "direccion": "A-6 km 15, Madrid",
+  "lat": 40.4168,
+  "lng": -3.7038,
+  "zona": "Madrid"
+}</pre></div>
+      <div class="info-label">Response 201</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "id": "SIN-A1B2C3D4",
+  "expediente": "EXP-2024-0916",
+  "cliente_id": "CLI-001",
+  "tipo": "coche",
+  "estado": "Abierto",
+  "urgencia": 8,
+  "score_fraude": 5,
+  "ia_confianza": 95,
+  "ia_gestion": "full",
+  "fecha_creacion": "2024-12-18T12:00:00.000Z"
+}</pre></div>
+      <div class="status-list">
+        <span class="status-code s2">201 Created</span>
+        <span class="status-code s4">400 Campos requeridos</span>
+        <span class="status-code s4">404 Cliente no encontrado</span>
+      </div>
+      <div class="curl-block"><pre>curl -X POST http://localhost:3001/api/siniestros \
+  -H "Content-Type: application/json" \
+  -d '{"cliente_id":"CLI-001","tipo":"coche","descripcion":"Accidente leve","urgencia":5}'</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-sin-actualizar">
+  <div class="endpoint" data-search="actualizar modificar siniestro estado perito">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge put">PUT</span>
+      <span class="endpoint-path">/api/siniestros/:id</span>
+      <span class="endpoint-desc">Actualizar siniestro</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="info-label">Campos actualizables</div>
+      <table>
+        <tr><th>Campo</th><th>Tipo</th><th>Descripcion</th></tr>
+        <tr><td><code>estado</code></td><td>string</td><td>Nuevo estado</td></tr>
+        <tr><td><code>urgencia</code></td><td>int</td><td>1-10</td></tr>
+        <tr><td><code>descripcion</code></td><td>string</td><td>Descripcion actualizada</td></tr>
+        <tr><td><code>perito_id</code></td><td>string</td><td>ID del perito a asignar</td></tr>
+        <tr><td><code>valoracion</code></td><td>float</td><td>Valoracion en EUR</td></tr>
+        <tr><td><code>indemnizacion</code></td><td>float</td><td>Indemnizacion en EUR</td></tr>
+      </table>
+      <div class="info-label">Request Body</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "estado": "Perito asignado",
+  "perito_id": "AGT-001"
+}</pre></div>
+      <div class="status-list">
+        <span class="status-code s2">200 OK</span>
+        <span class="status-code s4">400 Nada que actualizar</span>
+        <span class="status-code s4">404 Not Found</span>
+      </div>
+      <div class="curl-block"><pre>curl -X PUT http://localhost:3001/api/siniestros/SIN-001 \
+  -H "Content-Type: application/json" \
+  -d '{"estado":"Resuelto","indemnizacion":3500}'</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-sin-eliminar">
+  <div class="endpoint" data-search="eliminar borrar siniestro">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge delete">DELETE</span>
+      <span class="endpoint-path">/api/siniestros/:id</span>
+      <span class="endpoint-desc">Eliminar siniestro</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge required">Token requerido (admin)</span></div></div>
+      <div class="info-box red"><strong>Solo admin.</strong> Esta accion es irreversible.</div>
+      <div class="info-label">Response 200</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "mensaje": "Siniestro eliminado"
+}</pre></div>
+      <div class="status-list">
+        <span class="status-code s2">200 OK</span>
+        <span class="status-code s4">401 No autenticado</span>
+        <span class="status-code s4">403 Forbidden (no admin)</span>
+        <span class="status-code s4">404 Not Found</span>
+      </div>
+      <div class="curl-block"><pre>curl -X DELETE http://localhost:3001/api/siniestros/SIN-001 \
+  -H "Authorization: Bearer ADMIN_TOKEN"</pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== CLIENTES ENDPOINTS ==================== -->
+
+<div class="section" id="ep-cli-listar">
+  <h2>Clientes</h2>
+  <div class="endpoint" data-search="listar clientes poliza">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/clientes</span>
+      <span class="endpoint-desc">Listar todos los clientes</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="info-label">Response 200</div>
+      <div class="code-block"><span class="label">JSON</span><pre>[
+  {
+    "id": "CLI-001",
+    "nombre": "Maria Garcia Lopez",
+    "telefono": "612345678",
+    "email": "maria.garcia@email.com",
+    "dni": "12345678A",
+    "poliza": "POL-2024-00456",
+    "tipo_poliza": "Todo riesgo"
+  }
+]</pre></div>
+      <div class="curl-block"><pre>curl http://localhost:3001/api/clientes</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-cli-obtener">
+  <div class="endpoint" data-search="obtener cliente detalle">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/clientes/:id</span>
+      <span class="endpoint-desc">Obtener detalle de cliente</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="info-label">Response 200</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "id": "CLI-001",
+  "nombre": "Maria Garcia Lopez",
+  "telefono": "612345678",
+  "email": "maria.garcia@email.com",
+  "dni": "12345678A",
+  "direccion": "Calle Gran Via 42, Madrid",
+  "poliza": "POL-2024-00456",
+  "tipo_poliza": "Todo riesgo",
+  "siniestros": [...]
+}</pre></div>
+      <div class="status-list"><span class="status-code s2">200 OK</span><span class="status-code s4">404 Not Found</span></div>
+      <div class="curl-block"><pre>curl http://localhost:3001/api/clientes/CLI-001</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-cli-crear">
+  <div class="endpoint" data-search="crear nuevo cliente">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge post">POST</span>
+      <span class="endpoint-path">/api/clientes</span>
+      <span class="endpoint-desc">Crear nuevo cliente</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="info-label">Request Body</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "nombre": "Juan Perez Garcia",
+  "telefono": "612000111",
+  "email": "juan@email.com",
+  "dni": "55555555X",
+  "direccion": "Calle Nueva 10, Madrid",
+  "poliza": "POL-2024-02000",
+  "tipo_poliza": "Todo riesgo"
+}</pre></div>
+      <div class="status-list"><span class="status-code s2">201 Created</span><span class="status-code s4">400 Bad Request</span></div>
+      <div class="curl-block"><pre>curl -X POST http://localhost:3001/api/clientes \
+  -H "Content-Type: application/json" \
+  -d '{"nombre":"Juan Perez","telefono":"612000111","email":"juan@email.com"}'</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-cli-actualizar">
+  <div class="endpoint" data-search="actualizar cliente modificar">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge put">PUT</span>
+      <span class="endpoint-path">/api/clientes/:id</span>
+      <span class="endpoint-desc">Actualizar cliente</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="info-label">Request Body</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "telefono": "611999888",
+  "direccion": "Nueva Calle 20, Barcelona"
+}</pre></div>
+      <div class="status-list"><span class="status-code s2">200 OK</span><span class="status-code s4">404 Not Found</span></div>
+      <div class="curl-block"><pre>curl -X PUT http://localhost:3001/api/clientes/CLI-001 \
+  -H "Content-Type: application/json" \
+  -d '{"telefono":"611999888"}'</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-cli-eliminar">
+  <div class="endpoint" data-search="eliminar cliente borrar">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge delete">DELETE</span>
+      <span class="endpoint-path">/api/clientes/:id</span>
+      <span class="endpoint-desc">Eliminar cliente</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge required">Token requerido (admin)</span></div></div>
+      <div class="info-box red"><strong>Solo admin.</strong> No se puede eliminar un cliente con siniestros activos.</div>
+      <div class="status-list"><span class="status-code s2">200 OK</span><span class="status-code s4">403 Forbidden</span><span class="status-code s4">404 Not Found</span></div>
+      <div class="curl-block"><pre>curl -X DELETE http://localhost:3001/api/clientes/CLI-001 \
+  -H "Authorization: Bearer ADMIN_TOKEN"</pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== METRICAS ENDPOINTS ==================== -->
+
+<div class="section" id="ep-met-dashboard">
+  <h2>Metricas</h2>
+  <div class="endpoint" data-search="dashboard metricas resumen kpi">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/metricas/dashboard</span>
+      <span class="endpoint-desc">KPIs del dashboard principal</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="info-label">Response 200</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "total_siniestros": 15,
+  "abiertos": 4,
+  "en_gestion": 4,
+  "resueltos": 4,
+  "score_fraude_medio": 14.2,
+  "tiempo_medio_resolucion": "3.2 dias",
+  "ahorro_ia_estimado": 47320
+}</pre></div>
+      <div class="curl-block"><pre>curl http://localhost:3001/api/metricas/dashboard</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-met-tipo">
+  <div class="endpoint" data-search="metricas tipo distribucion">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/metricas/por-tipo</span>
+      <span class="endpoint-desc">Distribucion por tipo de siniestro</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="code-block"><span class="label">JSON</span><pre>[
+  {"tipo": "coche", "cantidad": 5, "porcentaje": 33.3},
+  {"tipo": "hogar", "cantidad": 4, "porcentaje": 26.7},
+  {"tipo": "robo", "cantidad": 3, "porcentaje": 20.0},
+  {"tipo": "salud", "cantidad": 2, "porcentaje": 13.3},
+  {"tipo": "otro", "cantidad": 1, "porcentaje": 6.7}
+]</pre></div>
+      <div class="curl-block"><pre>curl http://localhost:3001/api/metricas/por-tipo</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-met-estado">
+  <div class="endpoint" data-search="metricas estado">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/metricas/por-estado</span>
+      <span class="endpoint-desc">Distribucion por estado</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="code-block"><span class="label">JSON</span><pre>[
+  {"estado": "Abierto", "cantidad": 4},
+  {"estado": "En gestion", "cantidad": 4},
+  {"estado": "Perito asignado", "cantidad": 3},
+  {"estado": "Resuelto", "cantidad": 4}
+]</pre></div>
+      <div class="curl-block"><pre>curl http://localhost:3001/api/metricas/por-estado</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-met-zona">
+  <div class="endpoint" data-search="metricas zona region geografica">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/metricas/por-zona</span>
+      <span class="endpoint-desc">Distribucion por zona geografica</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="code-block"><span class="label">JSON</span><pre>[
+  {"zona": "Madrid", "cantidad": 4},
+  {"zona": "Barcelona", "cantidad": 3},
+  {"zona": "Sevilla", "cantidad": 2},
+  {"zona": "Valencia", "cantidad": 2}
+]</pre></div>
+      <div class="curl-block"><pre>curl http://localhost:3001/api/metricas/por-zona</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-met-tendencia">
+  <div class="endpoint" data-search="tendencia mensual evolucion">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/metricas/tendencia</span>
+      <span class="endpoint-desc">Tendencia mensual de siniestros</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="code-block"><span class="label">JSON</span><pre>[
+  {"mes": "2024-07", "total": 88, "abiertos": 15, "resueltos": 45},
+  {"mes": "2024-08", "total": 89, "abiertos": 12, "resueltos": 52},
+  {"mes": "2024-12", "total": 127, "abiertos": 24, "resueltos": 65}
+]</pre></div>
+      <div class="curl-block"><pre>curl http://localhost:3001/api/metricas/tendencia</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-met-peritos">
+  <div class="endpoint" data-search="ranking peritos rendimiento">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/metricas/ranking-peritos</span>
+      <span class="endpoint-desc">Ranking de peritos por rendimiento</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="code-block"><span class="label">JSON</span><pre>[
+  {
+    "id": "AGT-001",
+    "nombre": "Carlos Ruiz Martinez",
+    "valoracion": 4.9,
+    "expedientes_total": 87,
+    "tiempo_medio_dias": 3.1,
+    "siniestros_asignados": 2
+  }
+]</pre></div>
+      <div class="curl-block"><pre>curl http://localhost:3001/api/metricas/ranking-peritos</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-met-ia">
+  <div class="endpoint" data-search="rendimiento ia inteligencia artificial">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/metricas/rendimiento-ia</span>
+      <span class="endpoint-desc">Metricas de rendimiento de la IA</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "confianza_media": 91.2,
+  "gestion_full": 12,
+  "gestion_partial": 3,
+  "tiempo_medio_ia": "1.8 min",
+  "tiempo_medio_humano": "20.3 min",
+  "ahorro_tiempo_porcentaje": 91.1,
+  "precision_antifraude": 94.8
+}</pre></div>
+      <div class="curl-block"><pre>curl http://localhost:3001/api/metricas/rendimiento-ia</pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== AGENTES ENDPOINTS ==================== -->
+
+<div class="section" id="ep-agt-listar">
+  <h2>Agentes</h2>
+  <div class="endpoint" data-search="listar agentes peritos grua medico">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/agentes</span>
+      <span class="endpoint-desc">Listar agentes con filtros</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="info-label">Query Parameters</div>
+      <table>
+        <tr><th>Param</th><th>Tipo</th><th>Descripcion</th></tr>
+        <tr><td><code>tipo</code></td><td>string</td><td>perito, grua, legal, medico</td></tr>
+        <tr><td><code>zona</code></td><td>string</td><td>Zona geografica</td></tr>
+        <tr><td><code>disponible</code></td><td>int</td><td>1 = disponible, 0 = no disponible</td></tr>
+      </table>
+      <div class="info-label">Response 200</div>
+      <div class="code-block"><span class="label">JSON</span><pre>[
+  {
+    "id": "AGT-001",
+    "nombre": "Carlos Ruiz Martinez",
+    "tipo": "perito",
+    "especialidad": "Auto, Hogar",
+    "zona": "Madrid",
+    "disponible": 1,
+    "valoracion": 4.9,
+    "expedientes_total": 87
+  }
+]</pre></div>
+      <div class="curl-block"><pre>curl "http://localhost:3001/api/agentes?tipo=perito&zona=Madrid&disponible=1"</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-agt-obtener">
+  <div class="endpoint" data-search="obtener agente detalle">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/agentes/:id</span>
+      <span class="endpoint-desc">Obtener detalle de agente</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="info-label">Response 200</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "id": "AGT-001",
+  "nombre": "Carlos Ruiz Martinez",
+  "tipo": "perito",
+  "especialidad": "Auto, Hogar",
+  "zona": "Madrid",
+  "valoracion": 4.9,
+  "siniestros_asignados": [...]
+}</pre></div>
+      <div class="status-list"><span class="status-code s2">200 OK</span><span class="status-code s4">404 Not Found</span></div>
+      <div class="curl-block"><pre>curl http://localhost:3001/api/agentes/AGT-001</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-agt-crear">
+  <div class="endpoint" data-search="crear agente perito nuevo">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge post">POST</span>
+      <span class="endpoint-path">/api/agentes</span>
+      <span class="endpoint-desc">Crear nuevo agente</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="info-label">Request Body</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "nombre": "Nuevo Perito",
+  "tipo": "perito",
+  "especialidad": "Auto, Hogar",
+  "telefono": "611222333",
+  "email": "nuevo@peritos.com",
+  "zona": "Madrid"
+}</pre></div>
+      <div class="status-list"><span class="status-code s2">201 Created</span><span class="status-code s4">400 nombre y tipo requeridos</span></div>
+      <div class="curl-block"><pre>curl -X POST http://localhost:3001/api/agentes \
+  -H "Content-Type: application/json" \
+  -d '{"nombre":"Nuevo Perito","tipo":"perito","zona":"Madrid"}'</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-agt-actualizar">
+  <div class="endpoint" data-search="actualizar agente disponibilidad">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge put">PUT</span>
+      <span class="endpoint-path">/api/agentes/:id</span>
+      <span class="endpoint-desc">Actualizar agente</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="info-label">Request Body</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "disponible": false,
+  "zona": "Barcelona"
+}</pre></div>
+      <div class="status-list"><span class="status-code s2">200 OK</span><span class="status-code s4">400 Nada que actualizar</span><span class="status-code s4">404 Not Found</span></div>
+      <div class="curl-block"><pre>curl -X PUT http://localhost:3001/api/agentes/AGT-001 \
+  -H "Content-Type: application/json" \
+  -d '{"disponible":false}'</pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== FRAUDE ==================== -->
+
+<div class="section" id="ep-fraude-analizar">
+  <h2>Fraude</h2>
+  <div class="endpoint" data-search="fraude analizar score antifraude">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge post">POST</span>
+      <span class="endpoint-path">/api/fraude/analizar/:siniestroId</span>
+      <span class="endpoint-desc">Analisis anti-fraude completo</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <p style="font-size:13px;color:var(--text2);margin:8px 0">Ejecuta el motor anti-fraude multidimensional. Analiza 8 dimensiones con pesos configurables y genera alertas automaticas.</p>
+      <div class="info-label">Response 200</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "siniestro_id": "SIN-009",
+  "expediente": "EXP-2024-0883",
+  "cliente": "Carmen Vega",
+  "score_final": 68,
+  "nivel_riesgo": "ALTO",
+  "recomendacion": "Requiere investigacion adicional...",
+  "dimensiones": {
+    "historial_reclamaciones": {"score": 30, "detalle": "..."},
+    "coherencia_temporal": {"score": 25, "detalle": "..."},
+    "patron_comportamiento": {"score": 45, "detalle": "..."}
+  },
+  "alertas": [
+    "Siniestro reportado en horario nocturno",
+    "Palabra sospechosa: robo"
+  ],
+  "fecha_analisis": "2024-12-18T12:00:00.000Z"
+}</pre></div>
+      <div class="status-list">
+        <span class="status-code s2">200 OK</span>
+        <span class="status-code s4">404 Siniestro no encontrado</span>
+        <span class="status-code s5">500 Error interno</span>
+      </div>
+      <div class="curl-block"><pre>curl -X POST http://localhost:3001/api/fraude/analizar/SIN-009</pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== AGENTE IA ==================== -->
+
+<div class="section" id="ep-ia-clasificar">
+  <h2>Agente IA</h2>
+  <div class="endpoint" data-search="ia clasificar siniestro automatico">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge post">POST</span>
+      <span class="endpoint-path">/api/agente/clasificar/:siniestroId</span>
+      <span class="endpoint-desc">Clasificar siniestro con IA</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "siniestro_id": "SIN-001",
+  "clasificacion": {
+    "tipo_sugerido": "coche",
+    "urgencia_sugerida": 9,
+    "confianza": 94,
+    "perito_recomendado": "AGT-001"
+  }
+}</pre></div>
+      <div class="curl-block"><pre>curl -X POST http://localhost:3001/api/agente/clasificar/SIN-001</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-ia-consultar">
+  <div class="endpoint" data-search="ia consultar pregunta prompt">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge post">POST</span>
+      <span class="endpoint-path">/api/agente/consultar</span>
+      <span class="endpoint-desc">Consulta libre al agente IA</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="info-label">Request Body</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "prompt": "Cual es el siniestro con mayor score de fraude?",
+  "contexto": "dashboard"
+}</pre></div>
+      <div class="info-label">Response 200</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "respuesta": "El siniestro con mayor score de fraude es EXP-2024-0883..."
+}</pre></div>
+      <div class="curl-block"><pre>curl -X POST http://localhost:3001/api/agente/consultar \
+  -H "Content-Type: application/json" \
+  -d '{"prompt":"Resume los siniestros abiertos"}'</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-ia-resumen">
+  <div class="endpoint" data-search="ia resumen siniestro">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/agente/resumen/:siniestroId</span>
+      <span class="endpoint-desc">Generar resumen IA del siniestro</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "siniestro_id": "SIN-001",
+  "resumen": "Siniestro de automovil por colision frontal...",
+  "acciones_sugeridas": [
+    "Asignar perito especializado en auto",
+    "Solicitar parte amistoso"
+  ],
+  "riesgo": "BAJO"
+}</pre></div>
+      <div class="curl-block"><pre>curl http://localhost:3001/api/agente/resumen/SIN-001</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-ia-chat">
+  <div class="endpoint" data-search="ia chat mensaje conversacion">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge post">POST</span>
+      <span class="endpoint-path">/api/agente/chat/:siniestroId</span>
+      <span class="endpoint-desc">Chat IA sobre un siniestro</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <div class="info-label">Request Body</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "mensaje": "Necesito mas detalles sobre los danos",
+  "usuario": "Ana Martinez"
+}</pre></div>
+      <div class="info-label">Response 200</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "respuesta": "Segun los datos del siniestro EXP-2024-0891..."
+}</pre></div>
+      <div class="curl-block"><pre>curl -X POST http://localhost:3001/api/agente/chat/SIN-001 \
+  -H "Content-Type: application/json" \
+  -d '{"mensaje":"Estado actual del expediente","usuario":"Admin"}'</pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== UPLOAD ==================== -->
+
+<div class="section" id="ep-upload">
+  <h2>Upload</h2>
+  <div class="endpoint" data-search="upload subir archivos documentos fotos">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge post">POST</span>
+      <span class="endpoint-path">/api/upload</span>
+      <span class="endpoint-desc">Subir archivos (max 10)</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge optional">Opcional</span></div></div>
+      <p style="font-size:13px;color:var(--text2);margin:8px 0">Multipart form-data. Formatos: jpeg, jpg, png, gif, webp, pdf, doc, docx, zip. Max 10MB por archivo.</p>
+      <div class="info-label">Response 200</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "archivos": [
+    {
+      "nombre": "foto_danos.jpg",
+      "ruta": "1703001200-abc123.jpg",
+      "tamano": "245 KB",
+      "tipo": "image/jpeg"
+    }
+  ]
+}</pre></div>
+      <div class="status-list"><span class="status-code s2">200 OK</span><span class="status-code s4">400 No files</span></div>
+      <div class="curl-block"><pre>curl -X POST http://localhost:3001/api/upload \
+  -F "archivos=@foto_danos.jpg" \
+  -F "archivos=@parte_amistoso.pdf"</pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== WEBHOOKS ==================== -->
+
+<div class="section" id="ep-wh-whatsapp">
+  <h2>Webhooks</h2>
+  <div class="endpoint" data-search="webhook whatsapp twilio">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge post">POST</span>
+      <span class="endpoint-path">/api/whatsapp/webhook</span>
+      <span class="endpoint-desc">Webhook de Twilio WhatsApp</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge none">Publico (Twilio)</span></div></div>
+      <p style="font-size:13px;color:var(--text2);margin:8px 0">Recibe mensajes entrantes de WhatsApp via Twilio. Configurar en la consola de Twilio.</p>
+      <div class="info-label">Request Body (Twilio format)</div>
+      <div class="code-block"><span class="label">form-data</span><pre>From=whatsapp:+34612345678
+Body=Hola, quiero reportar un siniestro
+NumMedia=0</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-wh-voz">
+  <div class="endpoint" data-search="webhook voz llamada twilio">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge post">POST</span>
+      <span class="endpoint-path">/api/voz/entrante</span>
+      <span class="endpoint-desc">Webhook de llamada entrante</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge none">Publico (Twilio)</span></div></div>
+      <p style="font-size:13px;color:var(--text2);margin:8px 0">Maneja llamadas entrantes con IVR inteligente. Responde con TwiML.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-wh-voz-input">
+  <div class="endpoint" data-search="webhook voz procesar input">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge post">POST</span>
+      <span class="endpoint-path">/api/voz/procesar-input</span>
+      <span class="endpoint-desc">Procesar input de voz (DTMF/speech)</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge none">Publico (Twilio)</span></div></div>
+      <p style="font-size:13px;color:var(--text2);margin:8px 0">Procesa la seleccion del usuario en el IVR y deriva al flujo correspondiente.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== ADMIN ==================== -->
+
+<div class="section" id="ep-adm-users">
+  <h2>Admin</h2>
+  <div class="endpoint" data-search="admin listar usuarios">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/admin/usuarios</span>
+      <span class="endpoint-desc">Listar todos los usuarios</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge required">Token requerido (admin)</span></div></div>
+      <div class="code-block"><span class="label">JSON</span><pre>[
+  {
+    "id": "uuid-001",
+    "nombre": "Ana Martinez",
+    "email": "ana@siniestrosai.com",
+    "rol": "admin",
+    "activo": 1,
+    "creado_en": "2024-12-01T10:00:00Z",
+    "ultimo_login": "2024-12-18T09:15:00Z"
+  }
+]</pre></div>
+      <div class="curl-block"><pre>curl http://localhost:3001/api/admin/usuarios \
+  -H "Authorization: Bearer ADMIN_TOKEN"</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-adm-user-toggle">
+  <div class="endpoint" data-search="admin activar desactivar usuario">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge put">PUT</span>
+      <span class="endpoint-path">/api/admin/usuarios/:id/toggle</span>
+      <span class="endpoint-desc">Activar/desactivar usuario</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge required">Token requerido (admin)</span></div></div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "mensaje": "Usuario desactivado",
+  "activo": 0
+}</pre></div>
+      <div class="curl-block"><pre>curl -X PUT http://localhost:3001/api/admin/usuarios/uuid-002/toggle \
+  -H "Authorization: Bearer ADMIN_TOKEN"</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-adm-stats">
+  <div class="endpoint" data-search="admin estadisticas sistema">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/admin/stats</span>
+      <span class="endpoint-desc">Estadisticas del sistema</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge required">Token requerido (admin)</span></div></div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "usuarios_total": 3,
+  "usuarios_activos": 3,
+  "siniestros_total": 15,
+  "clientes_total": 15,
+  "agentes_total": 7,
+  "llamadas_total": 3,
+  "mensajes_total": 4,
+  "db_size_mb": 0.85,
+  "uptime_hours": 24.5
+}</pre></div>
+      <div class="curl-block"><pre>curl http://localhost:3001/api/admin/stats \
+  -H "Authorization: Bearer ADMIN_TOKEN"</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-adm-logs">
+  <div class="endpoint" data-search="admin logs auditoria">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/admin/logs</span>
+      <span class="endpoint-desc">Logs de auditoria</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge required">Token requerido (admin)</span></div></div>
+      <div class="code-block"><span class="label">JSON</span><pre>[
+  {
+    "timestamp": "2024-12-18T09:15:00Z",
+    "usuario": "ana@siniestrosai.com",
+    "accion": "login",
+    "detalle": "Login exitoso desde 192.168.1.100"
+  }
+]</pre></div>
+      <div class="curl-block"><pre>curl http://localhost:3001/api/admin/logs \
+  -H "Authorization: Bearer ADMIN_TOKEN"</pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== HEALTH ==================== -->
+
+<div class="section" id="ep-health">
+  <h2>Health</h2>
+  <div class="endpoint" data-search="health check status">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/health</span>
+      <span class="endpoint-desc">Health check basico</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge none">Publico</span></div></div>
+      <div class="info-label">Response 200</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "status": "ok",
+  "version": "1.0.0",
+  "uptime": 86400.5,
+  "timestamp": "2024-12-18T12:00:00.000Z",
+  "servicios": {
+    "database": "conectada",
+    "websockets": 5,
+    "agente_ia": "activo",
+    "antifraude": "activo"
+  }
+}</pre></div>
+      <div class="curl-block"><pre>curl http://localhost:3001/api/health</pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="ep-health-detail">
+  <div class="endpoint" data-search="health detallado servicios dependencias">
+    <div class="endpoint-header" onclick="toggleEndpoint(this)">
+      <span class="method-badge get">GET</span>
+      <span class="endpoint-path">/api/health/detailed</span>
+      <span class="endpoint-desc">Health check detallado</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="info-row"><div><div class="info-label">Auth</div><span class="auth-badge none">Publico</span></div></div>
+      <div class="info-label">Response 200</div>
+      <div class="code-block"><span class="label">JSON</span><pre>{
+  "status": "ok",
+  "version": "1.0.0",
+  "node_version": "v20.10.0",
+  "memory": {
+    "rss_mb": 85.2,
+    "heap_used_mb": 42.1,
+    "heap_total_mb": 65.0
+  },
+  "database": {
+    "status": "connected",
+    "tables": 8,
+    "size_mb": 0.85
+  },
+  "websockets": {
+    "connections": 5
+  },
+  "uptime_seconds": 86400.5
+}</pre></div>
+      <div class="curl-block"><pre>curl http://localhost:3001/api/health/detailed</pre></div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- JAVASCRIPT -->
+<script>
+// Toggle endpoint body
+function toggleEndpoint(header) {
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+// Sidebar navigation
+document.querySelectorAll('.nav-item[data-target]').forEach(item => {
+  item.addEventListener('click', () => {
+    const target = document.getElementById(item.dataset.target);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      item.classList.add('active');
+    }
+  });
+});
+
+// Search
+const searchInput = document.getElementById('searchInput');
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.toLowerCase().trim();
+  const sections = document.querySelectorAll('.section');
+  const navItems = document.querySelectorAll('.nav-item[data-target]');
+
+  if (!q) {
+    sections.forEach(s => s.classList.remove('hidden'));
+    navItems.forEach(n => n.classList.remove('hidden'));
+    document.querySelectorAll('.nav-group').forEach(g => g.classList.remove('hidden'));
+    return;
+  }
+
+  sections.forEach(s => {
+    const text = s.textContent.toLowerCase();
+    const endpoints = s.querySelectorAll('.endpoint');
+    let match = false;
+
+    if (s.id && !s.id.startsWith('ep-')) {
+      // Non-endpoint sections match on content
+      match = text.includes(q);
+    } else {
+      endpoints.forEach(ep => {
+        const searchData = (ep.dataset.search || '') + ' ' + ep.textContent.toLowerCase();
+        if (searchData.includes(q)) match = true;
+      });
+      if (!match) match = text.includes(q);
+    }
+
+    s.classList.toggle('hidden', !match);
+  });
+
+  navItems.forEach(n => {
+    const target = document.getElementById(n.dataset.target);
+    n.classList.toggle('hidden', target ? target.classList.contains('hidden') : false);
+  });
+
+  // Hide empty nav groups
+  document.querySelectorAll('.nav-group').forEach(g => {
+    const visibleItems = g.querySelectorAll('.nav-item:not(.hidden)');
+    g.classList.toggle('hidden', visibleItems.length === 0);
+  });
+});
+
+// Active section tracking on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      document.querySelectorAll('.nav-item').forEach(n => {
+        n.classList.toggle('active', n.dataset.target === id);
+      });
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+
+document.querySelectorAll('.section[id]').forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

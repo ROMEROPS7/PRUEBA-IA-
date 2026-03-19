@@ -20,7 +20,7 @@ const clientesController = {
       const total = await dbGet('SELECT COUNT(*) as total FROM clientes');
       res.json({ clientes, total: total.total });
     } catch (err) {
-      console.error('Error listando clientes:', err);
+
       res.status(500).json({ error: 'Error interno' });
     }
   },
@@ -39,7 +39,7 @@ const clientesController = {
 
       res.json({ ...cliente, siniestros, llamadas, mensajes });
     } catch (err) {
-      console.error('Error obteniendo cliente:', err);
+
       res.status(500).json({ error: 'Error interno' });
     }
   },
@@ -65,7 +65,7 @@ const clientesController = {
       const cliente = await dbGet('SELECT * FROM clientes WHERE id = ?', [id]);
       res.status(201).json(cliente);
     } catch (err) {
-      console.error('Error creando cliente:', err);
+
       res.status(500).json({ error: 'Error interno' });
     }
   },
@@ -100,7 +100,7 @@ const clientesController = {
       const actualizado = await dbGet('SELECT * FROM clientes WHERE id = ?', [id]);
       res.json(actualizado);
     } catch (err) {
-      console.error('Error actualizando cliente:', err);
+
       res.status(500).json({ error: 'Error interno' });
     }
   },
@@ -119,7 +119,7 @@ const clientesController = {
       }
       res.json({ mensaje: 'Cliente eliminado' });
     } catch (err) {
-      console.error('Error eliminando cliente:', err);
+
       res.status(500).json({ error: 'Error interno' });
     }
   },

@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiniestrosAI - Portal del Perito</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+/* ===== VARIABLES ===== */
+:root {
+    --primary:#3b82f6;--primary-dark:#2563eb;--primary-light:#e8effd;
+    --success:#16a34a;--success-light:#dcfce7;--warning:#f59e0b;--warning-light:#fef3c7;
+    --danger:#dc2626;--danger-light:#fee2e2;--info:#2563eb;--info-light:#dbeafe;
+    --ai-purple:#8b5cf6;--ai-purple-dark:#7c3aed;--ai-cyan:#06b6d4;
+    --ai-gradient:linear-gradient(135deg,#8b5cf6 0%,#06b6d4 100%);
+    --ai-glow:0 0 20px rgba(139,92,246,0.3);
+    --white:#fff;--gray-50:#f8fafc;--gray-100:#f1f5f9;--gray-200:#e2e8f0;--gray-300:#cbd5e1;
+    --gray-400:#94a3b8;--gray-500:#64748b;--gray-600:#475569;--gray-700:#334155;--gray-800:#1e293b;--gray-900:#0f172a;
+    --sidebar-width:240px;--header-height:60px;--radius:10px;
+    --shadow:0 1px 3px rgba(0,0,0,0.08);--shadow-md:0 4px 6px rgba(0,0,0,0.07);--shadow-lg:0 10px 15px rgba(0,0,0,0.1);
+    --transition:all 0.2s ease;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--gray-50);color:var(--gray-800);min-height:100vh;display:flex;overflow-x:hidden;}
+
+/* ANIMATIONS */
+@keyframes livePulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes pulse{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(34,197,94,.4)}70%{transform:scale(1.05);box-shadow:0 0 0 10px rgba(34,197,94,0)}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+@keyframes aiGlow{0%,100%{box-shadow:0 0 5px rgba(139,92,246,.3)}50%{box-shadow:0 0 20px rgba(139,92,246,.6),0 0 40px rgba(6,182,212,.3)}}
+@keyframes fadeInUp{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes slideLeft{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes slideRight{from{transform:translateX(-100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes typeStep{from{width:0}to{width:100%}}
+@keyframes scanLine{0%{top:0;opacity:1}100%{top:100%;opacity:0}}
+@keyframes progressPulse{0%,100%{opacity:1}50%{opacity:.6}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+.ai-color{color:var(--ai-purple)!important}
+.ai-tag{font-size:.55rem;background:var(--ai-gradient);color:#fff;padding:1px 5px;border-radius:4px;vertical-align:super}
+
+/* ===== SIDEBAR ===== */
+.sidebar{width:var(--sidebar-width);height:100vh;background:linear-gradient(180deg,var(--gray-900),var(--gray-800));position:fixed;left:0;top:0;z-index:100;display:flex;flex-direction:column;transition:var(--transition);overflow-y:auto}
+.sidebar-header{padding:1.25rem;border-bottom:1px solid rgba(255,255,255,.08)}
+.logo{display:flex;align-items:center;gap:.6rem;color:#fff;font-size:1rem;font-weight:700;text-decoration:none}
+.logo-icon{font-size:1.1rem;color:#fff;background:var(--ai-gradient);padding:.45rem;border-radius:8px;display:flex;align-items:center;justify-content:center;animation:aiGlow 3s infinite}
+.nav-menu{list-style:none;padding:.75rem 0;flex:1}
+.nav-item{display:flex;align-items:center;gap:.6rem;padding:.65rem 1.25rem;color:var(--gray-400);cursor:pointer;transition:var(--transition);border-left:3px solid transparent;font-size:.8rem;text-decoration:none}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,.05)}
+.nav-item.active{color:#fff;background:rgba(59,130,246,.15);border-left-color:var(--primary)}
+.nav-item i{width:18px;text-align:center;font-size:.9rem}
+.nav-badge{font-size:.5rem;background:#22c55e;color:#fff;padding:1px 6px;border-radius:8px;margin-left:auto;animation:livePulse 1.5s infinite}
+.sidebar-footer{padding:.75rem 1.25rem;border-top:1px solid rgba(255,255,255,.08)}
+.ai-status-bar{display:flex;align-items:center;gap:.4rem;margin-bottom:.5rem;padding:.4rem .6rem;background:rgba(139,92,246,.15);border-radius:6px;font-size:.7rem;color:var(--ai-purple);font-weight:500}
+.ai-pulse-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
+.user-info{display:flex;align-items:center;gap:.6rem}
+.user-avatar{width:34px;height:34px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:.75rem}
+.user-details{display:flex;flex-direction:column}
+.user-name{color:#fff;font-size:.8rem;font-weight:500}
+.user-role{color:var(--gray-400);font-size:.65rem}
+.perito-rating{display:flex;align-items:center;gap:.2rem;margin-top:.3rem}
+.perito-rating i{font-size:.6rem;color:#fbbf24}
+
+/* ===== MAIN ===== */
+.main-content{margin-left:var(--sidebar-width);flex:1;min-height:100vh}
+.top-header{height:var(--header-height);background:#fff;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;padding:0 1.25rem;gap:.75rem;position:sticky;top:0;z-index:50}
+.menu-toggle{display:none;background:none;border:none;font-size:1.1rem;color:var(--gray-600);cursor:pointer}
+.header-search{flex:1;display:flex;align-items:center;background:var(--gray-100);border-radius:var(--radius);padding:0 .85rem;max-width:400px}
+.header-search i{color:var(--gray-400);margin-right:.4rem;font-size:.85rem}
+.header-search input{border:none;background:none;padding:.5rem 0;font-size:.8rem;width:100%;outline:none;font-family:inherit}
+.header-actions{display:flex;align-items:center;gap:.5rem}
+.header-btn{display:flex;align-items:center;gap:.4rem;padding:.4rem .85rem;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:500;transition:var(--transition);font-family:inherit}
+.header-btn:hover{background:var(--primary-dark)}
+.header-date{font-size:.8rem;color:var(--gray-500);font-weight:500}
+
+/* ===== PAGES ===== */
+.page{display:none;padding:1.25rem}
+.page.active{display:block;animation:fadeInUp .3s ease}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem}
+.page-header h1{font-size:1.35rem;font-weight:700;color:var(--gray-900)}
+
+/* ===== CARDS ===== */
+.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:1rem;margin-bottom:1.25rem}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem}
+.card-header h3{font-size:.9rem;font-weight:600;color:var(--gray-800)}
+
+/* ===== BUTTONS ===== */
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem 1rem;border-radius:7px;font-size:.8rem;font-weight:500;border:none;cursor:pointer;transition:var(--transition);font-family:inherit;white-space:nowrap}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-dark)}
+.btn-secondary{background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-200)}.btn-secondary:hover{background:var(--gray-200)}
+.btn-outline{background:transparent;color:var(--gray-600);border:1px solid var(--gray-300)}.btn-outline:hover{background:var(--gray-50)}
+.btn-lg{padding:.65rem 1.5rem;font-size:.9rem}
+.btn-ai{background:var(--ai-gradient);color:#fff;font-weight:600}.btn-ai:hover{opacity:.9;box-shadow:var(--ai-glow)}
+.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#b91c1c}
+.btn-success{background:var(--success);color:#fff}.btn-success:hover{background:#15803d}
+.btn-xl{padding:1rem 2.5rem;font-size:1.1rem;border-radius:14px}
+.btn-sm{padding:.3rem .7rem;font-size:.75rem}
+
+/* ===== KPI GRID ===== */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.85rem;margin-bottom:1.25rem}
+.kpi-card{background:#fff;border-radius:var(--radius);padding:1rem;box-shadow:var(--shadow);display:flex;align-items:center;gap:.85rem;transition:var(--transition)}
+.kpi-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.kpi-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.kpi-info{display:flex;flex-direction:column}
+.kpi-value{font-size:1.5rem;font-weight:700;line-height:1;color:var(--gray-900)}
+.kpi-label{font-size:.7rem;color:var(--gray-500);margin-top:.2rem}
+.kpi-trend{font-size:.6rem;font-weight:500;display:flex;align-items:center;gap:.15rem;margin-top:.2rem}
+.kpi-trend.up{color:var(--success)}.kpi-trend.down{color:var(--danger)}
+
+/* ===== MAIN LAYOUT ===== */
+.portal-grid{display:grid;grid-template-columns:320px 1fr;gap:1.5rem;align-items:start}
+.portal-grid-3{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem}
+
+/* ===== MOBILE FRAME ===== */
+.mobile-frame{width:300px;height:600px;background:#1a1a2e;border-radius:36px;padding:8px;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative;flex-shrink:0}
+.mobile-notch{width:100px;height:22px;background:#1a1a2e;border-radius:0 0 14px 14px;position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:10}
+.mobile-screen{width:100%;height:100%;background:#fff;border-radius:28px;overflow:hidden;position:relative}
+.mobile-page{position:absolute;inset:0;display:none;flex-direction:column;background:#fff;transition:transform .35s ease,opacity .35s ease}
+.mobile-page.active{display:flex}
+.mobile-page.slide-in-right{animation:slideLeft .35s ease}
+.mobile-page.slide-in-left{animation:slideRight .35s ease}
+.mob-header{display:flex;align-items:center;gap:.5rem;padding:.6rem .8rem;background:var(--ai-gradient);color:#fff;font-size:.75rem;font-weight:600;min-height:44px}
+.mob-header .mob-back{cursor:pointer;padding:.2rem}
+.mob-header .mob-title{flex:1}
+.mob-header .mob-avatar{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:.7rem}
+.mobile-home-bar{width:100px;height:4px;background:rgba(255,255,255,.5);border-radius:2px;margin:0 auto .4rem}
+.mob-bottom-nav{display:flex;justify-content:space-around;padding:.4rem 0;background:#fff;border-top:1px solid var(--gray-200)}
+.mob-bottom-nav .mob-nav-btn{display:flex;flex-direction:column;align-items:center;gap:.1rem;font-size:.5rem;color:var(--gray-400);cursor:pointer;padding:.2rem .6rem;border-radius:6px;transition:var(--transition);border:none;background:none;font-family:inherit}
+.mob-bottom-nav .mob-nav-btn.active{color:var(--primary)}
+.mob-bottom-nav .mob-nav-btn i{font-size:.85rem}
+
+/* Mobile - Visits List */
+.mob-visits-list{flex:1;overflow-y:auto;padding:.5rem}
+.mob-visit-item{display:flex;gap:.5rem;padding:.5rem;border-radius:8px;border:1px solid var(--gray-200);margin-bottom:.4rem;cursor:pointer;transition:var(--transition)}
+.mob-visit-item:hover,.mob-visit-item.active{border-color:var(--primary);background:var(--primary-light)}
+.mob-visit-time{font-size:.65rem;font-weight:700;color:var(--primary);min-width:36px;text-align:center;padding-top:.1rem}
+.mob-visit-info{flex:1;min-width:0}
+.mob-visit-info h4{font-size:.7rem;font-weight:600;color:var(--gray-800);margin-bottom:.1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mob-visit-info p{font-size:.6rem;color:var(--gray-500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mob-visit-badge{font-size:.5rem;font-weight:600;padding:.1rem .35rem;border-radius:4px;white-space:nowrap;align-self:flex-start;margin-top:.1rem}
+.mob-visit-badge.auto{background:#dbeafe;color:#2563eb}
+.mob-visit-badge.hogar{background:#fef3c7;color:#b45309}
+.mob-visit-badge.salud{background:#dcfce7;color:#16a34a}
+.mob-visit-badge.robo{background:#fee2e2;color:#dc2626}
+
+/* Mobile - Route Map */
+.mob-route-map{flex:1;position:relative;background:linear-gradient(135deg,#e8effd 0%,#f0ecff 50%,#e8fafe 100%);overflow:hidden;padding:.6rem}
+.mob-route-map-title{font-size:.7rem;font-weight:700;color:var(--gray-800);margin-bottom:.3rem;display:flex;align-items:center;gap:.3rem}
+.route-line{position:absolute;width:2px;background:var(--primary);z-index:1}
+.route-stop{position:absolute;z-index:2;display:flex;align-items:center;gap:.3rem}
+.route-stop-dot{width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.55rem;font-weight:700;border:2px solid #fff;box-shadow:0 2px 6px rgba(59,130,246,.3)}
+.route-stop-dot.completed{background:var(--success)}
+.route-stop-dot.current{background:var(--primary);animation:pulse 2s infinite}
+.route-stop-dot.pending{background:var(--gray-400)}
+.route-stop-label{font-size:.5rem;font-weight:600;color:var(--gray-700);white-space:nowrap;background:rgba(255,255,255,.9);padding:.1rem .3rem;border-radius:3px}
+.route-info-bar{position:absolute;bottom:.4rem;left:.4rem;right:.4rem;background:rgba(255,255,255,.95);border-radius:8px;padding:.4rem .6rem;display:flex;justify-content:space-between;align-items:center;font-size:.6rem;box-shadow:var(--shadow)}
+.route-info-bar strong{color:var(--primary)}
+
+/* Mobile - Case Detail */
+.mob-case-detail{flex:1;overflow-y:auto;padding:.6rem}
+.mob-case-photos{display:grid;grid-template-columns:1fr 1fr;gap:.3rem;margin-bottom:.5rem}
+.mob-case-photo{aspect-ratio:4/3;background:var(--gray-200);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--gray-400);font-size:1.2rem;position:relative;overflow:hidden}
+.mob-case-photo .photo-label{position:absolute;bottom:.2rem;left:.2rem;font-size:.5rem;font-weight:600;color:#fff;background:rgba(0,0,0,.5);padding:.1rem .3rem;border-radius:3px}
+.mob-damage-form{display:flex;flex-direction:column;gap:.4rem}
+.mob-form-group{display:flex;flex-direction:column;gap:.15rem}
+.mob-form-group label{font-size:.6rem;font-weight:600;color:var(--gray-600)}
+.mob-form-group select,.mob-form-group input,.mob-form-group textarea{padding:.35rem .5rem;border:1px solid var(--gray-200);border-radius:6px;font-size:.65rem;font-family:inherit}
+.mob-form-group textarea{resize:none;height:48px}
+.mob-damage-chips{display:flex;flex-wrap:wrap;gap:.25rem}
+.mob-damage-chip{font-size:.55rem;padding:.2rem .4rem;border-radius:12px;background:var(--gray-100);color:var(--gray-600);cursor:pointer;border:1px solid var(--gray-200);transition:var(--transition)}
+.mob-damage-chip.selected{background:var(--primary-light);color:var(--primary);border-color:var(--primary)}
+.mob-btn-primary{width:100%;padding:.5rem;background:var(--ai-gradient);color:#fff;border:none;border-radius:8px;font-size:.7rem;font-weight:600;cursor:pointer;font-family:inherit}
+
+/* ===== AI REPORT GENERATOR ===== */
+.ai-report-container{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.ai-report-header{padding:1.25rem;background:linear-gradient(135deg,#1e1b4b,#312e81);color:#fff}
+.ai-report-header h3{font-size:1rem;font-weight:700;margin-bottom:.3rem}
+.ai-report-header p{font-size:.75rem;color:rgba(255,255,255,.6)}
+.ai-report-body{padding:1.25rem}
+.ai-report-trigger{text-align:center;padding:2rem 1rem}
+.ai-report-trigger .report-icon{font-size:3rem;color:var(--ai-purple);margin-bottom:.75rem}
+.ai-steps-container{display:none;flex-direction:column;gap:.6rem;margin-bottom:1rem}
+.ai-step{display:flex;align-items:center;gap:.6rem;padding:.6rem .8rem;border-radius:8px;font-size:.8rem;background:var(--gray-50);color:var(--gray-400);transition:all .4s ease}
+.ai-step.active{background:rgba(139,92,246,.08);color:var(--ai-purple);animation:progressPulse 1.5s infinite}
+.ai-step.done{background:var(--success-light);color:var(--success)}
+.ai-step i{width:18px;text-align:center}
+.ai-step .step-bar{flex:1;height:3px;background:var(--gray-200);border-radius:2px;overflow:hidden;margin-left:.5rem}
+.ai-step .step-bar-fill{height:100%;width:0;background:var(--ai-gradient);border-radius:2px;transition:width 1.5s ease}
+.ai-step.done .step-bar-fill{width:100%}
+.ai-step.active .step-bar-fill{width:60%;animation:progressPulse 1.5s infinite}
+
+/* Report Preview */
+.report-preview{display:none;border:1px solid var(--gray-200);border-radius:10px;overflow:hidden;animation:fadeInUp .5s ease}
+.report-preview-header{background:linear-gradient(135deg,var(--gray-900),var(--gray-800));color:#fff;padding:1rem;display:flex;align-items:center;gap:.75rem}
+.report-preview-header .report-logo{width:40px;height:40px;background:var(--ai-gradient);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem}
+.report-preview-header h4{font-size:.85rem;font-weight:700}
+.report-preview-header p{font-size:.65rem;color:rgba(255,255,255,.6)}
+.report-preview-body{padding:1rem;font-size:.75rem;line-height:1.6;color:var(--gray-700);max-height:400px;overflow-y:auto}
+.report-preview-body h5{font-size:.8rem;font-weight:700;color:var(--gray-900);margin:1rem 0 .4rem;padding-bottom:.3rem;border-bottom:1px solid var(--gray-200)}
+.report-preview-body h5:first-child{margin-top:0}
+.report-preview-body .report-field{display:flex;gap:.5rem;margin-bottom:.25rem}
+.report-preview-body .report-field .field-label{font-weight:600;color:var(--gray-600);min-width:120px}
+.report-preview-body .report-table{width:100%;border-collapse:collapse;margin:.5rem 0;font-size:.7rem}
+.report-preview-body .report-table th{text-align:left;padding:.35rem .5rem;background:var(--gray-50);border:1px solid var(--gray-200);font-weight:600}
+.report-preview-body .report-table td{padding:.35rem .5rem;border:1px solid var(--gray-200)}
+.report-preview-body .report-total{text-align:right;font-size:.85rem;font-weight:700;color:var(--primary);margin-top:.5rem}
+.report-preview-actions{padding:.75rem 1rem;background:var(--gray-50);border-top:1px solid var(--gray-200);display:flex;gap:.5rem;justify-content:flex-end}
+
+/* ===== CALENDAR ===== */
+.calendar-container{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:1rem}
+.calendar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.calendar-header h3{font-size:.9rem;font-weight:700}
+.calendar-nav{display:flex;gap:.3rem}
+.calendar-nav button{width:28px;height:28px;border-radius:6px;border:1px solid var(--gray-200);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--gray-500);transition:var(--transition)}
+.calendar-nav button:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+.calendar-grid{display:grid;grid-template-columns:50px repeat(5,1fr);gap:1px;background:var(--gray-200);border-radius:8px;overflow:hidden}
+.calendar-time{background:#fff;padding:.3rem;font-size:.6rem;color:var(--gray-400);text-align:center;display:flex;align-items:flex-start;justify-content:center;min-height:48px}
+.calendar-day-header{background:var(--gray-50);padding:.4rem;text-align:center;font-size:.7rem;font-weight:600;color:var(--gray-700)}
+.calendar-day-header.today{background:var(--primary-light);color:var(--primary)}
+.calendar-cell{background:#fff;min-height:48px;padding:.15rem;position:relative}
+.calendar-event{padding:.2rem .35rem;border-radius:4px;font-size:.55rem;font-weight:500;margin-bottom:.1rem;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:var(--transition)}
+.calendar-event:hover{transform:scale(1.02);box-shadow:var(--shadow)}
+.calendar-event.auto{background:#dbeafe;color:#1e40af;border-left:2px solid #3b82f6}
+.calendar-event.hogar{background:#fef3c7;color:#92400e;border-left:2px solid #f59e0b}
+.calendar-event.salud{background:#dcfce7;color:#166534;border-left:2px solid #16a34a}
+.calendar-event.robo{background:#fee2e2;color:#991b1b;border-left:2px solid #dc2626}
+.calendar-event.otro{background:#f3e8ff;color:#6b21a8;border-left:2px solid #8b5cf6}
+.calendar-legend{display:flex;gap:.75rem;margin-top:.75rem;flex-wrap:wrap}
+.calendar-legend-item{display:flex;align-items:center;gap:.3rem;font-size:.65rem;color:var(--gray-600)}
+.calendar-legend-item span{width:10px;height:10px;border-radius:3px}
+
+/* ===== BILLING TABLE ===== */
+.billing-container{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:1rem}
+.billing-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1rem}
+.billing-stat{text-align:center;padding:.75rem;border-radius:8px}
+.billing-stat.earnings{background:linear-gradient(135deg,#f0fdf4,#dcfce7)}
+.billing-stat.pending{background:linear-gradient(135deg,#fefce8,#fef3c7)}
+.billing-stat.total{background:linear-gradient(135deg,#eff6ff,#dbeafe)}
+.billing-stat-value{display:block;font-size:1.25rem;font-weight:800;color:var(--gray-900)}
+.billing-stat-label{font-size:.65rem;color:var(--gray-500);margin-top:.15rem}
+.billing-table{width:100%;border-collapse:collapse;font-size:.75rem}
+.billing-table th{text-align:left;padding:.5rem .6rem;font-weight:600;color:var(--gray-600);background:var(--gray-50);border-bottom:2px solid var(--gray-200);font-size:.65rem;text-transform:uppercase;letter-spacing:.03em}
+.billing-table td{padding:.5rem .6rem;border-bottom:1px solid var(--gray-100);vertical-align:middle}
+.billing-table tr:hover{background:var(--gray-50)}
+.status-pill{display:inline-flex;align-items:center;gap:.2rem;padding:.15rem .45rem;border-radius:12px;font-size:.65rem;font-weight:600}
+.status-pill.pagado{background:var(--success-light);color:var(--success)}
+.status-pill.pendiente{background:var(--warning-light);color:#b45309}
+.invoice-btn{width:24px;height:24px;border-radius:5px;border:1px solid var(--gray-200);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--gray-500);transition:var(--transition)}
+.invoice-btn:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+/* ===== STATS DASHBOARD ===== */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.85rem;margin-bottom:1.25rem}
+.stat-card{background:#fff;border-radius:var(--radius);padding:.85rem;box-shadow:var(--shadow);display:flex;align-items:center;gap:.75rem;transition:var(--transition)}
+.stat-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem}
+.stat-info{display:flex;flex-direction:column}
+.stat-value{font-size:1.3rem;font-weight:700;line-height:1;color:var(--gray-900)}
+.stat-label{font-size:.65rem;color:var(--gray-500);margin-top:.15rem}
+.stat-trend{font-size:.6rem;font-weight:500;display:flex;align-items:center;gap:.15rem;margin-top:.2rem}
+.stat-trend.positive{color:var(--success)}
+.stat-trend.negative{color:var(--danger)}
+
+/* ===== PERFORMANCE BARS ===== */
+.perf-list{display:flex;flex-direction:column;gap:.75rem}
+.perf-item{display:flex;flex-direction:column;gap:.25rem}
+.perf-item-header{display:flex;justify-content:space-between;align-items:center}
+.perf-item-header span{font-size:.75rem;font-weight:500;color:var(--gray-700)}
+.perf-item-header strong{font-size:.75rem;color:var(--primary)}
+.perf-bar{height:6px;background:var(--gray-200);border-radius:3px;overflow:hidden}
+.perf-bar-fill{height:100%;border-radius:3px;transition:width 1s ease}
+
+/* ===== TOAST ===== */
+.toast-container{position:fixed;bottom:1.5rem;right:1.5rem;z-index:2000;display:flex;flex-direction:column;gap:.35rem}
+.toast{display:flex;align-items:center;gap:.5rem;padding:.7rem 1rem;background:var(--gray-900);color:#fff;border-radius:var(--radius);box-shadow:var(--shadow-lg);font-size:.8rem;animation:fadeInUp .3s ease;min-width:240px}
+.toast.success{border-left:4px solid var(--success)}.toast.ai{border-left:4px solid var(--ai-purple)}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:1200px){.portal-grid{grid-template-columns:1fr}.mobile-frame{margin:0 auto}.portal-grid-3,.stats-grid,.kpi-grid{grid-template-columns:repeat(2,1fr)}.calendar-grid{font-size:.6rem}.billing-summary{grid-template-columns:1fr}}
+@media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main-content{margin-left:0}.menu-toggle{display:block}.stats-grid,.kpi-grid{grid-template-columns:1fr}.calendar-grid{grid-template-columns:40px repeat(5,1fr)}}
+
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:3px}
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <a href="index.html" class="logo">
+            <div class="logo-icon"><i class="fas fa-brain"></i></div>
+            <span>SiniestrosAI <small class="ai-tag">IA</small></span>
+        </a>
+    </div>
+    <ul class="nav-menu">
+        <li class="nav-item active" data-page="visitas" onclick="navigateTo('visitas')"><i class="fas fa-map-marked-alt"></i><span>Visitas Hoy</span><span class="nav-badge">6</span></li>
+        <li class="nav-item" data-page="reporte-ia" onclick="navigateTo('reporte-ia')"><i class="fas fa-robot"></i><span>Reporte IA</span></li>
+        <li class="nav-item" data-page="estadisticas" onclick="navigateTo('estadisticas')"><i class="fas fa-chart-bar"></i><span>Estadisticas</span></li>
+        <li class="nav-item" data-page="facturacion" onclick="navigateTo('facturacion')"><i class="fas fa-file-invoice-dollar"></i><span>Facturacion</span></li>
+        <li class="nav-item" data-page="calendario" onclick="navigateTo('calendario')"><i class="fas fa-calendar-alt"></i><span>Calendario</span></li>
+        <li style="border-top:1px solid rgba(255,255,255,.08);margin-top:1rem;padding-top:1rem" class="nav-item" onclick="window.location.href='index.html'"><i class="fas fa-arrow-left"></i><span>Volver al Panel</span></li>
+    </ul>
+    <div class="sidebar-footer">
+        <div class="ai-status-bar">
+            <div class="ai-pulse-dot"></div>
+            <span>IA Perito activa</span>
+        </div>
+        <div class="user-info">
+            <div class="user-avatar">CR</div>
+            <div class="user-details">
+                <span class="user-name">Carlos Ruiz Martinez</span>
+                <span class="user-role">Perito Senior</span>
+                <div class="perito-rating">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                    <span style="color:var(--gray-400);font-size:.55rem;margin-left:.15rem">4.9</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="main-content" id="mainContent">
+    <header class="top-header">
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <div class="header-search"><i class="fas fa-search"></i><input type="text" placeholder="Buscar expediente, direccion..."></div>
+        <div class="header-actions">
+            <span class="header-date"><i class="fas fa-calendar-day"></i> Mie, 19 Mar 2026</span>
+            <button class="header-btn" onclick="navigateTo('reporte-ia')"><i class="fas fa-robot"></i> Generar Reporte</button>
+        </div>
+    </header>
+
+    <!-- ============ PAGE: VISITAS HOY ============ -->
+    <section class="page active" id="page-visitas">
+        <div class="page-header">
+            <h1><i class="fas fa-route ai-color"></i> Visitas de Hoy</h1>
+            <span style="font-size:.8rem;color:var(--gray-500)">6 visitas programadas &bull; 2 completadas</span>
+        </div>
+        <div class="portal-grid">
+            <div>
+                <div class="mobile-frame" id="mobileFrame">
+                    <div class="mobile-notch"></div>
+                    <div class="mobile-screen" id="mobileScreen">
+                        <!-- Screen 1: Visits list -->
+                        <div class="mobile-page active" id="mobVisits">
+                            <div class="mob-header">
+                                <div class="mob-avatar"><i class="fas fa-user-tie"></i></div>
+                                <div class="mob-title">Mis Visitas - 19 Mar</div>
+                                <span style="font-size:.6rem;opacity:.8">6 visitas</span>
+                            </div>
+                            <div class="mob-visits-list" id="mobVisitsList"></div>
+                            <div class="mob-bottom-nav">
+                                <button class="mob-nav-btn active" onclick="showMobPage('mobVisits')"><i class="fas fa-list"></i>Visitas</button>
+                                <button class="mob-nav-btn" onclick="showMobPage('mobRoute')"><i class="fas fa-route"></i>Ruta</button>
+                                <button class="mob-nav-btn" onclick="showMobPage('mobCase')"><i class="fas fa-file-alt"></i>Caso</button>
+                            </div>
+                            <div class="mobile-home-bar"></div>
+                        </div>
+                        <!-- Screen 2: Route Map -->
+                        <div class="mobile-page" id="mobRoute">
+                            <div class="mob-header">
+                                <i class="fas fa-arrow-left mob-back" onclick="showMobPage('mobVisits')"></i>
+                                <div class="mob-title">Ruta Optimizada</div>
+                                <span style="font-size:.55rem;opacity:.8">42.3 km</span>
+                            </div>
+                            <div class="mob-route-map" id="mobRouteMap">
+                                <div class="mob-route-map-title"><i class="fas fa-magic" style="color:var(--ai-purple)"></i> Ruta optimizada por IA</div>
+                            </div>
+                            <div class="mob-bottom-nav">
+                                <button class="mob-nav-btn" onclick="showMobPage('mobVisits')"><i class="fas fa-list"></i>Visitas</button>
+                                <button class="mob-nav-btn active" onclick="showMobPage('mobRoute')"><i class="fas fa-route"></i>Ruta</button>
+                                <button class="mob-nav-btn" onclick="showMobPage('mobCase')"><i class="fas fa-file-alt"></i>Caso</button>
+                            </div>
+                            <div class="mobile-home-bar"></div>
+                        </div>
+                        <!-- Screen 3: Case Detail -->
+                        <div class="mobile-page" id="mobCase">
+                            <div class="mob-header">
+                                <i class="fas fa-arrow-left mob-back" onclick="showMobPage('mobVisits')"></i>
+                                <div class="mob-title">EXP-2024-0891</div>
+                                <span style="font-size:.55rem;background:rgba(255,255,255,.2);padding:.1rem .3rem;border-radius:4px">Auto</span>
+                            </div>
+                            <div class="mob-case-detail" id="mobCaseDetail">
+                                <div class="mob-case-photos">
+                                    <div class="mob-case-photo" style="background:linear-gradient(135deg,#94a3b8,#64748b)"><i class="fas fa-car-crash" style="color:rgba(255,255,255,.5)"></i><span class="photo-label">Frontal</span></div>
+                                    <div class="mob-case-photo" style="background:linear-gradient(135deg,#78716c,#57534e)"><i class="fas fa-car" style="color:rgba(255,255,255,.5)"></i><span class="photo-label">Lateral</span></div>
+                                    <div class="mob-case-photo" style="background:linear-gradient(135deg,#a1a1aa,#71717a)"><i class="fas fa-cog" style="color:rgba(255,255,255,.5)"></i><span class="photo-label">Motor</span></div>
+                                    <div class="mob-case-photo" style="background:linear-gradient(135deg,#9ca3af,#6b7280)"><i class="fas fa-id-card" style="color:rgba(255,255,255,.5)"></i><span class="photo-label">Matricula</span></div>
+                                </div>
+                                <div class="mob-damage-form">
+                                    <div class="mob-form-group">
+                                        <label>Tipo de dano</label>
+                                        <div class="mob-damage-chips">
+                                            <span class="mob-damage-chip selected" onclick="this.classList.toggle('selected')">Chapa</span>
+                                            <span class="mob-damage-chip selected" onclick="this.classList.toggle('selected')">Pintura</span>
+                                            <span class="mob-damage-chip" onclick="this.classList.toggle('selected')">Cristal</span>
+                                            <span class="mob-damage-chip selected" onclick="this.classList.toggle('selected')">Mecanico</span>
+                                            <span class="mob-damage-chip" onclick="this.classList.toggle('selected')">Electrico</span>
+                                            <span class="mob-damage-chip" onclick="this.classList.toggle('selected')">Estructural</span>
+                                        </div>
+                                    </div>
+                                    <div class="mob-form-group">
+                                        <label>Gravedad</label>
+                                        <select><option>Media - Reparable</option><option>Leve - Estetico</option><option>Grave - Siniestro total</option></select>
+                                    </div>
+                                    <div class="mob-form-group">
+                                        <label>Estimacion preliminar</label>
+                                        <input type="text" value="3.450 EUR" placeholder="Importe estimado">
+                                    </div>
+                                    <div class="mob-form-group">
+                                        <label>Observaciones</label>
+                                        <textarea placeholder="Notas...">Colision frontal. Capo deformado, parachoques roto, airbag del conductor activado. Motor sin danos visibles.</textarea>
+                                    </div>
+                                    <button class="mob-btn-primary" onclick="showToast('Valoracion enviada','success')"><i class="fas fa-paper-plane"></i> Enviar Valoracion</button>
+                                </div>
+                            </div>
+                            <div class="mob-bottom-nav">
+                                <button class="mob-nav-btn" onclick="showMobPage('mobVisits')"><i class="fas fa-list"></i>Visitas</button>
+                                <button class="mob-nav-btn" onclick="showMobPage('mobRoute')"><i class="fas fa-route"></i>Ruta</button>
+                                <button class="mob-nav-btn active" onclick="showMobPage('mobCase')"><i class="fas fa-file-alt"></i>Caso</button>
+                            </div>
+                            <div class="mobile-home-bar"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="card">
+                    <div class="card-header"><h3><i class="fas fa-list-ol ai-color"></i> Agenda del Dia</h3><span style="font-size:.7rem;color:var(--gray-400)">Optimizada por IA</span></div>
+                    <div id="visitasDesktop"></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3><i class="fas fa-chart-line ai-color"></i> Rendimiento Hoy</h3></div>
+                    <div class="perf-list" id="perfList">
+                        <div class="perf-item"><div class="perf-item-header"><span>Visitas completadas</span><strong>2 / 6</strong></div><div class="perf-bar"><div class="perf-bar-fill" style="width:33%;background:var(--ai-gradient)"></div></div></div>
+                        <div class="perf-item"><div class="perf-item-header"><span>Tiempo medio por caso</span><strong>38 min</strong></div><div class="perf-bar"><div class="perf-bar-fill" style="width:63%;background:linear-gradient(90deg,#16a34a,#22c55e)"></div></div></div>
+                        <div class="perf-item"><div class="perf-item-header"><span>Reportes enviados hoy</span><strong>2</strong></div><div class="perf-bar"><div class="perf-bar-fill" style="width:33%;background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div></div></div>
+                        <div class="perf-item"><div class="perf-item-header"><span>Satisfaccion clientes</span><strong>4.9 / 5</strong></div><div class="perf-bar"><div class="perf-bar-fill" style="width:98%;background:linear-gradient(90deg,#3b82f6,#06b6d4)"></div></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ PAGE: REPORTE IA ============ -->
+    <section class="page" id="page-reporte-ia">
+        <div class="page-header"><h1><i class="fas fa-robot ai-color"></i> Generador de Informes IA</h1></div>
+        <div class="ai-report-container">
+            <div class="ai-report-header">
+                <h3><i class="fas fa-brain"></i> Motor de Peritaje Inteligente</h3>
+                <p>Genera informes de peritaje completos en segundos usando inteligencia artificial</p>
+            </div>
+            <div class="ai-report-body">
+                <div class="ai-report-trigger" id="reportTrigger">
+                    <div class="report-icon"><i class="fas fa-file-invoice"></i></div>
+                    <h3 style="margin-bottom:.5rem;color:var(--gray-800)">Generar Informe de Peritaje</h3>
+                    <p style="font-size:.8rem;color:var(--gray-500);margin-bottom:1.25rem;max-width:400px;margin-left:auto;margin-right:auto">La IA analizara las fotos del siniestro, estimara los danos, cruzara precios con proveedores y generara un PDF listo para enviar.</p>
+                    <div style="margin-bottom:1rem">
+                        <select id="reportExpSelect" style="padding:.5rem 1rem;border:1px solid var(--gray-200);border-radius:8px;font-size:.85rem;font-family:inherit">
+                            <option value="EXP-2024-0891">EXP-2024-0891 - Maria Garcia Lopez (Auto)</option>
+                            <option value="EXP-2024-0890">EXP-2024-0890 - Carlos Fernandez Ruiz (Hogar)</option>
+                            <option value="EXP-2024-0889">EXP-2024-0889 - Laura Mendez Torres (Robo)</option>
+                            <option value="EXP-2024-0887">EXP-2024-0887 - Sofia Rodriguez (Auto)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-ai btn-xl" id="btnGenerateReport"><i class="fas fa-magic"></i> Generar con IA</button>
+                </div>
+                <div class="ai-steps-container" id="aiStepsContainer">
+                    <div class="ai-step" id="aiStep1"><i class="fas fa-camera"></i><span>Analizando fotografias del siniestro...</span><div class="step-bar"><div class="step-bar-fill"></div></div></div>
+                    <div class="ai-step" id="aiStep2"><i class="fas fa-search-dollar"></i><span>Estimando danos y valoracion...</span><div class="step-bar"><div class="step-bar-fill"></div></div></div>
+                    <div class="ai-step" id="aiStep3"><i class="fas fa-database"></i><span>Cruzando precios con proveedores...</span><div class="step-bar"><div class="step-bar-fill"></div></div></div>
+                    <div class="ai-step" id="aiStep4"><i class="fas fa-balance-scale"></i><span>Verificando cobertura de poliza...</span><div class="step-bar"><div class="step-bar-fill"></div></div></div>
+                    <div class="ai-step" id="aiStep5"><i class="fas fa-file-pdf"></i><span>Generando informe PDF...</span><div class="step-bar"><div class="step-bar-fill"></div></div></div>
+                </div>
+                <div class="report-preview" id="reportPreview">
+                    <div class="report-preview-header">
+                        <div class="report-logo"><i class="fas fa-file-pdf"></i></div>
+                        <div>
+                            <h4>Informe de Peritaje - EXP-2024-0891</h4>
+                            <p>Generado automaticamente por SiniestrosAI | 19/03/2026</p>
+                        </div>
+                    </div>
+                    <div class="report-preview-body">
+                        <h5>1. Datos del Siniestro</h5>
+                        <div class="report-field"><span class="field-label">Expediente:</span><span>EXP-2024-0891</span></div>
+                        <div class="report-field"><span class="field-label">Asegurado:</span><span>Maria Garcia Lopez</span></div>
+                        <div class="report-field"><span class="field-label">Poliza:</span><span>POL-2024-00456</span></div>
+                        <div class="report-field"><span class="field-label">Fecha siniestro:</span><span>18/12/2024</span></div>
+                        <div class="report-field"><span class="field-label">Ubicacion:</span><span>M-30 km 7.2, Madrid</span></div>
+                        <div class="report-field"><span class="field-label">Vehiculo:</span><span>Seat Leon 2022 - 4521 GKM</span></div>
+                        <div class="report-field"><span class="field-label">Perito asignado:</span><span>Carlos Ruiz Martinez (Col. 4892)</span></div>
+
+                        <h5>2. Analisis Fotografico IA</h5>
+                        <p>Se han analizado 4 fotografias mediante vision artificial. El modelo ha detectado los siguientes danos con un nivel de confianza del <strong>96.2%</strong>:</p>
+                        <ul style="margin:.5rem 0 .5rem 1.25rem;font-size:.75rem">
+                            <li>Deformacion severa del capo (impacto frontal central)</li>
+                            <li>Parachoques delantero fracturado (sustitucion necesaria)</li>
+                            <li>Faro izquierdo roto (sustitucion)</li>
+                            <li>Airbag conductor desplegado (sustitucion modulo completo)</li>
+                            <li>Radiador con fuga (sustitucion)</li>
+                            <li>Pintura danada en zona frontal y lateral izquierdo</li>
+                        </ul>
+
+                        <h5>3. Valoracion de Danos</h5>
+                        <table class="report-table">
+                            <thead><tr><th>Concepto</th><th>Pieza</th><th>Mano obra</th><th>Total</th></tr></thead>
+                            <tbody>
+                                <tr><td>Capo (sustitucion + pintura)</td><td>420 EUR</td><td>180 EUR</td><td>600 EUR</td></tr>
+                                <tr><td>Parachoques delantero</td><td>380 EUR</td><td>120 EUR</td><td>500 EUR</td></tr>
+                                <tr><td>Faro izquierdo</td><td>290 EUR</td><td>45 EUR</td><td>335 EUR</td></tr>
+                                <tr><td>Airbag conductor</td><td>650 EUR</td><td>180 EUR</td><td>830 EUR</td></tr>
+                                <tr><td>Radiador</td><td>310 EUR</td><td>95 EUR</td><td>405 EUR</td></tr>
+                                <tr><td>Pintura zona frontal</td><td>120 EUR</td><td>280 EUR</td><td>400 EUR</td></tr>
+                                <tr><td>Mano de obra adicional</td><td>-</td><td>380 EUR</td><td>380 EUR</td></tr>
+                            </tbody>
+                        </table>
+                        <div class="report-total">TOTAL VALORACION: 3.450 EUR</div>
+
+                        <h5>4. Verificacion de Cobertura</h5>
+                        <div class="report-field"><span class="field-label">Tipo poliza:</span><span>Todo riesgo con franquicia</span></div>
+                        <div class="report-field"><span class="field-label">Franquicia:</span><span>150 EUR</span></div>
+                        <div class="report-field"><span class="field-label">Importe cubierto:</span><span>3.300 EUR</span></div>
+                        <div class="report-field"><span class="field-label">Estado:</span><span style="color:var(--success);font-weight:600">APROBADO - Dentro de cobertura</span></div>
+
+                        <h5>5. Conclusion</h5>
+                        <p>Los danos son consistentes con una colision frontal a velocidad moderada (estimada 40-50 km/h). No se detectan indicios de fraude (score: 12/100). Se recomienda la reparacion en taller concertado. Tiempo estimado de reparacion: 8-10 dias laborables.</p>
+                    </div>
+                    <div class="report-preview-actions">
+                        <button class="btn btn-outline" onclick="showToast('Informe enviado al asegurado','success')"><i class="fas fa-envelope"></i> Enviar</button>
+                        <button class="btn btn-primary" onclick="showToast('PDF descargado','success')"><i class="fas fa-download"></i> Descargar PDF</button>
+                        <button class="btn btn-ai" onclick="showToast('Aprobacion enviada a la aseguradora','ai')"><i class="fas fa-check-double"></i> Aprobar y Enviar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ PAGE: ESTADISTICAS ============ -->
+    <section class="page" id="page-estadisticas">
+        <div class="page-header"><h1><i class="fas fa-chart-bar ai-color"></i> Estadisticas</h1><span style="font-size:.8rem;color:var(--gray-500)">Marzo 2026</span></div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#dbeafe;color:#2563eb"><i class="fas fa-clipboard-check"></i></div>
+                <div class="stat-info"><span class="stat-value" id="statCasos">87</span><span class="stat-label">Casos completados</span><span class="stat-trend positive"><i class="fas fa-arrow-up"></i> 12% vs feb</span></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#fef3c7;color:#b45309"><i class="fas fa-clock"></i></div>
+                <div class="stat-info"><span class="stat-value">38 min</span><span class="stat-label">Tiempo medio / caso</span><span class="stat-trend positive"><i class="fas fa-arrow-down"></i> 8% vs feb</span></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#dcfce7;color:#16a34a"><i class="fas fa-euro-sign"></i></div>
+                <div class="stat-info"><span class="stat-value">8.740 EUR</span><span class="stat-label">Ingresos este mes</span><span class="stat-trend positive"><i class="fas fa-arrow-up"></i> 15% vs feb</span></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#f3e8ff;color:#8b5cf6"><i class="fas fa-star"></i></div>
+                <div class="stat-info"><span class="stat-value">4.9 / 5</span><span class="stat-label">Valoracion clientes</span><span class="stat-trend positive"><i class="fas fa-arrow-up"></i> 0.1</span></div>
+            </div>
+        </div>
+        <div class="portal-grid-3">
+            <div class="card">
+                <div class="card-header"><h3><i class="fas fa-chart-pie ai-color"></i> Casos por Tipo</h3></div>
+                <div id="chartTiposContainer" style="display:flex;flex-direction:column;gap:.5rem">
+                    <div class="perf-item"><div class="perf-item-header"><span><i class="fas fa-car-crash" style="color:#3b82f6;margin-right:.3rem"></i>Automovil</span><strong>42 casos</strong></div><div class="perf-bar"><div class="perf-bar-fill" style="width:48%;background:#3b82f6"></div></div></div>
+                    <div class="perf-item"><div class="perf-item-header"><span><i class="fas fa-house-damage" style="color:#f59e0b;margin-right:.3rem"></i>Hogar</span><strong>23 casos</strong></div><div class="perf-bar"><div class="perf-bar-fill" style="width:26%;background:#f59e0b"></div></div></div>
+                    <div class="perf-item"><div class="perf-item-header"><span><i class="fas fa-mask" style="color:#ef4444;margin-right:.3rem"></i>Robo</span><strong>12 casos</strong></div><div class="perf-bar"><div class="perf-bar-fill" style="width:14%;background:#ef4444"></div></div></div>
+                    <div class="perf-item"><div class="perf-item-header"><span><i class="fas fa-heartbeat" style="color:#16a34a;margin-right:.3rem"></i>Salud</span><strong>7 casos</strong></div><div class="perf-bar"><div class="perf-bar-fill" style="width:8%;background:#16a34a"></div></div></div>
+                    <div class="perf-item"><div class="perf-item-header"><span><i class="fas fa-file-alt" style="color:#8b5cf6;margin-right:.3rem"></i>Otros</span><strong>3 casos</strong></div><div class="perf-bar"><div class="perf-bar-fill" style="width:4%;background:#8b5cf6"></div></div></div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3><i class="fas fa-trophy ai-color"></i> Rendimiento Mensual</h3></div>
+                <div style="display:flex;flex-direction:column;gap:.75rem">
+                    <div class="perf-item"><div class="perf-item-header"><span>Tasa de resolucion</span><strong style="color:var(--success)">94.3%</strong></div><div class="perf-bar"><div class="perf-bar-fill" style="width:94.3%;background:linear-gradient(90deg,#16a34a,#22c55e)"></div></div></div>
+                    <div class="perf-item"><div class="perf-item-header"><span>Reportes a tiempo</span><strong style="color:var(--primary)">97.1%</strong></div><div class="perf-bar"><div class="perf-bar-fill" style="width:97.1%;background:var(--ai-gradient)"></div></div></div>
+                    <div class="perf-item"><div class="perf-item-header"><span>Precision valoraciones</span><strong style="color:#f59e0b">91.8%</strong></div><div class="perf-bar"><div class="perf-bar-fill" style="width:91.8%;background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div></div></div>
+                    <div class="perf-item"><div class="perf-item-header"><span>Casos sin reclamacion</span><strong style="color:var(--success)">98.2%</strong></div><div class="perf-bar"><div class="perf-bar-fill" style="width:98.2%;background:linear-gradient(90deg,#06b6d4,#22d3ee)"></div></div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><h3><i class="fas fa-chart-area ai-color"></i> Evolucion Mensual (Casos Completados)</h3></div>
+            <div style="display:flex;align-items:flex-end;gap:4px;height:160px;padding:0 .5rem" id="monthlyChart"></div>
+        </div>
+        <div class="card">
+            <div class="card-header"><h3><i class="fas fa-comments ai-color"></i> Ultimas Valoraciones de Clientes</h3></div>
+            <div style="display:flex;flex-direction:column;gap:.6rem" id="clientReviews">
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ PAGE: FACTURACION ============ -->
+    <section class="page" id="page-facturacion">
+        <div class="page-header"><h1><i class="fas fa-file-invoice-dollar ai-color"></i> Auto-Facturacion</h1></div>
+        <div class="billing-container">
+            <div class="billing-summary">
+                <div class="billing-stat earnings"><span class="billing-stat-value">6.420 EUR</span><span class="billing-stat-label">Cobrado este mes</span></div>
+                <div class="billing-stat pending"><span class="billing-stat-value">2.320 EUR</span><span class="billing-stat-label">Pendiente de cobro</span></div>
+                <div class="billing-stat total"><span class="billing-stat-value">67.840 EUR</span><span class="billing-stat-label">Total acumulado 2026</span></div>
+            </div>
+            <div class="card-header"><h3>Facturas Generadas</h3><button class="btn btn-sm btn-primary" onclick="showToast('Exportado a Excel','success')"><i class="fas fa-file-excel"></i> Exportar</button></div>
+            <div style="overflow-x:auto">
+                <table class="billing-table" id="billingTable">
+                    <thead>
+                        <tr><th>Factura</th><th>Expediente</th><th>Cliente</th><th>Tipo</th><th>Importe</th><th>Estado</th><th>Fecha</th><th></th></tr>
+                    </thead>
+                    <tbody id="billingBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ PAGE: CALENDARIO ============ -->
+    <section class="page" id="page-calendario">
+        <div class="page-header"><h1><i class="fas fa-calendar-alt ai-color"></i> Calendario Semanal</h1></div>
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <h3>Semana del 16 al 20 de Marzo 2026</h3>
+                <div class="calendar-nav">
+                    <button><i class="fas fa-chevron-left"></i></button>
+                    <button style="background:var(--primary);color:#fff;border-color:var(--primary)">Hoy</button>
+                    <button><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+            <div class="calendar-legend">
+                <div class="calendar-legend-item"><span style="background:#3b82f6"></span> Automovil</div>
+                <div class="calendar-legend-item"><span style="background:#f59e0b"></span> Hogar</div>
+                <div class="calendar-legend-item"><span style="background:#16a34a"></span> Salud</div>
+                <div class="calendar-legend-item"><span style="background:#dc2626"></span> Robo</div>
+                <div class="calendar-legend-item"><span style="background:#8b5cf6"></span> Otro</div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const VISITS = [
+    { id: 1, time: '08:30', exp: 'EXP-2024-0891', client: 'Maria Garcia Lopez', address: 'M-30 km 7.2, Madrid', type: 'auto', typeLabel: 'Automovil', status: 'completed', desc: 'Colision frontal, airbags activados' },
+    { id: 2, time: '09:45', exp: 'EXP-2024-0895', client: 'Javier Ortiz Navarro', address: 'Calle Serrano 84, Madrid', type: 'hogar', typeLabel: 'Hogar', status: 'completed', desc: 'Inundacion por rotura tuberia' },
+    { id: 3, time: '11:00', exp: 'EXP-2024-0898', client: 'Ana Belen Torres', address: 'Av. America 32, Madrid', type: 'auto', typeLabel: 'Automovil', status: 'current', desc: 'Impacto lateral en cruce' },
+    { id: 4, time: '12:30', exp: 'EXP-2024-0901', client: 'Fernando Ruiz Perez', address: 'C/ Gran Via 78, Madrid', type: 'robo', typeLabel: 'Robo', status: 'pending', desc: 'Robo con fuerza en local' },
+    { id: 5, time: '14:30', exp: 'EXP-2024-0903', client: 'Carmen Diaz Soto', address: 'Paseo Castellana 120, Madrid', type: 'hogar', typeLabel: 'Hogar', status: 'pending', desc: 'Incendio en cocina, danos electricos' },
+    { id: 6, time: '16:00', exp: 'EXP-2024-0905', client: 'Roberto Sanchez Gil', address: 'C/ Alcala 200, Madrid', type: 'auto', typeLabel: 'Automovil', status: 'pending', desc: 'Danos por granizo en vehiculo' }
+];
+
+const INVOICES = [
+    { id: 'FAC-2026-0187', exp: 'EXP-2024-0891', client: 'Maria Garcia Lopez', type: 'Auto', amount: 185, status: 'pagado', date: '18/03/2026' },
+    { id: 'FAC-2026-0186', exp: 'EXP-2024-0895', client: 'Javier Ortiz Navarro', type: 'Hogar', amount: 210, status: 'pagado', date: '18/03/2026' },
+    { id: 'FAC-2026-0185', exp: 'EXP-2024-0888', client: 'Pedro Alvarez Gomez', type: 'Salud', amount: 150, status: 'pendiente', date: '17/03/2026' },
+    { id: 'FAC-2026-0184', exp: 'EXP-2024-0886', client: 'Antonio Navarro', type: 'Hogar', amount: 280, status: 'pagado', date: '16/03/2026' },
+    { id: 'FAC-2026-0183', exp: 'EXP-2024-0885', client: 'Isabel Moreno', type: 'Auto', amount: 165, status: 'pagado', date: '15/03/2026' },
+    { id: 'FAC-2026-0182', exp: 'EXP-2024-0883', client: 'Carmen Vega', type: 'Robo', amount: 195, status: 'pendiente', date: '14/03/2026' },
+    { id: 'FAC-2026-0181', exp: 'EXP-2024-0880', client: 'Luis Fernandez', type: 'Auto', amount: 175, status: 'pagado', date: '13/03/2026' },
+    { id: 'FAC-2026-0180', exp: 'EXP-2024-0878', client: 'Elena Gomez', type: 'Hogar', amount: 240, status: 'pagado', date: '12/03/2026' },
+    { id: 'FAC-2026-0179', exp: 'EXP-2024-0875', client: 'Pablo Martinez', type: 'Auto', amount: 185, status: 'pendiente', date: '11/03/2026' },
+    { id: 'FAC-2026-0178', exp: 'EXP-2024-0872', client: 'Lucia Romero', type: 'Hogar', amount: 220, status: 'pagado', date: '10/03/2026' },
+    { id: 'FAC-2026-0177', exp: 'EXP-2024-0870', client: 'Miguel Torres', type: 'Auto', amount: 190, status: 'pagado', date: '09/03/2026' },
+    { id: 'FAC-2026-0176', exp: 'EXP-2024-0868', client: 'Sara Lopez', type: 'Robo', amount: 205, status: 'pendiente', date: '08/03/2026' }
+];
+
+const CALENDAR_EVENTS = {
+    'Lun 16': [
+        { time: '09:00', label: 'Garcia - Auto', type: 'auto' },
+        { time: '11:00', label: 'Perez - Hogar', type: 'hogar' },
+        { time: '14:00', label: 'Lopez - Auto', type: 'auto' },
+        { time: '16:30', label: 'Ruiz - Otro', type: 'otro' }
+    ],
+    'Mar 17': [
+        { time: '08:30', label: 'Torres - Robo', type: 'robo' },
+        { time: '10:00', label: 'Diaz - Hogar', type: 'hogar' },
+        { time: '12:00', label: 'Vega - Auto', type: 'auto' },
+        { time: '15:00', label: 'Moreno - Salud', type: 'salud' },
+        { time: '17:00', label: 'Sanchez - Auto', type: 'auto' }
+    ],
+    'Mie 19': [
+        { time: '08:30', label: 'Garcia - Auto', type: 'auto' },
+        { time: '09:45', label: 'Ortiz - Hogar', type: 'hogar' },
+        { time: '11:00', label: 'Torres - Auto', type: 'auto' },
+        { time: '12:30', label: 'Ruiz - Robo', type: 'robo' },
+        { time: '14:30', label: 'Diaz - Hogar', type: 'hogar' },
+        { time: '16:00', label: 'Sanchez - Auto', type: 'auto' }
+    ],
+    'Jue 20': [
+        { time: '09:00', label: 'Fernandez - Auto', type: 'auto' },
+        { time: '11:30', label: 'Alvarez - Hogar', type: 'hogar' },
+        { time: '14:00', label: 'Romero - Auto', type: 'auto' },
+        { time: '16:00', label: 'Herrera - Otro', type: 'otro' }
+    ],
+    'Vie 21': [
+        { time: '09:00', label: 'Martin - Salud', type: 'salud' },
+        { time: '10:30', label: 'Navarro - Auto', type: 'auto' },
+        { time: '13:00', label: 'Jimenez - Hogar', type: 'hogar' }
+    ]
+};
+
+const CLIENT_REVIEWS = [
+    { name: 'Maria Garcia', stars: 5, text: 'Excelente profesional. Muy rapido y detallado en la valoracion. Trato muy amable.', date: 'Hace 1 dia' },
+    { name: 'Javier Ortiz', stars: 5, text: 'Peritaje impecable. Me explico todo el proceso y la valoracion fue justa. Muy recomendable.', date: 'Hace 1 dia' },
+    { name: 'Antonio Navarro', stars: 4, text: 'Buen trabajo en general. Llego puntual y fue muy profesional. La unica pega es que tardo un poco mas en el informe.', date: 'Hace 3 dias' },
+    { name: 'Isabel Moreno', stars: 5, text: 'Increible la rapidez. En menos de una hora tenia todo valorado y el informe listo. 10/10.', date: 'Hace 4 dias' },
+    { name: 'Pedro Alvarez', stars: 5, text: 'Muy competente. Se noto que tiene mucha experiencia. Resolvio todas mis dudas sobre la cobertura.', date: 'Hace 2 dias' }
+];
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function navigateTo(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const el = document.getElementById('page-' + page);
+    if (el) el.classList.add('active');
+    const nav = document.querySelector(`.nav-item[data-page="${page}"]`);
+    if (nav) nav.classList.add('active');
+    document.getElementById('sidebar').classList.remove('open');
+}
+
+// ============================================================
+// MOBILE APP
+// ============================================================
+function showMobPage(pageId) {
+    document.querySelectorAll('#mobileScreen .mobile-page').forEach(p => p.classList.remove('active'));
+    const page = document.getElementById(pageId);
+    if (page) { page.classList.add('active'); page.classList.add('slide-in-right'); setTimeout(() => page.classList.remove('slide-in-right'), 400); }
+    // Update bottom nav
+    document.querySelectorAll('.mob-nav-btn').forEach(b => b.classList.remove('active'));
+    const navMap = { mobVisits: 0, mobRoute: 1, mobCase: 2 };
+    const allNavs = document.querySelectorAll('.mob-bottom-nav');
+    allNavs.forEach(nav => {
+        const btns = nav.querySelectorAll('.mob-nav-btn');
+        if (navMap[pageId] !== undefined && btns[navMap[pageId]]) btns[navMap[pageId]].classList.add('active');
+    });
+}
+
+function renderMobileVisits() {
+    const list = document.getElementById('mobVisitsList');
+    list.innerHTML = VISITS.map(v => {
+        const statusIcon = v.status === 'completed' ? '<i class="fas fa-check-circle" style="color:var(--success);font-size:.7rem"></i>' :
+                           v.status === 'current' ? '<i class="fas fa-map-marker-alt" style="color:var(--primary);font-size:.7rem;animation:bounce 1s infinite"></i>' :
+                           '<i class="fas fa-clock" style="color:var(--gray-400);font-size:.7rem"></i>';
+        return `<div class="mob-visit-item ${v.status === 'current' ? 'active' : ''}" onclick="showMobPage('mobCase')">
+            <div class="mob-visit-time">${v.time}<br>${statusIcon}</div>
+            <div class="mob-visit-info"><h4>${v.client}</h4><p><i class="fas fa-map-pin" style="margin-right:.2rem"></i>${v.address}</p></div>
+            <span class="mob-visit-badge ${v.type}">${v.typeLabel}</span>
+        </div>`;
+    }).join('');
+}
+
+function renderRouteMap() {
+    const map = document.getElementById('mobRouteMap');
+    const stops = [
+        { x: 15, y: 15, label: 'Inicio', status: 'completed', num: '' },
+        { x: 25, y: 28, label: 'Garcia', status: 'completed', num: '1' },
+        { x: 55, y: 22, label: 'Ortiz', status: 'completed', num: '2' },
+        { x: 40, y: 48, label: 'Torres', status: 'current', num: '3' },
+        { x: 65, y: 55, label: 'Ruiz', status: 'pending', num: '4' },
+        { x: 35, y: 72, label: 'Diaz', status: 'pending', num: '5' },
+        { x: 70, y: 78, label: 'Sanchez', status: 'pending', num: '6' }
+    ];
+    // Draw lines between stops
+    for (let i = 0; i < stops.length - 1; i++) {
+        const s1 = stops[i], s2 = stops[i + 1];
+        const dx = s2.x - s1.x, dy = s2.y - s1.y;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+        const line = document.createElement('div');
+        line.className = 'route-line';
+        line.style.cssText = `left:${s1.x}%;top:${s1.y + 3}%;width:${len}%;height:2px;transform:rotate(${angle}deg);transform-origin:0 50%;
+            background:${s1.status === 'completed' && s2.status !== 'pending' ? 'var(--success)' : s1.status === 'current' ? 'var(--primary)' : '#cbd5e1'};
+            ${s1.status === 'pending' ? 'border-top:2px dashed #cbd5e1;background:none;height:0' : ''}`;
+        map.appendChild(line);
+    }
+    // Draw stops
+    stops.forEach(s => {
+        if (!s.num) return;
+        const stop = document.createElement('div');
+        stop.className = 'route-stop';
+        stop.style.cssText = `left:${s.x - 1.5}%;top:${s.y}%`;
+        stop.innerHTML = `<div class="route-stop-dot ${s.status}">${s.num}</div><div class="route-stop-label">${s.label}</div>`;
+        map.appendChild(stop);
+    });
+    // Info bar
+    const info = document.createElement('div');
+    info.className = 'route-info-bar';
+    info.innerHTML = '<span><i class="fas fa-road"></i> <strong>42.3 km</strong> total</span><span><i class="fas fa-clock"></i> <strong>1h 45min</strong> ruta</span><span><i class="fas fa-gas-pump"></i> <strong>3.8L</strong> est.</span>';
+    map.appendChild(info);
+}
+
+// ============================================================
+// DESKTOP VISITS
+// ============================================================
+function renderDesktopVisits() {
+    const container = document.getElementById('visitasDesktop');
+    container.innerHTML = VISITS.map(v => {
+        const statusStyle = v.status === 'completed' ? 'background:var(--success-light);color:var(--success)' :
+                            v.status === 'current' ? 'background:var(--primary-light);color:var(--primary)' :
+                            'background:var(--gray-100);color:var(--gray-500)';
+        const statusText = v.status === 'completed' ? 'Completada' : v.status === 'current' ? 'En curso' : 'Pendiente';
+        const statusIcon = v.status === 'completed' ? 'fa-check-circle' : v.status === 'current' ? 'fa-map-marker-alt' : 'fa-clock';
+        return `<div style="display:flex;align-items:center;gap:.75rem;padding:.65rem .5rem;border-bottom:1px solid var(--gray-100);${v.status === 'current' ? 'background:rgba(59,130,246,.04);border-radius:8px;border:1px solid rgba(59,130,246,.15)' : ''}">
+            <span style="font-size:.8rem;font-weight:700;color:var(--primary);min-width:40px">${v.time}</span>
+            <div style="flex:1;min-width:0">
+                <div style="font-size:.8rem;font-weight:600;color:var(--gray-800)">${v.client}</div>
+                <div style="font-size:.7rem;color:var(--gray-500)"><i class="fas fa-map-pin" style="margin-right:.2rem"></i>${v.address}</div>
+                <div style="font-size:.65rem;color:var(--gray-400);margin-top:.1rem">${v.exp} - ${v.desc}</div>
+            </div>
+            <span style="font-size:.6rem;font-weight:600;padding:.2rem .5rem;border-radius:12px;${statusStyle};display:flex;align-items:center;gap:.2rem;white-space:nowrap"><i class="fas ${statusIcon}"></i> ${statusText}</span>
+        </div>`;
+    }).join('');
+}
+
+// ============================================================
+// AI REPORT GENERATOR
+// ============================================================
+function initReportGenerator() {
+    const btn = document.getElementById('btnGenerateReport');
+    btn.addEventListener('click', () => {
+        document.getElementById('reportTrigger').style.display = 'none';
+        const stepsContainer = document.getElementById('aiStepsContainer');
+        stepsContainer.style.display = 'flex';
+        document.getElementById('reportPreview').style.display = 'none';
+
+        const steps = ['aiStep1', 'aiStep2', 'aiStep3', 'aiStep4', 'aiStep5'];
+        let i = 0;
+
+        function processStep() {
+            if (i >= steps.length) {
+                setTimeout(() => {
+                    document.getElementById('reportPreview').style.display = 'block';
+                    document.getElementById('reportPreview').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 500);
+                return;
+            }
+            const step = document.getElementById(steps[i]);
+            // Activate current
+            step.classList.add('active');
+            step.querySelector('i').className = 'fas fa-spinner fa-spin';
+            step.querySelector('.step-bar-fill').style.width = '60%';
+            step.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            setTimeout(() => {
+                step.classList.remove('active');
+                step.classList.add('done');
+                step.querySelector('i').className = 'fas fa-check-circle';
+                step.querySelector('.step-bar-fill').style.width = '100%';
+                i++;
+                setTimeout(processStep, 400);
+            }, 1800);
+        }
+        processStep();
+    });
+}
+
+// ============================================================
+// BILLING TABLE
+// ============================================================
+function renderBillingTable() {
+    const body = document.getElementById('billingBody');
+    body.innerHTML = INVOICES.map(inv => `<tr>
+        <td><strong>${inv.id}</strong></td>
+        <td>${inv.exp}</td>
+        <td>${inv.client}</td>
+        <td>${inv.type}</td>
+        <td><strong>${inv.amount} EUR</strong></td>
+        <td><span class="status-pill ${inv.status}">${inv.status === 'pagado' ? '<i class="fas fa-check-circle"></i> Pagado' : '<i class="fas fa-clock"></i> Pendiente'}</span></td>
+        <td>${inv.date}</td>
+        <td><button class="invoice-btn" title="Descargar factura" onclick="showToast('Factura ${inv.id} descargada','success')"><i class="fas fa-download"></i></button></td>
+    </tr>`).join('');
+}
+
+// ============================================================
+// CALENDAR
+// ============================================================
+function renderCalendar() {
+    const grid = document.getElementById('calendarGrid');
+    const days = ['Lun 16', 'Mar 17', 'Mie 19', 'Jue 20', 'Vie 21'];
+    const hours = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
+
+    // Headers
+    grid.innerHTML = '<div class="calendar-time" style="background:var(--gray-50);font-weight:600"></div>';
+    days.forEach(d => {
+        grid.innerHTML += `<div class="calendar-day-header ${d === 'Mie 19' ? 'today' : ''}">${d}</div>`;
+    });
+
+    // Rows
+    hours.forEach(h => {
+        grid.innerHTML += `<div class="calendar-time">${h}</div>`;
+        days.forEach(d => {
+            const events = (CALENDAR_EVENTS[d] || []).filter(e => {
+                const eHour = parseInt(e.time.split(':')[0]);
+                const hHour = parseInt(h.split(':')[0]);
+                return eHour === hHour;
+            });
+            let cellHTML = '<div class="calendar-cell">';
+            events.forEach(e => {
+                cellHTML += `<div class="calendar-event ${e.type}" title="${e.time} - ${e.label}">${e.time} ${e.label}</div>`;
+            });
+            cellHTML += '</div>';
+            grid.innerHTML += cellHTML;
+        });
+    });
+}
+
+// ============================================================
+// STATISTICS
+// ============================================================
+function renderMonthlyChart() {
+    const container = document.getElementById('monthlyChart');
+    const data = [
+        { month: 'Oct', value: 68 },
+        { month: 'Nov', value: 72 },
+        { month: 'Dic', value: 75 },
+        { month: 'Ene', value: 79 },
+        { month: 'Feb', value: 82 },
+        { month: 'Mar', value: 87 }
+    ];
+    const max = Math.max(...data.map(d => d.value));
+    container.innerHTML = data.map((d, i) => {
+        const h = (d.value / max * 130);
+        const isLast = i === data.length - 1;
+        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:.3rem">
+            <span style="font-size:.7rem;font-weight:700;color:${isLast ? 'var(--primary)' : 'var(--gray-600)'}">${d.value}</span>
+            <div style="width:100%;height:${h}px;background:${isLast ? 'var(--ai-gradient)' : 'linear-gradient(180deg,#dbeafe,#93c5fd)'};border-radius:6px 6px 0 0;transition:height 1s ease;position:relative;${isLast ? 'box-shadow:0 0 12px rgba(139,92,246,.3)' : ''}"></div>
+            <span style="font-size:.6rem;color:var(--gray-500);font-weight:500">${d.month}</span>
+        </div>`;
+    }).join('');
+}
+
+function renderClientReviews() {
+    const container = document.getElementById('clientReviews');
+    container.innerHTML = CLIENT_REVIEWS.map(r => {
+        const stars = Array(5).fill(0).map((_, i) => `<i class="fas fa-star" style="color:${i < r.stars ? '#fbbf24' : '#e2e8f0'};font-size:.65rem"></i>`).join('');
+        return `<div style="display:flex;gap:.75rem;padding:.65rem;background:var(--gray-50);border-radius:8px">
+            <div style="width:36px;height:36px;border-radius:50%;background:var(--ai-gradient);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.7rem;flex-shrink:0">${r.name.split(' ').map(n => n[0]).join('')}</div>
+            <div style="flex:1">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.2rem">
+                    <span style="font-size:.8rem;font-weight:600;color:var(--gray-800)">${r.name}</span>
+                    <span style="font-size:.6rem;color:var(--gray-400)">${r.date}</span>
+                </div>
+                <div style="margin-bottom:.2rem">${stars}</div>
+                <p style="font-size:.75rem;color:var(--gray-600);line-height:1.4">${r.text}</p>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function showToast(msg, type) {
+    const c = document.getElementById('toastContainer');
+    const t = document.createElement('div');
+    t.className = `toast ${type || 'info'}`;
+    const icons = { success: 'fa-check-circle', ai: 'fa-robot', info: 'fa-info-circle' };
+    t.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i> ${msg}`;
+    c.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(100%)'; t.style.transition = 'all .3s'; setTimeout(() => t.remove(), 300); }, 3500);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('menuToggle').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
+    renderMobileVisits();
+    renderRouteMap();
+    renderDesktopVisits();
+    initReportGenerator();
+    renderBillingTable();
+    renderCalendar();
+    renderMonthlyChart();
+    renderClientReviews();
+});
+</script>
+</body>
+</html>

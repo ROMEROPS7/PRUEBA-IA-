@@ -1,0 +1,43 @@
+name: CI/CD SiniestrosAI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      - name: Install dependencies
+        run: cd backend && npm ci
+      - name: Run tests
+        run: cd backend && npm test
+      - name: Check server starts
+        run: |
+          cd backend
+          timeout 10 node server.js &
+          sleep 5
+          curl -f http://localhost:3001/api/health
+          kill %1
+
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t siniestrosai:latest .
+      - name: Test Docker image
+        run: |
+          docker run -d --name test -p 3001:3001 -e JWT_SECRET=test-secret -e NODE_ENV=production siniestrosai:latest
+          sleep 5
+          curl -f http://localhost:3001/api/health
+          docker stop test

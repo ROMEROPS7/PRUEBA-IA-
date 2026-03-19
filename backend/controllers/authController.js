@@ -3,6 +3,14 @@ const { dbGet, dbRun } = require('../database/db');
 const { generarToken } = require('../middleware/auth');
 const { v4: uuidv4 } = require('uuid');
 
+function validatePassword(password) {
+  if (!password || password.length < 12) return 'Password must be at least 12 characters';
+  if (!/[A-Z]/.test(password)) return 'Must contain uppercase letter';
+  if (!/[0-9]/.test(password)) return 'Must contain a number';
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) return 'Must contain special character';
+  return null;
+}
+
 const authController = {
   async login(req, res) {
     try {
@@ -24,8 +32,11 @@ const authController = {
       await dbRun("UPDATE usuarios SET ultimo_login = datetime('now') WHERE id = ?", [usuario.id]);
 
       const token = generarToken(usuario);
+      const refreshToken = require('../middleware/auth').generarRefreshToken(usuario);
+      res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
       res.json({
         token,
+        refreshToken,
         usuario: {
           id: usuario.id,
           nombre: usuario.nombre,
@@ -34,7 +45,7 @@ const authController = {
         },
       });
     } catch (err) {
-      console.error('Error en login:', err);
+
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   },
@@ -44,6 +55,11 @@ const authController = {
       const { nombre, email, password, rol } = req.body;
       if (!nombre || !email || !password) {
         return res.status(400).json({ error: 'Nombre, email y password requeridos' });
+      }
+
+      const passwordError = validatePassword(password);
+      if (passwordError) {
+        return res.status(400).json({ error: passwordError });
       }
 
       const existe = await dbGet('SELECT id FROM usuarios WHERE email = ?', [email]);
@@ -62,7 +78,7 @@ const authController = {
         usuario: { id, nombre, email, rol: rol || 'gestor' },
       });
     } catch (err) {
-      console.error('Error en registro:', err);
+
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   },
@@ -75,7 +91,7 @@ const authController = {
       }
       res.json(usuario);
     } catch (err) {
-      console.error('Error obteniendo perfil:', err);
+
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   },
@@ -85,6 +101,11 @@ const authController = {
       const { password_actual, password_nuevo } = req.body;
       if (!password_actual || !password_nuevo) {
         return res.status(400).json({ error: 'Passwords actual y nuevo requeridos' });
+      }
+
+      const passwordError = validatePassword(password_nuevo);
+      if (passwordError) {
+        return res.status(400).json({ error: passwordError });
       }
 
       const usuario = await dbGet('SELECT * FROM usuarios WHERE id = ?', [req.usuario.id]);
@@ -97,7 +118,7 @@ const authController = {
       await dbRun('UPDATE usuarios SET password = ? WHERE id = ?', [hash, req.usuario.id]);
       res.json({ mensaje: 'Password actualizado correctamente' });
     } catch (err) {
-      console.error('Error cambiando password:', err);
+
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   },

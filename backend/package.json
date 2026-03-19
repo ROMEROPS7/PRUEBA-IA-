@@ -1,15 +1,21 @@
 {
   "name": "siniestros-ai-backend",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Backend completo para SiniestrosAI - Sistema Autonomo de Gestion de Siniestros",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "seed": "node database/db.js"
+    "seed": "node database/db.js",
+    "test": "node tests/runner.js",
+    "backup": "node -e \"require('./services/backupService').backupNow().then(r=>console.log('Backup:',r))\"",
+    "migrate:supabase": "node -e \"require('./database/supabase').migrateFromSQLite().then(()=>console.log('Migrado'))\"",
+    "health": "curl -s http://localhost:3001/api/health/detailed | node -e \"process.stdin.on('data',d=>console.log(JSON.parse(d)))\""
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "compression": "^1.8.1",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
@@ -20,6 +26,16 @@
     "twilio": "^5.4.0",
     "uuid": "^11.0.3"
   },
-  "keywords": ["siniestros", "seguros", "ia", "gestion"],
+  "optionalDependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  },
+  "keywords": [
+    "siniestros",
+    "seguros",
+    "ia",
+    "gestion",
+    "saas",
+    "multitenancy"
+  ],
   "license": "MIT"
 }

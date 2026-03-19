@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiniestrosAI - Portal del Reparador</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ===== VARIABLES ===== */
+        :root {
+            --primary:#1a56db;--primary-dark:#1242a8;--primary-light:#e8effd;
+            --success:#16a34a;--success-light:#dcfce7;--warning:#f59e0b;--warning-light:#fef3c7;
+            --danger:#dc2626;--danger-light:#fee2e2;--info:#2563eb;--info-light:#dbeafe;
+            --ai-purple:#8b5cf6;--ai-purple-dark:#7c3aed;--ai-cyan:#06b6d4;
+            --ai-gradient:linear-gradient(135deg,#8b5cf6 0%,#06b6d4 100%);
+            --white:#fff;--gray-50:#f8fafc;--gray-100:#f1f5f9;--gray-200:#e2e8f0;--gray-300:#cbd5e1;
+            --gray-400:#94a3b8;--gray-500:#64748b;--gray-600:#475569;--gray-700:#334155;--gray-800:#1e293b;--gray-900:#0f172a;
+            --radius:10px;
+            --shadow:0 1px 3px rgba(0,0,0,0.08);--shadow-md:0 4px 6px rgba(0,0,0,0.07);--shadow-lg:0 10px 15px rgba(0,0,0,0.1);
+            --transition:all 0.2s ease;
+        }
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0f0a2e 0%,#1a1145 30%,#0d1f3c 100%);color:var(--gray-800);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;}
+
+        @keyframes livePulse{0%,100%{opacity:1}50%{opacity:.4}}
+        @keyframes aiGlow{0%,100%{box-shadow:0 0 5px rgba(139,92,246,.3)}50%{box-shadow:0 0 20px rgba(139,92,246,.6),0 0 40px rgba(6,182,212,.3)}}
+        @keyframes fadeInUp{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+        @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+        @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+        /* ===== LAYOUT ===== */
+        .page-wrapper{display:flex;gap:2rem;max-width:1400px;width:100%;animation:fadeInUp .6s ease;}
+
+        /* ===== SIDEBAR NAV ===== */
+        .sidebar{width:260px;min-width:260px;background:linear-gradient(180deg,var(--gray-900),var(--gray-800));border-radius:16px;padding:1.5rem 0;display:flex;flex-direction:column;height:fit-content;position:sticky;top:2rem;}
+        .sidebar-header{padding:0 1.25rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.08);}
+        .logo{display:flex;align-items:center;gap:.6rem;color:#fff;font-size:1rem;font-weight:700;}
+        .logo-icon{font-size:1.1rem;color:#fff;background:var(--ai-gradient);padding:.45rem;border-radius:8px;display:flex;align-items:center;justify-content:center;}
+        .ai-tag{font-size:.55rem;background:var(--ai-gradient);color:#fff;padding:1px 5px;border-radius:4px;vertical-align:super;}
+        .sidebar-user{padding:1rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.08);}
+        .user-info{display:flex;align-items:center;gap:.6rem;}
+        .user-avatar{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#ef4444);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.85rem;}
+        .user-name{color:#fff;font-size:.8rem;font-weight:600;}
+        .user-role{color:var(--gray-400);font-size:.65rem;}
+        .nav-menu{list-style:none;padding:.75rem 0;flex:1;}
+        .nav-item{display:flex;align-items:center;gap:.6rem;padding:.65rem 1.25rem;color:var(--gray-400);cursor:pointer;transition:var(--transition);border-left:3px solid transparent;font-size:.8rem;text-decoration:none;}
+        .nav-item:hover{color:#fff;background:rgba(255,255,255,.05);}
+        .nav-item.active{color:#fff;background:rgba(26,86,219,.15);border-left-color:var(--primary);}
+        .nav-item i{width:18px;text-align:center;font-size:.9rem;}
+        .nav-separator{height:1px;background:rgba(255,255,255,.06);margin:.5rem 1.25rem;}
+        .nav-label{font-size:.6rem;font-weight:700;color:var(--gray-500);padding:.5rem 1.25rem;letter-spacing:.08em;text-transform:uppercase;}
+        .nav-ext{font-size:.6rem;margin-left:auto;opacity:.4;}
+        .live-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;animation:livePulse 1.5s infinite;margin-left:auto;}
+        .sidebar-footer{padding:.75rem 1.25rem;border-top:1px solid rgba(255,255,255,.08);margin-top:auto;}
+        .sidebar-footer-text{color:var(--gray-500);font-size:.6rem;text-align:center;}
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content{flex:1;min-width:0;}
+
+        /* ===== TOP HEADER ===== */
+        .top-header{background:var(--white);border-radius:16px;padding:1.25rem 1.75rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-md);}
+        .header-left h1{font-size:1.3rem;font-weight:800;color:var(--gray-900);}
+        .header-left p{font-size:.8rem;color:var(--gray-500);margin-top:.15rem;}
+        .header-right{display:flex;align-items:center;gap:.75rem;}
+        .header-badge{display:inline-flex;align-items:center;gap:.35rem;font-size:.7rem;font-weight:600;padding:.35rem .75rem;border-radius:8px;}
+        .badge-online{background:var(--success-light);color:var(--success);}
+        .badge-workshop{background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(239,68,68,.1));color:#d97706;border:1px solid rgba(245,158,11,.2);}
+
+        /* ===== MOBILE FRAME ===== */
+        .mobile-frame-container{display:flex;gap:1.5rem;align-items:flex-start;}
+        .mobile-frame{width:375px;min-width:375px;background:#fff;border-radius:32px;box-shadow:0 25px 60px rgba(0,0,0,.15),0 0 0 1px rgba(0,0,0,.05);overflow:hidden;position:relative;}
+        .mobile-notch{height:28px;background:#000;border-radius:0 0 18px 18px;width:160px;margin:0 auto;position:relative;z-index:2;}
+        .mobile-status-bar{display:flex;justify-content:space-between;align-items:center;padding:.35rem 1.25rem;font-size:.65rem;font-weight:600;color:var(--gray-700);}
+        .mobile-header{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;padding:1rem 1.25rem;text-align:center;}
+        .mobile-header h2{font-size:1rem;font-weight:700;}
+        .mobile-header p{font-size:.7rem;opacity:.85;margin-top:.15rem;}
+        .mobile-content{padding:1rem;max-height:580px;overflow-y:auto;}
+        .mobile-content::-webkit-scrollbar{width:3px;}
+        .mobile-content::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:3px;}
+        .mobile-nav{display:flex;justify-content:space-around;padding:.6rem 0;border-top:1px solid var(--gray-200);background:var(--white);}
+        .mobile-nav-item{display:flex;flex-direction:column;align-items:center;gap:.15rem;font-size:.55rem;color:var(--gray-400);cursor:pointer;transition:var(--transition);}
+        .mobile-nav-item.active{color:var(--primary);}
+        .mobile-nav-item i{font-size:1rem;}
+        .m-card{background:var(--gray-50);border-radius:10px;padding:.75rem;margin-bottom:.6rem;border:1px solid var(--gray-200);}
+        .m-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem;}
+        .m-card-title{font-size:.75rem;font-weight:700;color:var(--gray-800);}
+        .m-badge{font-size:.55rem;font-weight:600;padding:.15rem .4rem;border-radius:6px;}
+        .m-badge-pending{background:var(--warning-light);color:#b45309;}
+        .m-badge-progress{background:var(--info-light);color:var(--info);}
+        .m-badge-done{background:var(--success-light);color:var(--success);}
+        .m-badge-urgent{background:var(--danger-light);color:var(--danger);}
+        .m-card-detail{font-size:.65rem;color:var(--gray-500);line-height:1.4;}
+        .m-card-detail i{width:14px;color:var(--gray-400);}
+        .m-section-title{font-size:.7rem;font-weight:700;color:var(--gray-600);margin:1rem 0 .4rem;text-transform:uppercase;letter-spacing:.04em;}
+
+        /* ===== DESKTOP PANELS ===== */
+        .desktop-panels{flex:1;display:flex;flex-direction:column;gap:1.5rem;}
+        .panel{background:var(--white);border-radius:16px;padding:1.5rem;box-shadow:var(--shadow-md);}
+        .panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+        .panel-title{font-size:1rem;font-weight:700;color:var(--gray-900);display:flex;align-items:center;gap:.5rem;}
+        .panel-title i{color:var(--ai-purple);font-size:.9rem;}
+
+        /* ===== CASES TABLE ===== */
+        .cases-table{width:100%;border-collapse:separate;border-spacing:0;}
+        .cases-table th{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--gray-500);text-align:left;padding:.6rem .75rem;border-bottom:2px solid var(--gray-200);}
+        .cases-table td{font-size:.78rem;padding:.7rem .75rem;border-bottom:1px solid var(--gray-100);color:var(--gray-700);}
+        .cases-table tr:hover td{background:var(--gray-50);}
+        .status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:.35rem;}
+        .status-dot.pending{background:var(--warning);}
+        .status-dot.progress{background:var(--info);}
+        .status-dot.done{background:var(--success);}
+        .status-dot.urgent{background:var(--danger);animation:livePulse 1s infinite;}
+        .priority-badge{font-size:.6rem;font-weight:700;padding:.15rem .4rem;border-radius:4px;text-transform:uppercase;}
+        .priority-alta{background:var(--danger-light);color:var(--danger);}
+        .priority-media{background:var(--warning-light);color:#b45309;}
+        .priority-normal{background:var(--gray-100);color:var(--gray-600);}
+
+        /* ===== UPDATE FORM ===== */
+        .form-group{margin-bottom:1rem;}
+        .form-label{font-size:.75rem;font-weight:600;color:var(--gray-700);margin-bottom:.35rem;display:block;}
+        .form-select,.form-input,.form-textarea{width:100%;padding:.6rem .75rem;border:1px solid var(--gray-200);border-radius:8px;font-family:inherit;font-size:.8rem;color:var(--gray-700);transition:var(--transition);background:var(--white);}
+        .form-select:focus,.form-input:focus,.form-textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,86,219,.1);}
+        .form-textarea{resize:vertical;min-height:80px;}
+        .photo-upload{border:2px dashed var(--gray-300);border-radius:10px;padding:1.5rem;text-align:center;cursor:pointer;transition:var(--transition);background:var(--gray-50);}
+        .photo-upload:hover{border-color:var(--primary);background:var(--primary-light);}
+        .photo-upload i{font-size:2rem;color:var(--gray-400);margin-bottom:.5rem;}
+        .photo-upload p{font-size:.75rem;color:var(--gray-500);}
+        .photo-preview{display:flex;gap:.5rem;margin-top:.75rem;flex-wrap:wrap;}
+        .photo-thumb{width:60px;height:60px;border-radius:8px;background:var(--gray-200);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+        .photo-thumb i{color:var(--gray-400);font-size:1.2rem;}
+        .photo-thumb .remove{position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:var(--danger);color:#fff;font-size:.5rem;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+        .btn{padding:.55rem 1.1rem;border:none;border-radius:8px;font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer;transition:var(--transition);display:inline-flex;align-items:center;gap:.4rem;}
+        .btn-primary{background:var(--primary);color:#fff;}
+        .btn-primary:hover{background:var(--primary-dark);}
+        .btn-ai{background:var(--ai-gradient);color:#fff;}
+        .btn-ai:hover{opacity:.9;}
+        .btn-success{background:var(--success);color:#fff;}
+        .btn-outline{background:transparent;border:1px solid var(--gray-300);color:var(--gray-600);}
+        .btn-outline:hover{border-color:var(--primary);color:var(--primary);}
+
+        /* ===== BUDGET TABLE ===== */
+        .budget-table{width:100%;border-collapse:separate;border-spacing:0;}
+        .budget-table th{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--gray-500);text-align:left;padding:.5rem .6rem;border-bottom:2px solid var(--gray-200);}
+        .budget-table td{font-size:.78rem;padding:.5rem .6rem;border-bottom:1px solid var(--gray-100);color:var(--gray-700);}
+        .budget-table tfoot td{font-weight:700;color:var(--gray-900);border-top:2px solid var(--gray-300);font-size:.85rem;}
+        .budget-total{background:linear-gradient(135deg,rgba(139,92,246,.05),rgba(6,182,212,.05));border-radius:10px;padding:1rem;display:flex;justify-content:space-between;align-items:center;margin-top:.75rem;}
+        .budget-total-label{font-size:.8rem;font-weight:600;color:var(--gray-600);}
+        .budget-total-amount{font-size:1.3rem;font-weight:800;background:var(--ai-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+
+        /* ===== HISTORY ===== */
+        .history-item{display:flex;align-items:center;gap:.75rem;padding:.75rem 0;border-bottom:1px solid var(--gray-100);}
+        .history-item:last-child{border-bottom:none;}
+        .history-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
+        .history-icon.paid{background:var(--success-light);color:var(--success);}
+        .history-icon.pending{background:var(--warning-light);color:#b45309;}
+        .history-icon.process{background:var(--info-light);color:var(--info);}
+        .history-info{flex:1;min-width:0;}
+        .history-title{font-size:.8rem;font-weight:600;color:var(--gray-800);}
+        .history-meta{font-size:.7rem;color:var(--gray-500);}
+        .history-amount{font-size:.85rem;font-weight:700;color:var(--gray-800);}
+        .history-status{font-size:.6rem;font-weight:600;padding:.15rem .4rem;border-radius:6px;}
+        .history-status.paid{background:var(--success-light);color:var(--success);}
+        .history-status.pending{background:var(--warning-light);color:#b45309;}
+        .history-status.process{background:var(--info-light);color:var(--info);}
+
+        /* ===== RATINGS ===== */
+        .rating-card{background:var(--gray-50);border-radius:10px;padding:1rem;margin-bottom:.6rem;border:1px solid var(--gray-100);}
+        .rating-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem;}
+        .rating-stars{color:#f59e0b;font-size:.85rem;letter-spacing:1px;}
+        .rating-date{font-size:.65rem;color:var(--gray-400);}
+        .rating-text{font-size:.78rem;color:var(--gray-600);line-height:1.5;font-style:italic;}
+        .rating-author{font-size:.7rem;color:var(--gray-500);margin-top:.3rem;font-weight:600;}
+        .rating-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1rem;}
+        .rating-stat{text-align:center;padding:.75rem;background:var(--gray-50);border-radius:10px;}
+        .rating-stat-value{font-size:1.5rem;font-weight:800;color:var(--gray-900);}
+        .rating-stat-label{font-size:.65rem;color:var(--gray-500);margin-top:.15rem;}
+        .stars-large{color:#f59e0b;font-size:1.1rem;letter-spacing:2px;}
+
+        /* ===== FORM ROW ===== */
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+
+        /* ===== RESPONSIVE ===== */
+        @media(max-width:1200px){
+            .page-wrapper{flex-direction:column;}
+            .sidebar{width:100%;min-width:unset;position:static;}
+            .nav-menu{display:flex;flex-wrap:wrap;padding:.5rem;}
+            .nav-item{padding:.5rem .75rem;border-left:none;border-bottom:2px solid transparent;}
+            .nav-item.active{border-bottom-color:var(--primary);border-left:none;}
+            .nav-separator,.nav-label{display:none;}
+            .mobile-frame-container{flex-direction:column;align-items:center;}
+            .mobile-frame{min-width:unset;width:100%;max-width:375px;}
+        }
+
+        /* ===== TOAST ===== */
+        .toast{position:fixed;top:1.5rem;right:1.5rem;background:var(--white);border-radius:12px;padding:1rem 1.5rem;box-shadow:0 10px 40px rgba(0,0,0,.15);display:flex;align-items:center;gap:.75rem;z-index:9999;transform:translateX(150%);transition:transform .4s ease;max-width:360px;}
+        .toast.show{transform:translateX(0);}
+        .toast-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+        .toast-icon.success{background:var(--success-light);color:var(--success);}
+        .toast-title{font-size:.8rem;font-weight:700;color:var(--gray-900);}
+        .toast-msg{font-size:.7rem;color:var(--gray-500);}
+    </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-brain"></i></div>
+                <span>SiniestrosAI <small class="ai-tag">IA</small></span>
+            </div>
+        </div>
+        <div class="sidebar-user">
+            <div class="user-info">
+                <div class="user-avatar">TM</div>
+                <div>
+                    <div class="user-name">Talleres Martinez</div>
+                    <div class="user-role">Reparador Oficial</div>
+                </div>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item active" onclick="showSection('casos')"><i class="fas fa-clipboard-list"></i><span>Casos Asignados</span><span class="live-dot"></span></li>
+            <li class="nav-item" onclick="showSection('actualizar')"><i class="fas fa-sync-alt"></i><span>Actualizar Estado</span></li>
+            <li class="nav-item" onclick="showSection('presupuestos')"><i class="fas fa-file-invoice-dollar"></i><span>Presupuestos</span></li>
+            <li class="nav-item" onclick="showSection('historial')"><i class="fas fa-history"></i><span>Historial y Pagos</span></li>
+            <li class="nav-item" onclick="showSection('valoraciones')"><i class="fas fa-star"></i><span>Valoraciones</span></li>
+            <li class="nav-separator"></li>
+            <li class="nav-label">PORTALES</li>
+            <li class="nav-item" onclick="window.open('index.html','_blank')"><i class="fas fa-brain"></i><span>App Principal</span><i class="fas fa-external-link-alt nav-ext"></i></li>
+            <li class="nav-item" onclick="window.open('portal-gestor.html','_blank')"><i class="fas fa-headset"></i><span>Portal Gestor</span><i class="fas fa-external-link-alt nav-ext"></i></li>
+            <li class="nav-item" onclick="window.open('portal-perito.html','_blank')"><i class="fas fa-user-tie"></i><span>Portal Perito</span><i class="fas fa-external-link-alt nav-ext"></i></li>
+            <li class="nav-item" onclick="window.open('portal-cliente.html','_blank')"><i class="fas fa-mobile-alt"></i><span>Portal Cliente</span><i class="fas fa-external-link-alt nav-ext"></i></li>
+            <li class="nav-item" onclick="window.open('saas-panel.html','_blank')"><i class="fas fa-building"></i><span>Panel SaaS</span><i class="fas fa-external-link-alt nav-ext"></i></li>
+        </ul>
+        <div class="sidebar-footer">
+            <div class="sidebar-footer-text">SiniestrosAI v3.2 &middot; Portal Reparador</div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="top-header">
+            <div class="header-left">
+                <h1><i class="fas fa-tools" style="color:var(--ai-purple);margin-right:.4rem;"></i> Talleres Martinez - Reparador Oficial</h1>
+                <p>Portal de gestion de reparaciones &middot; Zona: Madrid Sur &middot; Convenio: Mapfre, AXA, Allianz, Generali</p>
+            </div>
+            <div class="header-right">
+                <span class="header-badge badge-online"><i class="fas fa-circle" style="font-size:.4rem;"></i> Conectado</span>
+                <span class="header-badge badge-workshop"><i class="fas fa-wrench"></i> Taller Nivel Premium</span>
+            </div>
+        </div>
+
+        <div class="mobile-frame-container">
+            <!-- MOBILE APP FRAME -->
+            <div class="mobile-frame">
+                <div class="mobile-notch"></div>
+                <div class="mobile-status-bar">
+                    <span>09:41</span>
+                    <span><i class="fas fa-signal" style="margin-right:.3rem;"></i><i class="fas fa-wifi" style="margin-right:.3rem;"></i><i class="fas fa-battery-full"></i></span>
+                </div>
+                <div class="mobile-header">
+                    <h2><i class="fas fa-tools"></i> Talleres Martinez</h2>
+                    <p>3 casos urgentes &middot; 8 en progreso</p>
+                </div>
+                <div class="mobile-content" id="mobileContent">
+                    <!-- Mobile cases -->
+                    <div class="m-section-title"><i class="fas fa-exclamation-circle" style="color:var(--danger);"></i> Urgentes</div>
+                    <div class="m-card">
+                        <div class="m-card-header">
+                            <span class="m-card-title">SIN-2026-4521</span>
+                            <span class="m-badge m-badge-urgent">Urgente</span>
+                        </div>
+                        <div class="m-card-detail">
+                            <div><i class="fas fa-car"></i> BMW Serie 3 &middot; Colision frontal</div>
+                            <div><i class="fas fa-user"></i> Ana Garcia Lopez</div>
+                            <div><i class="fas fa-clock"></i> Hace 2h &middot; Mapfre</div>
+                        </div>
+                    </div>
+                    <div class="m-card">
+                        <div class="m-card-header">
+                            <span class="m-card-title">SIN-2026-4518</span>
+                            <span class="m-badge m-badge-urgent">Urgente</span>
+                        </div>
+                        <div class="m-card-detail">
+                            <div><i class="fas fa-car"></i> Audi A4 &middot; Danhos por granizo</div>
+                            <div><i class="fas fa-user"></i> Carlos Ruiz Perez</div>
+                            <div><i class="fas fa-clock"></i> Hace 5h &middot; AXA</div>
+                        </div>
+                    </div>
+                    <div class="m-section-title"><i class="fas fa-spinner" style="color:var(--info);"></i> En progreso</div>
+                    <div class="m-card">
+                        <div class="m-card-header">
+                            <span class="m-card-title">SIN-2026-4490</span>
+                            <span class="m-badge m-badge-progress">Reparando</span>
+                        </div>
+                        <div class="m-card-detail">
+                            <div><i class="fas fa-car"></i> VW Golf &middot; Lateral derecho</div>
+                            <div><i class="fas fa-clock"></i> 60% completado</div>
+                        </div>
+                    </div>
+                    <div class="m-card">
+                        <div class="m-card-header">
+                            <span class="m-card-title">SIN-2026-4467</span>
+                            <span class="m-badge m-badge-progress">Piezas pedidas</span>
+                        </div>
+                        <div class="m-card-detail">
+                            <div><i class="fas fa-car"></i> Seat Leon &middot; Parachoques + faro</div>
+                            <div><i class="fas fa-clock"></i> Esperando piezas (ETA: 2 dias)</div>
+                        </div>
+                    </div>
+                    <div class="m-card">
+                        <div class="m-card-header">
+                            <span class="m-card-title">SIN-2026-4455</span>
+                            <span class="m-badge m-badge-pending">Presupuesto</span>
+                        </div>
+                        <div class="m-card-detail">
+                            <div><i class="fas fa-car"></i> Toyota Corolla &middot; Chapa y pintura</div>
+                            <div><i class="fas fa-clock"></i> Pendiente aprobacion perito</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mobile-nav">
+                    <div class="mobile-nav-item active"><i class="fas fa-clipboard-list"></i><span>Casos</span></div>
+                    <div class="mobile-nav-item"><i class="fas fa-camera"></i><span>Fotos</span></div>
+                    <div class="mobile-nav-item"><i class="fas fa-file-invoice"></i><span>Presup.</span></div>
+                    <div class="mobile-nav-item"><i class="fas fa-euro-sign"></i><span>Pagos</span></div>
+                    <div class="mobile-nav-item"><i class="fas fa-user"></i><span>Perfil</span></div>
+                </div>
+            </div>
+
+            <!-- DESKTOP PANELS -->
+            <div class="desktop-panels">
+                <!-- SECTION: CASOS ASIGNADOS -->
+                <div class="panel" id="section-casos">
+                    <div class="panel-header">
+                        <div class="panel-title"><i class="fas fa-clipboard-list"></i> Casos Asignados</div>
+                        <div style="display:flex;gap:.5rem;">
+                            <span class="header-badge badge-online">8 activos</span>
+                            <span class="header-badge" style="background:var(--danger-light);color:var(--danger);">3 urgentes</span>
+                        </div>
+                    </div>
+                    <table class="cases-table">
+                        <thead>
+                            <tr>
+                                <th>Expediente</th>
+                                <th>Vehiculo</th>
+                                <th>Tipo</th>
+                                <th>Aseguradora</th>
+                                <th>Estado</th>
+                                <th>Prioridad</th>
+                                <th>Plazo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="font-weight:600;">SIN-2026-4521</td>
+                                <td>BMW Serie 3 (2024)</td>
+                                <td>Colision frontal</td>
+                                <td>Mapfre</td>
+                                <td><span class="status-dot urgent"></span>Recibido</td>
+                                <td><span class="priority-badge priority-alta">Alta</span></td>
+                                <td style="color:var(--danger);font-weight:600;">Hoy</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:600;">SIN-2026-4518</td>
+                                <td>Audi A4 (2023)</td>
+                                <td>Granizo</td>
+                                <td>AXA</td>
+                                <td><span class="status-dot urgent"></span>Valorar</td>
+                                <td><span class="priority-badge priority-alta">Alta</span></td>
+                                <td style="color:var(--danger);font-weight:600;">Hoy</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:600;">SIN-2026-4512</td>
+                                <td>Mercedes Clase C (2022)</td>
+                                <td>Alcance trasero</td>
+                                <td>Allianz</td>
+                                <td><span class="status-dot urgent"></span>Presupuestar</td>
+                                <td><span class="priority-badge priority-alta">Alta</span></td>
+                                <td style="color:var(--warning);font-weight:600;">Manana</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:600;">SIN-2026-4490</td>
+                                <td>VW Golf (2023)</td>
+                                <td>Lateral derecho</td>
+                                <td>Generali</td>
+                                <td><span class="status-dot progress"></span>Reparando (60%)</td>
+                                <td><span class="priority-badge priority-media">Media</span></td>
+                                <td>3 dias</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:600;">SIN-2026-4467</td>
+                                <td>Seat Leon (2024)</td>
+                                <td>Parachoques + faro</td>
+                                <td>Mapfre</td>
+                                <td><span class="status-dot pending"></span>Piezas pedidas</td>
+                                <td><span class="priority-badge priority-media">Media</span></td>
+                                <td>5 dias</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:600;">SIN-2026-4455</td>
+                                <td>Toyota Corolla (2022)</td>
+                                <td>Chapa y pintura</td>
+                                <td>AXA</td>
+                                <td><span class="status-dot pending"></span>Pdte. aprobacion</td>
+                                <td><span class="priority-badge priority-normal">Normal</span></td>
+                                <td>7 dias</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:600;">SIN-2026-4443</td>
+                                <td>Hyundai Tucson (2023)</td>
+                                <td>Puerta + espejo</td>
+                                <td>Generali</td>
+                                <td><span class="status-dot progress"></span>Reparando (85%)</td>
+                                <td><span class="priority-badge priority-normal">Normal</span></td>
+                                <td>2 dias</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:600;">SIN-2026-4430</td>
+                                <td>Renault Clio (2021)</td>
+                                <td>Pintura integral</td>
+                                <td>Allianz</td>
+                                <td><span class="status-dot progress"></span>Cabina pintura</td>
+                                <td><span class="priority-badge priority-normal">Normal</span></td>
+                                <td>4 dias</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- SECTION: ACTUALIZAR ESTADO -->
+                <div class="panel" id="section-actualizar" style="display:none;">
+                    <div class="panel-header">
+                        <div class="panel-title"><i class="fas fa-sync-alt"></i> Actualizar Estado de Reparacion</div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Expediente</label>
+                            <select class="form-select" id="selectExpediente">
+                                <option>SIN-2026-4521 - BMW Serie 3</option>
+                                <option>SIN-2026-4518 - Audi A4</option>
+                                <option>SIN-2026-4512 - Mercedes Clase C</option>
+                                <option selected>SIN-2026-4490 - VW Golf</option>
+                                <option>SIN-2026-4467 - Seat Leon</option>
+                                <option>SIN-2026-4455 - Toyota Corolla</option>
+                                <option>SIN-2026-4443 - Hyundai Tucson</option>
+                                <option>SIN-2026-4430 - Renault Clio</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nuevo Estado</label>
+                            <select class="form-select" id="selectEstado">
+                                <option>Recibido en taller</option>
+                                <option>En valoracion</option>
+                                <option>Presupuesto enviado</option>
+                                <option>Esperando aprobacion</option>
+                                <option>Piezas pedidas</option>
+                                <option selected>En reparacion</option>
+                                <option>En cabina de pintura</option>
+                                <option>Control de calidad</option>
+                                <option>Listo para entrega</option>
+                                <option>Entregado</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Progreso (%)</label>
+                            <input type="range" min="0" max="100" value="60" class="form-input" style="padding:0;" id="progressRange" oninput="document.getElementById('progressVal').textContent=this.value+'%'">
+                            <span id="progressVal" style="font-size:.75rem;color:var(--gray-500);font-weight:600;">60%</span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Fecha estimada de finalizacion</label>
+                            <input type="date" class="form-input" value="2026-03-24">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Notas / Observaciones</label>
+                        <textarea class="form-textarea" placeholder="Describe el progreso actual, incidencias, piezas necesarias...">Reparacion de lateral derecho en curso. Chapa ya enderezada, aplicando masilla antes de entrar a cabina de pintura. Sin incidencias.</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Adjuntar Fotografias</label>
+                        <div class="photo-upload" onclick="simulateUpload()">
+                            <i class="fas fa-camera"></i>
+                            <p>Toca para tomar foto o seleccionar del archivo</p>
+                            <p style="font-size:.65rem;color:var(--gray-400);margin-top:.25rem;">Maximo 10 fotos &middot; JPG, PNG</p>
+                        </div>
+                        <div class="photo-preview" id="photoPreview">
+                            <div class="photo-thumb" style="background:linear-gradient(135deg,#ddd,#bbb);"><i class="fas fa-image"></i><span class="remove"><i class="fas fa-times"></i></span></div>
+                            <div class="photo-thumb" style="background:linear-gradient(135deg,#cde,#abc);"><i class="fas fa-image"></i><span class="remove"><i class="fas fa-times"></i></span></div>
+                            <div class="photo-thumb" style="background:linear-gradient(135deg,#edc,#cba);"><i class="fas fa-image"></i><span class="remove"><i class="fas fa-times"></i></span></div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:.75rem;justify-content:flex-end;">
+                        <button class="btn btn-outline"><i class="fas fa-save"></i> Guardar borrador</button>
+                        <button class="btn btn-primary" onclick="submitUpdate()"><i class="fas fa-paper-plane"></i> Enviar actualizacion</button>
+                    </div>
+                </div>
+
+                <!-- SECTION: PRESUPUESTOS -->
+                <div class="panel" id="section-presupuestos" style="display:none;">
+                    <div class="panel-header">
+                        <div class="panel-title"><i class="fas fa-file-invoice-dollar"></i> Presupuesto de Reparacion</div>
+                        <div style="display:flex;gap:.5rem;">
+                            <select class="form-select" style="width:auto;font-size:.75rem;padding:.35rem .6rem;">
+                                <option>SIN-2026-4521 - BMW Serie 3</option>
+                                <option>SIN-2026-4518 - Audi A4</option>
+                                <option selected>SIN-2026-4512 - Mercedes Clase C</option>
+                            </select>
+                        </div>
+                    </div>
+                    <table class="budget-table">
+                        <thead>
+                            <tr>
+                                <th>Concepto</th>
+                                <th>Tipo</th>
+                                <th>Cantidad</th>
+                                <th>Precio Unit.</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Parachoques trasero OEM</td>
+                                <td>Pieza</td>
+                                <td>1</td>
+                                <td>485,00 &euro;</td>
+                                <td style="font-weight:600;">485,00 &euro;</td>
+                            </tr>
+                            <tr>
+                                <td>Piloto trasero derecho</td>
+                                <td>Pieza</td>
+                                <td>1</td>
+                                <td>320,00 &euro;</td>
+                                <td style="font-weight:600;">320,00 &euro;</td>
+                            </tr>
+                            <tr>
+                                <td>Refuerzo parachoques</td>
+                                <td>Pieza</td>
+                                <td>1</td>
+                                <td>175,00 &euro;</td>
+                                <td style="font-weight:600;">175,00 &euro;</td>
+                            </tr>
+                            <tr>
+                                <td>Sensor aparcamiento</td>
+                                <td>Pieza</td>
+                                <td>2</td>
+                                <td>85,00 &euro;</td>
+                                <td style="font-weight:600;">170,00 &euro;</td>
+                            </tr>
+                            <tr>
+                                <td>Desmontaje y montaje</td>
+                                <td>Mano obra</td>
+                                <td>4h</td>
+                                <td>48,00 &euro;/h</td>
+                                <td style="font-weight:600;">192,00 &euro;</td>
+                            </tr>
+                            <tr>
+                                <td>Chapa y enderezado</td>
+                                <td>Mano obra</td>
+                                <td>3h</td>
+                                <td>52,00 &euro;/h</td>
+                                <td style="font-weight:600;">156,00 &euro;</td>
+                            </tr>
+                            <tr>
+                                <td>Pintura (color metalizado)</td>
+                                <td>Mano obra</td>
+                                <td>5h</td>
+                                <td>55,00 &euro;/h</td>
+                                <td style="font-weight:600;">275,00 &euro;</td>
+                            </tr>
+                            <tr>
+                                <td>Materiales pintura + barniz</td>
+                                <td>Material</td>
+                                <td>1</td>
+                                <td>145,00 &euro;</td>
+                                <td style="font-weight:600;">145,00 &euro;</td>
+                            </tr>
+                            <tr>
+                                <td>Calibracion sensores ADAS</td>
+                                <td>Mano obra</td>
+                                <td>1h</td>
+                                <td>90,00 &euro;/h</td>
+                                <td style="font-weight:600;">90,00 &euro;</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="budget-total">
+                        <div>
+                            <div class="budget-total-label">Total Presupuesto (IVA no incluido)</div>
+                            <div style="font-size:.7rem;color:var(--gray-400);margin-top:.15rem;">Mercedes Clase C (2022) &middot; Alcance trasero &middot; Allianz</div>
+                        </div>
+                        <div class="budget-total-amount">2.008,00 &euro;</div>
+                    </div>
+                    <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:1rem;">
+                        <button class="btn btn-outline"><i class="fas fa-plus"></i> Anadir linea</button>
+                        <button class="btn btn-outline"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+                        <button class="btn btn-ai" onclick="submitUpdate()"><i class="fas fa-paper-plane"></i> Enviar a aseguradora</button>
+                    </div>
+                </div>
+
+                <!-- SECTION: HISTORIAL Y PAGOS -->
+                <div class="panel" id="section-historial" style="display:none;">
+                    <div class="panel-header">
+                        <div class="panel-title"><i class="fas fa-history"></i> Historial de Trabajos y Pagos</div>
+                        <div style="font-size:.8rem;color:var(--gray-500);">Facturado este mes: <strong style="color:var(--success);">14.320 &euro;</strong></div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-icon paid"><i class="fas fa-check-circle"></i></div>
+                        <div class="history-info">
+                            <div class="history-title">SIN-2026-4320 &middot; Peugeot 308</div>
+                            <div class="history-meta">Reparacion lateral izq. &middot; Mapfre &middot; Completado 08/03/2026</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="history-amount">1.890 &euro;</div>
+                            <span class="history-status paid">Pagado</span>
+                        </div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-icon paid"><i class="fas fa-check-circle"></i></div>
+                        <div class="history-info">
+                            <div class="history-title">SIN-2026-4298 &middot; Ford Focus</div>
+                            <div class="history-meta">Parachoques delantero &middot; AXA &middot; Completado 05/03/2026</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="history-amount">1.245 &euro;</div>
+                            <span class="history-status paid">Pagado</span>
+                        </div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-icon pending"><i class="fas fa-clock"></i></div>
+                        <div class="history-info">
+                            <div class="history-title">SIN-2026-4275 &middot; Opel Corsa</div>
+                            <div class="history-meta">Chapa + pintura puerta &middot; Generali &middot; Completado 01/03/2026</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="history-amount">980 &euro;</div>
+                            <span class="history-status pending">Pdte. pago</span>
+                        </div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-icon paid"><i class="fas fa-check-circle"></i></div>
+                        <div class="history-info">
+                            <div class="history-title">SIN-2026-4210 &middot; Skoda Octavia</div>
+                            <div class="history-meta">Sustitucion luna + reparacion techo &middot; Allianz &middot; Completado 22/02/2026</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="history-amount">2.340 &euro;</div>
+                            <span class="history-status paid">Pagado</span>
+                        </div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-icon paid"><i class="fas fa-check-circle"></i></div>
+                        <div class="history-info">
+                            <div class="history-title">SIN-2026-4185 &middot; Citroen C4</div>
+                            <div class="history-meta">Reparacion colision trasera &middot; Mapfre &middot; Completado 18/02/2026</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="history-amount">3.150 &euro;</div>
+                            <span class="history-status paid">Pagado</span>
+                        </div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-icon process"><i class="fas fa-file-invoice"></i></div>
+                        <div class="history-info">
+                            <div class="history-title">SIN-2026-4160 &middot; Kia Sportage</div>
+                            <div class="history-meta">Multiples abolladuras granizo &middot; AXA &middot; Completado 14/02/2026</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="history-amount">4.715 &euro;</div>
+                            <span class="history-status process">Facturando</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION: VALORACIONES -->
+                <div class="panel" id="section-valoraciones" style="display:none;">
+                    <div class="panel-header">
+                        <div class="panel-title"><i class="fas fa-star"></i> Valoraciones Recibidas</div>
+                    </div>
+                    <div class="rating-summary">
+                        <div class="rating-stat">
+                            <div class="rating-stat-value">4.8</div>
+                            <div class="stars-large"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
+                            <div class="rating-stat-label">Puntuacion media</div>
+                        </div>
+                        <div class="rating-stat">
+                            <div class="rating-stat-value">127</div>
+                            <div class="rating-stat-label">Valoraciones totales</div>
+                        </div>
+                        <div class="rating-stat">
+                            <div class="rating-stat-value">96%</div>
+                            <div class="rating-stat-label">Clientes satisfechos</div>
+                        </div>
+                    </div>
+                    <div class="rating-card">
+                        <div class="rating-header">
+                            <div class="rating-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                            <span class="rating-date">15/03/2026</span>
+                        </div>
+                        <div class="rating-text">"Excelente servicio. Repararon mi coche en 3 dias y quedo como nuevo. El trato fue muy profesional y me mantuvieron informado en todo momento."</div>
+                        <div class="rating-author">Maria Fernandez &middot; Peugeot 308 &middot; Mapfre</div>
+                    </div>
+                    <div class="rating-card">
+                        <div class="rating-header">
+                            <div class="rating-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                            <span class="rating-date">10/03/2026</span>
+                        </div>
+                        <div class="rating-text">"Muy contento con el resultado. La pintura quedo perfecta, ni se nota donde fue el golpe. Ademas el coche de cortesia fue un detalle genial."</div>
+                        <div class="rating-author">Javier Moreno &middot; Ford Focus &middot; AXA</div>
+                    </div>
+                    <div class="rating-card">
+                        <div class="rating-header">
+                            <div class="rating-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div>
+                            <span class="rating-date">05/03/2026</span>
+                        </div>
+                        <div class="rating-text">"Buen trabajo en general. Tardo un par de dias mas de lo esperado por temas de piezas, pero el acabado final fue impecable."</div>
+                        <div class="rating-author">Laura Sanchez &middot; Opel Corsa &middot; Generali</div>
+                    </div>
+                    <div class="rating-card">
+                        <div class="rating-header">
+                            <div class="rating-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                            <span class="rating-date">28/02/2026</span>
+                        </div>
+                        <div class="rating-text">"Increible trabajo con la reparacion del granizo. Tenia mas de 30 abolladuras y las sacaron todas sin pintar. Tecnologia PDR de primera."</div>
+                        <div class="rating-author">Roberto Diaz &middot; Kia Sportage &middot; AXA</div>
+                    </div>
+                    <div class="rating-card">
+                        <div class="rating-header">
+                            <div class="rating-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
+                            <span class="rating-date">22/02/2026</span>
+                        </div>
+                        <div class="rating-text">"Muy buena atencion desde el primer momento. Recogieron el coche a domicilio y me lo devolvieron impecable. Lo recomiendo al 100%."</div>
+                        <div class="rating-author">Carmen Torres &middot; Skoda Octavia &middot; Allianz</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+    <div class="toast-icon success"><i class="fas fa-check"></i></div>
+    <div>
+        <div class="toast-title">Actualizacion enviada</div>
+        <div class="toast-msg">El estado se ha actualizado y notificado a la aseguradora.</div>
+    </div>
+</div>
+
+<script>
+    // Section navigation
+    function showSection(section) {
+        const sections = ['casos','actualizar','presupuestos','historial','valoraciones'];
+        sections.forEach(s => {
+            const el = document.getElementById('section-' + s);
+            if(el) el.style.display = s === section ? 'block' : 'none';
+        });
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+    }
+
+    // Photo upload simulation
+    function simulateUpload() {
+        const preview = document.getElementById('photoPreview');
+        const thumb = document.createElement('div');
+        thumb.className = 'photo-thumb';
+        thumb.style.background = `linear-gradient(135deg, hsl(${Math.random()*360},40%,80%), hsl(${Math.random()*360},40%,70%))`;
+        thumb.innerHTML = '<i class="fas fa-image"></i><span class="remove" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></span>';
+        preview.appendChild(thumb);
+    }
+
+    // Submit update
+    function submitUpdate() {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    // Mobile nav
+    document.querySelectorAll('.mobile-nav-item').forEach(item => {
+        item.addEventListener('click', function() {
+            document.querySelectorAll('.mobile-nav-item').forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+</script>
+</body>
+</html>

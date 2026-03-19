@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiniestrosAI - Portal del Gestor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+/* ===== VARIABLES ===== */
+:root {
+    --primary:#3b82f6;--primary-dark:#2563eb;--primary-light:#eff6ff;
+    --success:#16a34a;--success-light:#dcfce7;--warning:#f59e0b;--warning-light:#fef3c7;
+    --danger:#dc2626;--danger-light:#fee2e2;--info:#2563eb;--info-light:#dbeafe;
+    --ai-purple:#8b5cf6;--ai-purple-dark:#7c3aed;--ai-cyan:#06b6d4;
+    --ai-gradient:linear-gradient(135deg,#8b5cf6 0%,#06b6d4 100%);
+    --ai-glow:0 0 20px rgba(139,92,246,0.3);
+    --white:#fff;--gray-50:#f8fafc;--gray-100:#f1f5f9;--gray-200:#e2e8f0;--gray-300:#cbd5e1;
+    --gray-400:#94a3b8;--gray-500:#64748b;--gray-600:#475569;--gray-700:#334155;--gray-800:#1e293b;--gray-900:#0f172a;
+    --sidebar-width:240px;--header-height:60px;--radius:10px;
+    --shadow:0 1px 3px rgba(0,0,0,0.08);--shadow-md:0 4px 6px rgba(0,0,0,0.07);--shadow-lg:0 10px 15px rgba(0,0,0,0.1);
+    --transition:all 0.2s ease;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--gray-50);color:var(--gray-800);min-height:100vh;display:flex;overflow-x:hidden;}
+
+/* ANIMATIONS */
+@keyframes livePulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes pulse{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(34,197,94,.4)}70%{transform:scale(1.05);box-shadow:0 0 0 10px rgba(34,197,94,0)}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+@keyframes aiGlow{0%,100%{box-shadow:0 0 5px rgba(139,92,246,.3)}50%{box-shadow:0 0 20px rgba(139,92,246,.6),0 0 40px rgba(6,182,212,.3)}}
+@keyframes fadeInUp{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes slideInRight{from{transform:translateX(100%)}to{transform:translateX(0)}}
+@keyframes slideOutRight{from{transform:translateX(0)}to{transform:translateX(100%)}}
+@keyframes blink{50%{border-color:transparent}}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}
+@keyframes countUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+.ai-color{color:var(--ai-purple)!important}
+.ai-tag{font-size:.55rem;background:var(--ai-gradient);color:#fff;padding:1px 5px;border-radius:4px;vertical-align:super}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;animation:livePulse 1.5s infinite;display:inline-block}
+
+/* ===== SIDEBAR ===== */
+.sidebar{width:var(--sidebar-width);height:100vh;background:linear-gradient(180deg,var(--gray-900),var(--gray-800));position:fixed;left:0;top:0;z-index:100;display:flex;flex-direction:column;transition:var(--transition);overflow-y:auto}
+.sidebar-header{padding:1.25rem;border-bottom:1px solid rgba(255,255,255,.08)}
+.logo{display:flex;align-items:center;gap:.6rem;color:#fff;font-size:1rem;font-weight:700;text-decoration:none}
+.logo-icon{font-size:1.1rem;color:#fff;background:var(--ai-gradient);padding:.45rem;border-radius:8px;display:flex;align-items:center;justify-content:center;animation:aiGlow 3s infinite}
+.nav-menu{list-style:none;padding:.75rem 0;flex:1}
+.nav-item{display:flex;align-items:center;gap:.6rem;padding:.65rem 1.25rem;color:var(--gray-400);cursor:pointer;transition:var(--transition);border-left:3px solid transparent;font-size:.8rem;text-decoration:none}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,.05)}
+.nav-item.active{color:#fff;background:rgba(59,130,246,.15);border-left-color:var(--primary)}
+.nav-item i{width:18px;text-align:center;font-size:.9rem}
+.nav-badge{font-size:.55rem;background:var(--danger);color:#fff;padding:1px 6px;border-radius:8px;margin-left:auto;animation:livePulse 1.5s infinite}
+.nav-badge-live{font-size:.5rem;background:#22c55e;color:#fff;padding:1px 4px;border-radius:8px;margin-left:auto;animation:livePulse 1.5s infinite}
+.sidebar-section-label{padding:.5rem 1.25rem .25rem;font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:var(--gray-500);font-weight:600}
+.sidebar-footer{padding:.75rem 1.25rem;border-top:1px solid rgba(255,255,255,.08)}
+.ai-status-bar{display:flex;align-items:center;gap:.4rem;margin-bottom:.5rem;padding:.4rem .6rem;background:rgba(139,92,246,.15);border-radius:6px;font-size:.7rem;color:var(--ai-purple);font-weight:500}
+.ai-pulse-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
+.user-info{display:flex;align-items:center;gap:.6rem}
+.user-avatar{width:34px;height:34px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:.75rem}
+.user-details{display:flex;flex-direction:column}
+.user-name{color:#fff;font-size:.8rem;font-weight:500}
+.user-role{color:var(--gray-400);font-size:.65rem}
+
+/* ===== MAIN ===== */
+.main-content{margin-left:var(--sidebar-width);flex:1;min-height:100vh}
+.top-header{height:var(--header-height);background:#fff;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;padding:0 1.25rem;gap:.75rem;position:sticky;top:0;z-index:50}
+.menu-toggle{display:none;background:none;border:none;font-size:1.1rem;color:var(--gray-600);cursor:pointer}
+.header-title{display:flex;align-items:center;gap:.5rem;font-size:1rem;font-weight:700;color:var(--gray-900)}
+.header-title i{color:var(--ai-purple)}
+.header-search{flex:1;display:flex;align-items:center;background:var(--gray-100);border-radius:var(--radius);padding:0 .85rem;max-width:360px}
+.header-search i{color:var(--gray-400);margin-right:.4rem;font-size:.85rem}
+.header-search input{border:none;background:none;padding:.5rem 0;font-size:.8rem;width:100%;outline:none;font-family:inherit}
+.header-actions{display:flex;align-items:center;gap:.5rem;margin-left:auto}
+.header-btn{display:flex;align-items:center;gap:.4rem;padding:.4rem .85rem;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:500;transition:var(--transition);font-family:inherit;position:relative}
+.header-btn:hover{background:var(--primary-dark)}
+.header-btn.ghost{background:var(--gray-100);color:var(--gray-600)}.header-btn.ghost:hover{background:var(--gray-200)}
+.badge{position:absolute;top:-3px;right:-3px;background:var(--danger);color:#fff;font-size:.6rem;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600}
+
+/* ===== TABS ===== */
+.content-area{padding:1.25rem}
+.section-tabs{display:flex;gap:.25rem;background:#fff;padding:.35rem;border-radius:12px;box-shadow:var(--shadow);margin-bottom:1.25rem}
+.section-tab{padding:.5rem 1rem;border-radius:8px;font-size:.8rem;font-weight:500;color:var(--gray-500);cursor:pointer;transition:var(--transition);border:none;background:none;font-family:inherit;display:flex;align-items:center;gap:.4rem;white-space:nowrap}
+.section-tab:hover{color:var(--gray-700);background:var(--gray-50)}
+.section-tab.active{background:var(--ai-gradient);color:#fff;box-shadow:0 2px 8px rgba(139,92,246,.3)}
+.section-tab .tab-badge{font-size:.6rem;background:rgba(255,255,255,.25);padding:1px 5px;border-radius:6px;font-weight:700}
+.section-tab.active .tab-badge{background:rgba(255,255,255,.3)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* ===== CARDS ===== */
+.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:1rem;margin-bottom:1rem}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem}
+.card-header h3{font-size:.9rem;font-weight:600;color:var(--gray-800);display:flex;align-items:center;gap:.4rem}
+.glass-card{background:rgba(255,255,255,.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.3);border-radius:14px;padding:1.25rem;box-shadow:0 4px 16px rgba(0,0,0,.06)}
+
+/* ===== BUTTONS ===== */
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem 1rem;border-radius:7px;font-size:.8rem;font-weight:500;border:none;cursor:pointer;transition:var(--transition);font-family:inherit;white-space:nowrap}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-dark)}
+.btn-outline{background:transparent;color:var(--gray-600);border:1px solid var(--gray-300)}.btn-outline:hover{background:var(--gray-50)}
+.btn-ai{background:var(--ai-gradient);color:#fff;font-weight:600}.btn-ai:hover{opacity:.9;box-shadow:var(--ai-glow)}
+.btn-success{background:var(--success);color:#fff}.btn-success:hover{background:#15803d}
+.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#b91c1c}
+.btn-warning{background:var(--warning);color:#fff}.btn-warning:hover{background:#d97706}
+.btn-sm{padding:.3rem .65rem;font-size:.7rem;border-radius:5px}
+.btn-xs{padding:.2rem .45rem;font-size:.65rem;border-radius:4px}
+.btn-ghost{background:transparent;color:var(--gray-500);border:1px solid var(--gray-200)}.btn-ghost:hover{background:var(--gray-50);color:var(--gray-700)}
+
+/* ===== STATUS BADGES ===== */
+.status-badge{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .6rem;border-radius:16px;font-size:.7rem;font-weight:600;white-space:nowrap}
+.status-badge::before{content:'';width:5px;height:5px;border-radius:50%}
+.status-abierto{background:var(--danger-light);color:var(--danger)}.status-abierto::before{background:var(--danger)}
+.status-gestion{background:var(--warning-light);color:#b45309}.status-gestion::before{background:var(--warning)}
+.status-perito{background:var(--info-light);color:var(--info)}.status-perito::before{background:var(--info)}
+.status-resuelto{background:var(--success-light);color:var(--success)}.status-resuelto::before{background:var(--success)}
+.status-cerrado{background:var(--gray-100);color:var(--gray-500)}.status-cerrado::before{background:var(--gray-400)}
+.priority-badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;font-weight:700;font-size:.7rem}
+.priority-low{background:var(--success-light);color:var(--success)}
+.priority-medium{background:var(--warning-light);color:#b45309}
+.priority-high{background:#fde8e8;color:#c53030}
+.priority-critical{background:var(--danger);color:#fff}
+.fraud-badge{display:inline-flex;align-items:center;gap:.2rem;padding:.15rem .45rem;border-radius:5px;font-size:.65rem;font-weight:600}
+.fraud-low{background:var(--success-light);color:var(--success)}.fraud-medium{background:var(--warning-light);color:#b45309}.fraud-high{background:var(--danger-light);color:var(--danger)}
+
+/* ===== INBOX ===== */
+.inbox-list{display:flex;flex-direction:column;gap:.35rem;max-height:520px;overflow-y:auto}
+.inbox-item{display:flex;align-items:flex-start;gap:.75rem;padding:.75rem;border-radius:8px;cursor:pointer;transition:var(--transition);border:1px solid transparent;position:relative}
+.inbox-item:hover{background:var(--gray-50);border-color:var(--gray-200)}
+.inbox-item.unread{background:rgba(59,130,246,.04);border-color:rgba(59,130,246,.15)}
+.inbox-item.unread::after{content:'';position:absolute;left:4px;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;background:var(--primary)}
+.inbox-item.selected{background:rgba(139,92,246,.06);border-color:rgba(139,92,246,.25)}
+.inbox-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;color:#fff}
+.inbox-icon.call{background:linear-gradient(135deg,#3b82f6,#2563eb)}
+.inbox-icon.whatsapp{background:linear-gradient(135deg,#25d366,#128c7e)}
+.inbox-icon.email{background:linear-gradient(135deg,#f59e0b,#d97706)}
+.inbox-icon.chat{background:linear-gradient(135deg,#8b5cf6,#7c3aed)}
+.inbox-body{flex:1;min-width:0}
+.inbox-sender{font-size:.8rem;font-weight:600;color:var(--gray-800);display:flex;align-items:center;gap:.35rem}
+.inbox-sender .channel-label{font-size:.55rem;padding:1px 4px;border-radius:3px;font-weight:500;color:#fff}
+.inbox-sender .channel-label.call{background:#3b82f6}.inbox-sender .channel-label.whatsapp{background:#25d366}.inbox-sender .channel-label.email{background:#f59e0b}.inbox-sender .channel-label.chat{background:#8b5cf6}
+.inbox-preview{font-size:.75rem;color:var(--gray-500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:.15rem}
+.inbox-meta{display:flex;flex-direction:column;align-items:flex-end;gap:.25rem;flex-shrink:0}
+.inbox-time{font-size:.65rem;color:var(--gray-400);white-space:nowrap}
+.inbox-priority{font-size:.55rem;padding:.1rem .35rem;border-radius:4px;font-weight:700}
+.inbox-priority.alta{background:var(--danger-light);color:var(--danger)}
+.inbox-priority.media{background:var(--warning-light);color:#b45309}
+.inbox-priority.baja{background:var(--success-light);color:var(--success)}
+.inbox-priority.urgente{background:var(--danger);color:#fff;animation:livePulse 1.5s infinite}
+.inbox-exp{font-size:.6rem;color:var(--ai-purple);font-weight:600}
+.new-message-anim{animation:fadeInUp .4s ease}
+
+/* ===== AI SUGGESTIONS ===== */
+.ai-suggestions-panel{display:flex;flex-direction:column;gap:.75rem}
+.ai-suggestion-card{background:linear-gradient(135deg,rgba(139,92,246,.04),rgba(6,182,212,.04));border:1px solid rgba(139,92,246,.15);border-radius:10px;padding:.85rem;transition:var(--transition)}
+.ai-suggestion-card:hover{border-color:rgba(139,92,246,.3);box-shadow:0 2px 12px rgba(139,92,246,.1)}
+.ai-suggestion-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+.ai-suggestion-exp{font-size:.75rem;font-weight:700;color:var(--ai-purple)}
+.ai-suggestion-client{font-size:.7rem;color:var(--gray-500)}
+.ai-suggestions-list{display:flex;flex-direction:column;gap:.35rem}
+.ai-suggestion-item{display:flex;align-items:center;gap:.5rem;padding:.4rem .6rem;border-radius:6px;background:rgba(255,255,255,.7);font-size:.75rem}
+.ai-suggestion-item i{color:var(--ai-purple);font-size:.7rem;width:16px;text-align:center}
+.ai-suggestion-text{flex:1;color:var(--gray-700)}
+.ai-confidence{font-size:.65rem;font-weight:700;padding:.15rem .4rem;border-radius:4px;white-space:nowrap}
+.ai-confidence.high{background:var(--success-light);color:var(--success)}
+.ai-confidence.medium{background:var(--warning-light);color:#b45309}
+.ai-confidence.low{background:var(--gray-100);color:var(--gray-500)}
+.ai-suggestion-actions{display:flex;gap:.3rem;margin-top:.5rem;flex-wrap:wrap}
+
+/* ===== WORKLOAD DASHBOARD ===== */
+.workload-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.85rem;margin-bottom:1.25rem}
+.workload-card{background:#fff;border-radius:12px;padding:1rem;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:var(--transition)}
+.workload-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.workload-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--ai-gradient)}
+.workload-avatar{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.8rem;margin-bottom:.5rem}
+.workload-name{font-size:.8rem;font-weight:600;color:var(--gray-800);display:block}
+.workload-role{font-size:.65rem;color:var(--gray-400);display:block;margin-bottom:.5rem}
+.workload-stats{display:flex;gap:.5rem;margin-bottom:.5rem}
+.workload-stat{text-align:center;flex:1}
+.workload-stat-value{display:block;font-size:1.1rem;font-weight:700;color:var(--gray-900)}
+.workload-stat-label{display:block;font-size:.55rem;color:var(--gray-400)}
+.workload-bar-container{height:6px;background:var(--gray-100);border-radius:3px;overflow:hidden}
+.workload-bar{height:100%;border-radius:3px;transition:width .5s ease}
+.workload-bar.low{background:var(--success)}.workload-bar.medium{background:var(--warning)}.workload-bar.high{background:var(--danger)}
+.burnout-alert{display:flex;align-items:center;gap:.4rem;padding:.3rem .6rem;border-radius:6px;font-size:.65rem;font-weight:600;margin-top:.5rem}
+.burnout-alert.ok{background:var(--success-light);color:var(--success)}
+.burnout-alert.warning{background:var(--warning-light);color:#b45309}
+.burnout-alert.danger{background:var(--danger-light);color:var(--danger);animation:livePulse 2s infinite}
+
+.workload-chart-container{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:1rem;margin-bottom:1rem}
+.chart-bars{display:flex;align-items:flex-end;gap:1rem;height:180px;padding:1rem .5rem .5rem}
+.chart-bar-group{flex:1;display:flex;flex-direction:column;align-items:center;gap:.3rem;height:100%}
+.chart-bar-track{flex:1;width:100%;background:var(--gray-100);border-radius:6px;position:relative;display:flex;align-items:flex-end;overflow:hidden;max-width:50px;margin:0 auto}
+.chart-bar-fill{width:100%;border-radius:6px;transition:height .8s ease;position:relative}
+.chart-bar-fill.gradient-1{background:linear-gradient(180deg,#8b5cf6,#3b82f6)}
+.chart-bar-fill.gradient-2{background:linear-gradient(180deg,#06b6d4,#3b82f6)}
+.chart-bar-fill.gradient-3{background:linear-gradient(180deg,#f59e0b,#ef4444)}
+.chart-bar-value{font-size:.7rem;font-weight:700;color:var(--gray-700);text-align:center}
+.chart-bar-label{font-size:.65rem;color:var(--gray-500);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px}
+
+/* ===== EXPEDIENTES GRID ===== */
+.filters-bar{display:flex;flex-wrap:wrap;gap:.75rem;background:#fff;padding:.85rem;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:1rem}
+.filter-group{display:flex;align-items:center;gap:.35rem}
+.filter-group label{font-size:.7rem;font-weight:500;color:var(--gray-500);white-space:nowrap}
+.filter-group select,.filter-group input{padding:.3rem .6rem;border:1px solid var(--gray-200);border-radius:5px;font-size:.75rem;font-family:inherit;background:#fff;color:var(--gray-700);cursor:pointer}
+.table-wrapper{overflow-x:auto}
+.data-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.data-table th{text-align:left;padding:.6rem .75rem;font-weight:600;color:var(--gray-600);background:var(--gray-50);border-bottom:2px solid var(--gray-200);white-space:nowrap;font-size:.7rem;text-transform:uppercase;letter-spacing:.03em}
+.data-table td{padding:.6rem .75rem;border-bottom:1px solid var(--gray-100);vertical-align:middle}
+.data-table tr{transition:var(--transition);cursor:pointer}
+.data-table tr:hover{background:var(--gray-50)}
+.table-actions{display:flex;gap:.25rem}
+.table-actions button{width:26px;height:26px;border-radius:5px;border:1px solid var(--gray-200);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--gray-500);transition:var(--transition)}
+.table-actions button:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+/* ===== CLIENT HISTORY SIDEBAR ===== */
+.history-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;display:none;opacity:0;transition:opacity .3s}
+.history-overlay.show{display:block;opacity:1}
+.history-panel{position:fixed;top:0;right:0;bottom:0;width:420px;background:#fff;z-index:501;box-shadow:-8px 0 30px rgba(0,0,0,.15);transform:translateX(100%);transition:transform .3s ease;display:flex;flex-direction:column}
+.history-panel.show{transform:translateX(0)}
+.history-header{padding:1rem 1.25rem;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(139,92,246,.05),rgba(6,182,212,.05))}
+.history-close{background:none;border:none;font-size:1.2rem;color:var(--gray-400);cursor:pointer;padding:.25rem}
+.history-close:hover{color:var(--gray-700)}
+.history-body{flex:1;overflow-y:auto;padding:1.25rem}
+.history-client-card{text-align:center;padding:1.25rem;background:linear-gradient(135deg,#f5f3ff,#eff6ff);border-radius:12px;margin-bottom:1rem}
+.history-client-avatar{width:56px;height:56px;border-radius:50%;background:var(--ai-gradient);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:1.1rem;margin:0 auto .5rem}
+.history-client-name{font-size:1rem;font-weight:700;color:var(--gray-900)}
+.history-client-info{font-size:.75rem;color:var(--gray-500);margin-top:.2rem}
+.history-section{margin-bottom:1.25rem}
+.history-section h4{font-size:.8rem;font-weight:700;color:var(--gray-700);margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem}
+.history-section h4 i{color:var(--ai-purple)}
+.history-stat-row{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.5rem}
+.history-stat{background:var(--gray-50);border-radius:6px;padding:.5rem;text-align:center}
+.history-stat-value{display:block;font-size:1rem;font-weight:700;color:var(--gray-900)}
+.history-stat-label{display:block;font-size:.6rem;color:var(--gray-400)}
+.history-timeline{position:relative;padding-left:1.5rem}
+.history-timeline::before{content:'';position:absolute;left:5px;top:0;bottom:0;width:2px;background:var(--gray-200)}
+.history-timeline-item{position:relative;padding-bottom:1rem}
+.history-timeline-item:last-child{padding-bottom:0}
+.history-timeline-dot{position:absolute;left:-1.5rem;top:2px;width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--primary);z-index:1}
+.history-timeline-dot.completed{background:var(--success);border-color:var(--success)}
+.history-timeline-dot.active{background:var(--primary);border-color:var(--primary)}
+.history-timeline-content{font-size:.75rem}
+.history-timeline-content strong{color:var(--gray-800)}
+.history-timeline-content p{color:var(--gray-500);margin-top:.1rem}
+.history-timeline-date{font-size:.6rem;color:var(--gray-400);margin-top:.1rem}
+.history-polizas{display:flex;flex-direction:column;gap:.35rem}
+.history-poliza{display:flex;align-items:center;gap:.5rem;padding:.5rem;background:var(--gray-50);border-radius:6px;font-size:.75rem}
+.history-poliza i{color:var(--primary)}
+.history-poliza-type{font-weight:600;color:var(--gray-800);flex:1}
+.history-poliza-num{font-size:.65rem;color:var(--gray-400)}
+
+/* ===== LIVE INDICATOR ===== */
+.live-badge{display:inline-flex;align-items:center;gap:.3rem;font-size:.65rem;font-weight:700;color:var(--ai-purple);background:rgba(139,92,246,.1);padding:.15rem .5rem;border-radius:12px}
+.live-badge .live-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;animation:livePulse 1.5s infinite}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:1200px){.workload-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){
+    .sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}
+    .main-content{margin-left:0}.menu-toggle{display:block}
+    .workload-grid{grid-template-columns:1fr}
+    .history-panel{width:100%}
+    .section-tabs{overflow-x:auto}
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:3px}
+
+/* ===== TWO COLUMN LAYOUT ===== */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+@media(max-width:1024px){.two-col{grid-template-columns:1fr}}
+
+/* ===== TOAST ===== */
+.toast-container{position:fixed;bottom:1.5rem;right:1.5rem;z-index:2000;display:flex;flex-direction:column;gap:.35rem}
+.toast{display:flex;align-items:center;gap:.5rem;padding:.7rem 1rem;background:var(--gray-900);color:#fff;border-radius:var(--radius);box-shadow:var(--shadow-lg);font-size:.8rem;animation:fadeInUp .3s ease;min-width:240px}
+.toast.success{border-left:4px solid var(--success)}.toast.ai{border-left:4px solid var(--ai-purple)}.toast.warning{border-left:4px solid var(--warning)}
+
+/* KPI row */
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:.75rem;margin-bottom:1.25rem}
+.kpi-mini{background:#fff;border-radius:10px;padding:.85rem;box-shadow:var(--shadow);display:flex;align-items:center;gap:.6rem;transition:var(--transition)}
+.kpi-mini:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.kpi-mini-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.9rem}
+.kpi-mini-info{display:flex;flex-direction:column}
+.kpi-mini-value{font-size:1.15rem;font-weight:700;color:var(--gray-900)}
+.kpi-mini-label{font-size:.6rem;color:var(--gray-500)}
+@media(max-width:1200px){.kpi-row{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:768px){.kpi-row{grid-template-columns:repeat(2,1fr)}}
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <a href="index.html" class="logo">
+            <div class="logo-icon"><i class="fas fa-brain"></i></div>
+            <span>SiniestrosAI <small class="ai-tag">IA</small></span>
+        </a>
+    </div>
+    <ul class="nav-menu">
+        <li class="sidebar-section-label">Portal del Gestor</li>
+        <a class="nav-item active" data-tab="inbox"><i class="fas fa-inbox"></i><span>Bandeja Unificada</span><span class="nav-badge" id="inboxBadge">7</span></a>
+        <a class="nav-item" data-tab="ai-suggestions"><i class="fas fa-robot"></i><span>Sugerencias IA</span><span class="nav-badge-live">IA</span></a>
+        <a class="nav-item" data-tab="workload"><i class="fas fa-chart-bar"></i><span>Carga de Trabajo</span></a>
+        <a class="nav-item" data-tab="expedientes"><i class="fas fa-folder-open"></i><span>Expedientes</span></a>
+
+        <li class="sidebar-section-label">Otros Portales</li>
+        <a class="nav-item" href="index.html"><i class="fas fa-chart-pie"></i><span>Dashboard Principal</span></a>
+        <a class="nav-item" href="portal-perito.html"><i class="fas fa-user-tie"></i><span>Portal Perito</span></a>
+        <a class="nav-item" href="portal-cliente.html"><i class="fas fa-mobile-alt"></i><span>Portal Cliente</span></a>
+        <a class="nav-item" href="portal-taller.html"><i class="fas fa-wrench"></i><span>Portal Taller</span></a>
+        <a class="nav-item" href="vista-direccion.html"><i class="fas fa-crown"></i><span>Vista Direccion</span></a>
+    </ul>
+    <div class="sidebar-footer">
+        <div class="ai-status-bar">
+            <div class="ai-pulse-dot"></div>
+            <span>8 Agentes IA activos</span>
+        </div>
+        <div class="user-info">
+            <div class="user-avatar">AM</div>
+            <div class="user-details"><span class="user-name">Ana Martinez</span><span class="user-role">Gestora Senior</span></div>
+        </div>
+    </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main-content" id="mainContent">
+    <header class="top-header">
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <div class="header-title"><i class="fas fa-brain"></i> SiniestrosAI - Portal del Gestor</div>
+        <div class="header-search"><i class="fas fa-search"></i><input type="text" placeholder="Buscar expediente, cliente o poliza..." id="globalSearch"></div>
+        <div class="header-actions">
+            <button class="header-btn ghost" id="notifBtn"><i class="fas fa-bell"></i><span class="badge" id="notifBadge">3</span></button>
+            <button class="header-btn"><i class="fas fa-plus"></i> Nuevo Siniestro</button>
+        </div>
+    </header>
+
+    <div class="content-area">
+        <!-- KPIs -->
+        <div class="kpi-row">
+            <div class="kpi-mini"><div class="kpi-mini-icon" style="background:var(--danger-light);color:var(--danger)"><i class="fas fa-exclamation-circle"></i></div><div class="kpi-mini-info"><span class="kpi-mini-value" id="kpiAbiertos">14</span><span class="kpi-mini-label">Abiertos</span></div></div>
+            <div class="kpi-mini"><div class="kpi-mini-icon" style="background:var(--warning-light);color:#b45309"><i class="fas fa-cogs"></i></div><div class="kpi-mini-info"><span class="kpi-mini-value" id="kpiGestion">23</span><span class="kpi-mini-label">En Gestion</span></div></div>
+            <div class="kpi-mini"><div class="kpi-mini-icon" style="background:var(--info-light);color:var(--info)"><i class="fas fa-user-tie"></i></div><div class="kpi-mini-info"><span class="kpi-mini-value">8</span><span class="kpi-mini-label">Perito Asignado</span></div></div>
+            <div class="kpi-mini"><div class="kpi-mini-icon" style="background:var(--success-light);color:var(--success)"><i class="fas fa-check-circle"></i></div><div class="kpi-mini-info"><span class="kpi-mini-value">156</span><span class="kpi-mini-label">Resueltos (mes)</span></div></div>
+            <div class="kpi-mini"><div class="kpi-mini-icon" style="background:rgba(139,92,246,.1);color:var(--ai-purple)"><i class="fas fa-robot"></i></div><div class="kpi-mini-info"><span class="kpi-mini-value">87%</span><span class="kpi-mini-label">Automatizados IA</span></div></div>
+        </div>
+
+        <!-- TABS -->
+        <div class="section-tabs">
+            <button class="section-tab active" data-tab="inbox"><i class="fas fa-inbox"></i> Bandeja Unificada <span class="tab-badge" id="tabInboxBadge">7</span></button>
+            <button class="section-tab" data-tab="ai-suggestions"><i class="fas fa-robot"></i> Sugerencias IA <span class="tab-badge">5</span></button>
+            <button class="section-tab" data-tab="workload"><i class="fas fa-chart-bar"></i> Carga de Trabajo</button>
+            <button class="section-tab" data-tab="expedientes"><i class="fas fa-folder-open"></i> Expedientes</button>
+        </div>
+
+        <!-- TAB: INBOX -->
+        <div class="tab-panel active" id="tab-inbox">
+            <div class="two-col">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-inbox ai-color"></i> Mensajes Entrantes</h3>
+                        <div style="display:flex;gap:.4rem;align-items:center">
+                            <span class="live-badge"><span class="live-dot"></span> EN VIVO</span>
+                            <select id="inboxFilter" style="padding:.25rem .5rem;border:1px solid var(--gray-200);border-radius:5px;font-size:.7rem;font-family:inherit">
+                                <option value="all">Todos los canales</option>
+                                <option value="call">Llamadas</option>
+                                <option value="whatsapp">WhatsApp</option>
+                                <option value="email">Email</option>
+                                <option value="chat">Chat</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="inbox-list" id="inboxList"></div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-eye ai-color"></i> Vista Previa</h3>
+                    </div>
+                    <div id="inboxPreview" style="min-height:300px;display:flex;align-items:center;justify-content:center;color:var(--gray-400);font-size:.85rem">
+                        <div style="text-align:center">
+                            <i class="fas fa-envelope-open" style="font-size:2.5rem;margin-bottom:.75rem;display:block;opacity:.3"></i>
+                            Seleccione un mensaje para ver detalles
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: AI SUGGESTIONS -->
+        <div class="tab-panel" id="tab-ai-suggestions">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-robot ai-color"></i> Sugerencias de IA por Expediente</h3>
+                    <span class="live-badge"><span class="live-dot"></span> Analizando</span>
+                </div>
+                <div class="ai-suggestions-panel" id="aiSuggestionsPanel"></div>
+            </div>
+        </div>
+
+        <!-- TAB: WORKLOAD -->
+        <div class="tab-panel" id="tab-workload">
+            <div class="workload-grid" id="workloadGrid"></div>
+            <div class="two-col">
+                <div class="workload-chart-container">
+                    <div class="card-header"><h3><i class="fas fa-chart-bar ai-color"></i> Distribucion de Carga</h3></div>
+                    <div class="chart-bars" id="workloadChart"></div>
+                </div>
+                <div class="workload-chart-container">
+                    <div class="card-header"><h3><i class="fas fa-fire ai-color"></i> Indicador de Burnout</h3></div>
+                    <div id="burnoutPanel" style="padding:1rem"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: EXPEDIENTES -->
+        <div class="tab-panel" id="tab-expedientes">
+            <div class="filters-bar">
+                <div class="filter-group"><label>Estado:</label><select id="filtroEstado"><option value="">Todos</option><option value="Abierto">Abierto</option><option value="En gestion">En gestion</option><option value="Perito asignado">Perito asignado</option><option value="Resuelto">Resuelto</option></select></div>
+                <div class="filter-group"><label>Tipo:</label><select id="filtroTipo"><option value="">Todos</option><option value="Auto">Auto</option><option value="Hogar">Hogar</option><option value="Salud">Salud</option><option value="Robo">Robo</option></select></div>
+                <div class="filter-group"><label>Urgencia:</label><select id="filtroUrgencia"><option value="0">Todas</option><option value="7">Alta 7+</option><option value="8">Muy alta 8+</option><option value="9">Critica 9+</option></select></div>
+                <div class="filter-group"><label>Buscar:</label><input type="text" id="filtroTexto" placeholder="Expediente o cliente..."></div>
+            </div>
+            <div class="card">
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead><tr>
+                            <th>Expediente</th><th>Cliente</th><th>Tipo</th><th>Estado</th><th>Urgencia</th><th>Fraude</th><th>Gestor</th><th>Fecha</th><th>Acciones</th>
+                        </tr></thead>
+                        <tbody id="expedientesTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- CLIENT HISTORY SIDEBAR -->
+<div class="history-overlay" id="historyOverlay"></div>
+<div class="history-panel" id="historyPanel">
+    <div class="history-header">
+        <h3 style="font-size:.9rem;font-weight:700"><i class="fas fa-user ai-color"></i> Historial del Cliente</h3>
+        <button class="history-close" id="historyClose">&times;</button>
+    </div>
+    <div class="history-body" id="historyBody"></div>
+</div>
+
+<!-- TOASTS -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ===================== DATA =====================
+const expedientes = [
+    { id: 'EXP-2025-1201', cliente: 'Carlos Mendez Garcia', tipo: 'Auto', estado: 'Abierto', urgencia: 9, fraude: 12, gestor: 'Ana Martinez', fecha: '2025-03-18', poliza: 'POL-AUTO-4521', telefono: '612 345 678', email: 'carlos.mendez@email.com', descripcion: 'Colision frontal en M-40 a la altura de Pozuelo. Dos vehiculos implicados.', valoracion: 8500 },
+    { id: 'EXP-2025-1198', cliente: 'Maria Lopez Fernandez', tipo: 'Hogar', estado: 'En gestion', urgencia: 7, fraude: 5, gestor: 'Ana Martinez', fecha: '2025-03-17', poliza: 'POL-HOG-2233', telefono: '634 567 890', email: 'maria.lopez@email.com', descripcion: 'Inundacion por rotura de tuberia en cocina. Danos en electrodomesticos y suelo.', valoracion: 4200 },
+    { id: 'EXP-2025-1195', cliente: 'Javier Ruiz Torres', tipo: 'Auto', estado: 'Perito asignado', urgencia: 6, fraude: 78, gestor: 'Pedro Gomez', fecha: '2025-03-16', poliza: 'POL-AUTO-8891', telefono: '654 321 098', email: 'javier.ruiz@email.com', descripcion: 'Robo de catalizador en parking comunitario. Sospecha de fraude por tercer parte.', valoracion: 2100 },
+    { id: 'EXP-2025-1190', cliente: 'Elena Navarro Diaz', tipo: 'Salud', estado: 'En gestion', urgencia: 8, fraude: 3, gestor: 'Ana Martinez', fecha: '2025-03-15', poliza: 'POL-SAL-5567', telefono: '678 123 456', email: 'elena.navarro@email.com', descripcion: 'Intervencion quirurgica de rodilla programada. Solicitud de autorizacion previa.', valoracion: 12000 },
+    { id: 'EXP-2025-1187', cliente: 'Antonio Perez Sanchez', tipo: 'Robo', estado: 'Abierto', urgencia: 10, fraude: 45, gestor: 'Ana Martinez', fecha: '2025-03-18', poliza: 'POL-HOG-3344', telefono: '691 234 567', email: 'antonio.perez@email.com', descripcion: 'Robo con fuerza en vivienda. Joyas y dispositivos electronicos sustraidos. Denuncia presentada.', valoracion: 15600 },
+    { id: 'EXP-2025-1183', cliente: 'Laura Gimenez Blanco', tipo: 'Auto', estado: 'Resuelto', urgencia: 4, fraude: 2, gestor: 'Pedro Gomez', fecha: '2025-03-10', poliza: 'POL-AUTO-1122', telefono: '623 456 789', email: 'laura.gimenez@email.com', descripcion: 'Danio por granizo en carroceria. Peritacion completada.', valoracion: 1800 },
+    { id: 'EXP-2025-1180', cliente: 'Roberto Vidal Castro', tipo: 'Hogar', estado: 'En gestion', urgencia: 5, fraude: 8, gestor: 'Lucia Fernandez', fecha: '2025-03-14', poliza: 'POL-HOG-7788', telefono: '645 678 901', email: 'roberto.vidal@email.com', descripcion: 'Cortocircuito electrico. Danos en cuadro general y electrodomesticos.', valoracion: 3400 },
+    { id: 'EXP-2025-1175', cliente: 'Isabel Moreno Ramos', tipo: 'Auto', estado: 'Perito asignado', urgencia: 7, fraude: 15, gestor: 'Ana Martinez', fecha: '2025-03-13', poliza: 'POL-AUTO-9903', telefono: '667 890 123', email: 'isabel.moreno@email.com', descripcion: 'Alcance trasero en rotonda. Latigazo cervical reportado por conductor.', valoracion: 5200 },
+    { id: 'EXP-2025-1170', cliente: 'Fernando Alonso Martin', tipo: 'Robo', estado: 'Abierto', urgencia: 6, fraude: 62, gestor: 'Lucia Fernandez', fecha: '2025-03-17', poliza: 'POL-HOG-4455', telefono: '612 098 765', email: 'fernando.alonso@email.com', descripcion: 'Sustraccion de bicicletas de garaje comunitario. Cerradura no forzada.', valoracion: 4800 },
+    { id: 'EXP-2025-1165', cliente: 'Carmen Ortiz Delgado', tipo: 'Salud', estado: 'Resuelto', urgencia: 3, fraude: 1, gestor: 'Pedro Gomez', fecha: '2025-03-08', poliza: 'POL-SAL-2211', telefono: '689 012 345', email: 'carmen.ortiz@email.com', descripcion: 'Consulta oftalmologica y prescripcion de lentes progresivas.', valoracion: 650 },
+    { id: 'EXP-2025-1160', cliente: 'Diego Herrera Luna', tipo: 'Auto', estado: 'En gestion', urgencia: 8, fraude: 22, gestor: 'Ana Martinez', fecha: '2025-03-12', poliza: 'POL-AUTO-6677', telefono: '634 567 012', email: 'diego.herrera@email.com', descripcion: 'Salida de via en carretera comarcal. Vehiculo en cuneta, danos graves.', valoracion: 11200 },
+    { id: 'EXP-2025-1155', cliente: 'Sofia Reyes Campos', tipo: 'Hogar', estado: 'Abierto', urgencia: 9, fraude: 7, gestor: 'Lucia Fernandez', fecha: '2025-03-18', poliza: 'POL-HOG-8899', telefono: '656 789 234', email: 'sofia.reyes@email.com', descripcion: 'Incendio en cocina por sarten. Danos en campana extractora y mobiliario superior.', valoracion: 6800 }
+];
+
+const gestores = [
+    { nombre: 'Ana Martinez', rol: 'Gestora Senior', avatar: 'AM', color: '#3b82f6', casosAbiertos: 8, casosTotal: 42, capacidad: 85, resueltosMes: 34, tiempoMedio: '2.1d' },
+    { nombre: 'Pedro Gomez', rol: 'Gestor', avatar: 'PG', color: '#8b5cf6', casosAbiertos: 5, casosTotal: 31, capacidad: 62, resueltosMes: 26, tiempoMedio: '3.4d' },
+    { nombre: 'Lucia Fernandez', rol: 'Gestora', avatar: 'LF', color: '#06b6d4', casosAbiertos: 7, casosTotal: 38, capacidad: 76, resueltosMes: 31, tiempoMedio: '2.8d' },
+    { nombre: 'Miguel Santos', rol: 'Gestor Junior', avatar: 'MS', color: '#f59e0b', casosAbiertos: 3, casosTotal: 18, capacidad: 45, resueltosMes: 15, tiempoMedio: '4.2d' }
+];
+
+const inboxMessages = [
+    { id: 1, channel: 'call', sender: 'Carlos Mendez Garcia', preview: 'Llamada entrante sobre colision en M-40. Cliente alterado, solicita grua inmediata.', time: 'Hace 2 min', priority: 'urgente', exp: 'EXP-2025-1201', unread: true },
+    { id: 2, channel: 'whatsapp', sender: 'Maria Lopez Fernandez', preview: 'Hola, adjunto fotos de la inundacion en la cocina. El fontanero dice que la tuberia estaba corroida.', time: 'Hace 8 min', priority: 'alta', exp: 'EXP-2025-1198', unread: true },
+    { id: 3, channel: 'email', sender: 'Antonio Perez Sanchez', preview: 'RE: Documentacion robo - Adjunto denuncia policial y listado de objetos sustraidos con facturas.', time: 'Hace 15 min', priority: 'alta', exp: 'EXP-2025-1187', unread: true },
+    { id: 4, channel: 'chat', sender: 'Elena Navarro Diaz', preview: 'Necesito saber si la autorizacion para la operacion ya fue aprobada. Tengo cita el lunes.', time: 'Hace 22 min', priority: 'media', exp: 'EXP-2025-1190', unread: true },
+    { id: 5, channel: 'whatsapp', sender: 'Sofia Reyes Campos', preview: 'Buenos dias, les envio el informe de bomberos sobre el incendio en la cocina.', time: 'Hace 35 min', priority: 'alta', exp: 'EXP-2025-1155', unread: false },
+    { id: 6, channel: 'call', sender: 'Diego Herrera Luna', preview: 'Devolucion de llamada - Cliente pregunta por estado de peritacion del vehiculo.', time: 'Hace 45 min', priority: 'media', exp: 'EXP-2025-1160', unread: false },
+    { id: 7, channel: 'email', sender: 'Isabel Moreno Ramos', preview: 'Adjunto informe medico del latigazo cervical. Solicito cubrir sesiones de fisioterapia.', time: 'Hace 1h', priority: 'media', exp: 'EXP-2025-1175', unread: false },
+    { id: 8, channel: 'chat', sender: 'Fernando Alonso Martin', preview: 'He revisado y efectivamente la cerradura del garaje no tiene marcas de fuerza.', time: 'Hace 1h 20m', priority: 'baja', exp: 'EXP-2025-1170', unread: false },
+    { id: 9, channel: 'whatsapp', sender: 'Roberto Vidal Castro', preview: 'El electricista ya vino. Dice que hay que cambiar todo el cuadro. Le envio presupuesto.', time: 'Hace 2h', priority: 'media', exp: 'EXP-2025-1180', unread: false },
+    { id: 10, channel: 'email', sender: 'Laura Gimenez Blanco', preview: 'Confirmo recepcion de la indemnizacion. Muchas gracias por la rapida gestion.', time: 'Hace 3h', priority: 'baja', exp: 'EXP-2025-1183', unread: false }
+];
+
+const aiSuggestions = [
+    { exp: 'EXP-2025-1201', cliente: 'Carlos Mendez Garcia', suggestions: [
+        { icon: 'fa-truck', text: 'Enviar grua a M-40 km 23.4 (Pozuelo)', confidence: 96, level: 'high', action: 'Enviar grua' },
+        { icon: 'fa-user-tie', text: 'Asignar perito Carlos Ruiz (disponible, zona Madrid)', confidence: 91, level: 'high', action: 'Asignar perito' },
+        { icon: 'fa-file-medical', text: 'Solicitar parte medico por posibles lesiones', confidence: 72, level: 'medium', action: 'Solicitar docs' }
+    ]},
+    { exp: 'EXP-2025-1187', cliente: 'Antonio Perez Sanchez', suggestions: [
+        { icon: 'fa-shield-alt', text: 'Activar protocolo anti-fraude (score 45%)', confidence: 88, level: 'high', action: 'Activar anti-fraude' },
+        { icon: 'fa-camera', text: 'Solicitar fotos de la cerradura forzada', confidence: 85, level: 'high', action: 'Solicitar fotos' },
+        { icon: 'fa-user-tie', text: 'Asignar perito Laura Sanchez (especialista robo)', confidence: 79, level: 'medium', action: 'Asignar perito' }
+    ]},
+    { exp: 'EXP-2025-1190', cliente: 'Elena Navarro Diaz', suggestions: [
+        { icon: 'fa-check-circle', text: 'Aprobar autorizacion quirurgica (dentro de cobertura)', confidence: 94, level: 'high', action: 'Aprobar' },
+        { icon: 'fa-hospital', text: 'Confirmar centro: Hospital La Paz, Dr. Rodriguez', confidence: 90, level: 'high', action: 'Confirmar centro' }
+    ]},
+    { exp: 'EXP-2025-1195', cliente: 'Javier Ruiz Torres', suggestions: [
+        { icon: 'fa-exclamation-triangle', text: 'ALERTA: Score fraude 78% - Revisar antecedentes', confidence: 95, level: 'high', action: 'Revisar fraude' },
+        { icon: 'fa-search', text: 'Solicitar grabaciones del parking', confidence: 82, level: 'high', action: 'Solicitar videos' },
+        { icon: 'fa-ban', text: 'Considerar rechazo de reclamacion', confidence: 68, level: 'medium', action: 'Evaluar rechazo' }
+    ]},
+    { exp: 'EXP-2025-1155', cliente: 'Sofia Reyes Campos', suggestions: [
+        { icon: 'fa-user-tie', text: 'Asignar perito Elena Torres (especialista hogar)', confidence: 89, level: 'high', action: 'Asignar perito' },
+        { icon: 'fa-file-alt', text: 'Solicitar informe de bomberos oficial', confidence: 76, level: 'medium', action: 'Solicitar informe' },
+        { icon: 'fa-euro-sign', text: 'Estimacion preliminar: 6.800 EUR', confidence: 71, level: 'medium', action: 'Ver estimacion' }
+    ]}
+];
+
+const simulatedNewMessages = [
+    { channel: 'whatsapp', sender: 'Carlos Mendez Garcia', preview: 'La grua aun no ha llegado, llevo 25 minutos esperando!', priority: 'urgente', exp: 'EXP-2025-1201' },
+    { channel: 'call', sender: 'Perito Carlos Ruiz', preview: 'Llamada del perito: confirma disponibilidad para manana a las 10:00', priority: 'media', exp: 'EXP-2025-1175' },
+    { channel: 'email', sender: 'Taller MadridMotor', preview: 'Presupuesto de reparacion para vehiculo de Diego Herrera: 11.240 EUR', priority: 'alta', exp: 'EXP-2025-1160' },
+    { channel: 'chat', sender: 'Bot IA - Antifraude', preview: 'Analisis completado: EXP-2025-1170 tiene patron sospechoso en declaracion.', priority: 'alta', exp: 'EXP-2025-1170' },
+    { channel: 'whatsapp', sender: 'Elena Navarro Diaz', preview: 'Muchas gracias por aprobar la operacion! Confirmo cita para el lunes.', priority: 'baja', exp: 'EXP-2025-1190' },
+    { channel: 'call', sender: 'Maria Lopez Fernandez', preview: 'Rellamada: el agua sigue filtrando, necesita intervencion urgente.', priority: 'urgente', exp: 'EXP-2025-1198' }
+];
+
+// ===================== INIT =====================
+let currentTab = 'inbox';
+let messageCounter = inboxMessages.length;
+let simMsgIndex = 0;
+
+document.addEventListener('DOMContentLoaded', () => {
+    renderInbox();
+    renderAISuggestions();
+    renderWorkload();
+    renderExpedientes();
+    setupEventListeners();
+    startSimulation();
+});
+
+// ===================== EVENT LISTENERS =====================
+function setupEventListeners() {
+    // Tab navigation
+    document.querySelectorAll('.section-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabId = tab.dataset.tab;
+            switchTab(tabId);
+        });
+    });
+    document.querySelectorAll('.nav-item[data-tab]').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const tabId = item.dataset.tab;
+            switchTab(tabId);
+        });
+    });
+
+    // Filters
+    document.getElementById('filtroEstado').addEventListener('change', renderExpedientes);
+    document.getElementById('filtroTipo').addEventListener('change', renderExpedientes);
+    document.getElementById('filtroUrgencia').addEventListener('change', renderExpedientes);
+    document.getElementById('filtroTexto').addEventListener('input', renderExpedientes);
+    document.getElementById('inboxFilter').addEventListener('change', renderInbox);
+
+    // History panel close
+    document.getElementById('historyClose').addEventListener('click', closeHistory);
+    document.getElementById('historyOverlay').addEventListener('click', closeHistory);
+
+    // Menu toggle
+    document.getElementById('menuToggle').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.toggle('open');
+    });
+
+    // Global search
+    document.getElementById('globalSearch').addEventListener('input', (e) => {
+        if (currentTab !== 'expedientes') switchTab('expedientes');
+        document.getElementById('filtroTexto').value = e.target.value;
+        renderExpedientes();
+    });
+}
+
+function switchTab(tabId) {
+    currentTab = tabId;
+    document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item[data-tab]').forEach(n => n.classList.remove('active'));
+
+    const tab = document.querySelector(`.section-tab[data-tab="${tabId}"]`);
+    if (tab) tab.classList.add('active');
+    const panel = document.getElementById('tab-' + tabId);
+    if (panel) panel.classList.add('active');
+    const navItem = document.querySelector(`.nav-item[data-tab="${tabId}"]`);
+    if (navItem) navItem.classList.add('active');
+}
+
+// ===================== INBOX =====================
+function renderInbox() {
+    const filter = document.getElementById('inboxFilter').value;
+    const list = document.getElementById('inboxList');
+    const filtered = filter === 'all' ? inboxMessages : inboxMessages.filter(m => m.channel === filter);
+
+    list.innerHTML = filtered.map(msg => `
+        <div class="inbox-item ${msg.unread ? 'unread' : ''}" onclick="selectInboxMessage(${msg.id})" id="inbox-${msg.id}">
+            <div class="inbox-icon ${msg.channel}">
+                <i class="${getChannelIcon(msg.channel)}"></i>
+            </div>
+            <div class="inbox-body">
+                <div class="inbox-sender">
+                    ${msg.sender}
+                    <span class="channel-label ${msg.channel}">${getChannelLabel(msg.channel)}</span>
+                </div>
+                <div class="inbox-preview">${msg.preview}</div>
+            </div>
+            <div class="inbox-meta">
+                <span class="inbox-time">${msg.time}</span>
+                <span class="inbox-priority ${msg.priority}">${msg.priority.toUpperCase()}</span>
+                <span class="inbox-exp">${msg.exp}</span>
+            </div>
+        </div>
+    `).join('');
+
+    updateInboxBadge();
+}
+
+function getChannelIcon(ch) {
+    const icons = { call: 'fas fa-phone-alt', whatsapp: 'fab fa-whatsapp', email: 'fas fa-envelope', chat: 'fas fa-comment-dots' };
+    return icons[ch] || 'fas fa-inbox';
+}
+function getChannelLabel(ch) {
+    const labels = { call: 'Llamada', whatsapp: 'WhatsApp', email: 'Email', chat: 'Chat' };
+    return labels[ch] || ch;
+}
+
+function selectInboxMessage(id) {
+    const msg = inboxMessages.find(m => m.id === id);
+    if (!msg) return;
+    msg.unread = false;
+
+    document.querySelectorAll('.inbox-item').forEach(el => el.classList.remove('selected'));
+    const el = document.getElementById('inbox-' + id);
+    if (el) { el.classList.remove('unread'); el.classList.add('selected'); }
+
+    const exp = expedientes.find(e => e.id === msg.exp);
+    const preview = document.getElementById('inboxPreview');
+    preview.innerHTML = `
+        <div style="width:100%">
+            <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:1rem">
+                <div class="inbox-icon ${msg.channel}" style="width:32px;height:32px;font-size:.8rem"><i class="${getChannelIcon(msg.channel)}"></i></div>
+                <div>
+                    <strong style="font-size:.85rem">${msg.sender}</strong>
+                    <div style="font-size:.65rem;color:var(--gray-400)">${msg.time} - ${getChannelLabel(msg.channel)}</div>
+                </div>
+                <span class="inbox-priority ${msg.priority}" style="margin-left:auto">${msg.priority.toUpperCase()}</span>
+            </div>
+            <div style="background:var(--gray-50);border-radius:8px;padding:.85rem;font-size:.8rem;color:var(--gray-700);line-height:1.5;margin-bottom:1rem">
+                ${msg.preview}
+            </div>
+            ${exp ? `
+            <div style="background:linear-gradient(135deg,rgba(139,92,246,.04),rgba(6,182,212,.04));border:1px solid rgba(139,92,246,.15);border-radius:8px;padding:.85rem;margin-bottom:1rem">
+                <div style="font-size:.7rem;color:var(--ai-purple);font-weight:700;margin-bottom:.4rem"><i class="fas fa-folder-open"></i> ${exp.id}</div>
+                <div style="font-size:.75rem;color:var(--gray-600)"><strong>Tipo:</strong> ${exp.tipo} | <strong>Estado:</strong> ${exp.estado} | <strong>Urgencia:</strong> ${exp.urgencia}/10</div>
+                <div style="font-size:.75rem;color:var(--gray-500);margin-top:.25rem">${exp.descripcion}</div>
+            </div>
+            <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+                <button class="btn btn-sm btn-primary" onclick="openHistory('${exp.id}')"><i class="fas fa-user"></i> Ver cliente</button>
+                <button class="btn btn-sm btn-ai" onclick="switchTab('ai-suggestions')"><i class="fas fa-robot"></i> Ver sugerencias IA</button>
+                <button class="btn btn-sm btn-ghost"><i class="fas fa-reply"></i> Responder</button>
+                <button class="btn btn-sm btn-ghost"><i class="fas fa-share"></i> Derivar</button>
+            </div>
+            ` : ''}
+        </div>
+    `;
+    updateInboxBadge();
+}
+
+function updateInboxBadge() {
+    const unread = inboxMessages.filter(m => m.unread).length;
+    document.getElementById('inboxBadge').textContent = unread;
+    document.getElementById('tabInboxBadge').textContent = unread;
+}
+
+// ===================== AI SUGGESTIONS =====================
+function renderAISuggestions() {
+    const panel = document.getElementById('aiSuggestionsPanel');
+    panel.innerHTML = aiSuggestions.map(s => `
+        <div class="ai-suggestion-card">
+            <div class="ai-suggestion-header">
+                <span class="ai-suggestion-exp"><i class="fas fa-folder"></i> ${s.exp}</span>
+                <span class="ai-suggestion-client">${s.cliente}</span>
+            </div>
+            <div class="ai-suggestions-list">
+                ${s.suggestions.map(sg => `
+                    <div class="ai-suggestion-item">
+                        <i class="fas ${sg.icon}"></i>
+                        <span class="ai-suggestion-text">${sg.text}</span>
+                        <span class="ai-confidence ${sg.level}">${sg.confidence}%</span>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="ai-suggestion-actions">
+                ${s.suggestions.map(sg => `
+                    <button class="btn btn-xs btn-ai" onclick="executeAISuggestion('${s.exp}','${sg.action}')">${sg.action}</button>
+                `).join('')}
+                <button class="btn btn-xs btn-ghost" onclick="openHistory('${s.exp}')"><i class="fas fa-eye"></i> Ver caso</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function executeAISuggestion(expId, action) {
+    showToast(`<i class="fas fa-robot"></i> ${action} ejecutado para ${expId}`, 'ai');
+}
+
+// ===================== WORKLOAD =====================
+function renderWorkload() {
+    const grid = document.getElementById('workloadGrid');
+    grid.innerHTML = gestores.map(g => {
+        const burnoutClass = g.capacidad >= 80 ? 'danger' : g.capacidad >= 60 ? 'warning' : 'ok';
+        const burnoutText = g.capacidad >= 80 ? 'Sobrecarga' : g.capacidad >= 60 ? 'Moderada' : 'Optima';
+        const barClass = g.capacidad >= 80 ? 'high' : g.capacidad >= 60 ? 'medium' : 'low';
+        return `
+        <div class="workload-card">
+            <div class="workload-avatar" style="background:${g.color}">${g.avatar}</div>
+            <span class="workload-name">${g.nombre}</span>
+            <span class="workload-role">${g.rol}</span>
+            <div class="workload-stats">
+                <div class="workload-stat"><span class="workload-stat-value">${g.casosAbiertos}</span><span class="workload-stat-label">Abiertos</span></div>
+                <div class="workload-stat"><span class="workload-stat-value">${g.casosTotal}</span><span class="workload-stat-label">Total</span></div>
+                <div class="workload-stat"><span class="workload-stat-value">${g.tiempoMedio}</span><span class="workload-stat-label">T. Medio</span></div>
+            </div>
+            <div class="workload-bar-container"><div class="workload-bar ${barClass}" style="width:${g.capacidad}%"></div></div>
+            <div class="burnout-alert ${burnoutClass}">
+                <i class="fas ${burnoutClass === 'danger' ? 'fa-fire' : burnoutClass === 'warning' ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i>
+                ${burnoutText} (${g.capacidad}%)
+            </div>
+        </div>
+        `;
+    }).join('');
+
+    // Chart
+    const chart = document.getElementById('workloadChart');
+    chart.innerHTML = gestores.map((g, i) => {
+        const pct = (g.casosAbiertos / 10) * 100;
+        const gradients = ['gradient-1','gradient-2','gradient-1','gradient-3'];
+        return `
+        <div class="chart-bar-group">
+            <div class="chart-bar-value">${g.casosAbiertos}</div>
+            <div class="chart-bar-track"><div class="chart-bar-fill ${gradients[i]}" style="height:${Math.max(pct, 10)}%"></div></div>
+            <div class="chart-bar-label">${g.nombre.split(' ')[0]}</div>
+        </div>
+        `;
+    }).join('');
+
+    // Burnout panel
+    const burnoutPanel = document.getElementById('burnoutPanel');
+    burnoutPanel.innerHTML = gestores.map(g => {
+        const burnoutClass = g.capacidad >= 80 ? 'danger' : g.capacidad >= 60 ? 'warning' : 'ok';
+        const icon = g.capacidad >= 80 ? 'fa-fire' : g.capacidad >= 60 ? 'fa-exclamation-triangle' : 'fa-heart';
+        return `
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.75rem;padding:.6rem;background:var(--gray-50);border-radius:8px">
+            <div style="width:32px;height:32px;border-radius:8px;background:${g.color};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.7rem;flex-shrink:0">${g.avatar}</div>
+            <div style="flex:1;min-width:0">
+                <div style="font-size:.75rem;font-weight:600;color:var(--gray-800)">${g.nombre}</div>
+                <div style="height:5px;background:var(--gray-200);border-radius:3px;margin-top:.3rem;overflow:hidden">
+                    <div style="height:100%;width:${g.capacidad}%;border-radius:3px;background:${g.capacidad >= 80 ? 'var(--danger)' : g.capacidad >= 60 ? 'var(--warning)' : 'var(--success)'};transition:width .5s"></div>
+                </div>
+            </div>
+            <div class="burnout-alert ${burnoutClass}" style="margin-top:0;font-size:.6rem;padding:.2rem .4rem">
+                <i class="fas ${icon}"></i> ${g.capacidad}%
+            </div>
+        </div>
+        `;
+    }).join('') + `
+    <div style="margin-top:1rem;padding:.75rem;background:linear-gradient(135deg,rgba(139,92,246,.06),rgba(6,182,212,.06));border-radius:8px;border:1px solid rgba(139,92,246,.15)">
+        <div style="font-size:.75rem;font-weight:600;color:var(--ai-purple);margin-bottom:.3rem"><i class="fas fa-robot"></i> Recomendacion IA</div>
+        <div style="font-size:.7rem;color:var(--gray-600);line-height:1.4">Redistribuir 2 expedientes de <strong>Ana Martinez</strong> a <strong>Miguel Santos</strong> para equilibrar la carga. Estimacion: mejora del 15% en tiempos de respuesta.</div>
+        <button class="btn btn-xs btn-ai" style="margin-top:.5rem" onclick="showToast('Redistribucion ejecutada por IA', 'ai')"><i class="fas fa-magic"></i> Aplicar redistribucion</button>
+    </div>`;
+}
+
+// ===================== EXPEDIENTES =====================
+function renderExpedientes() {
+    const estado = document.getElementById('filtroEstado').value;
+    const tipo = document.getElementById('filtroTipo').value;
+    const urgencia = parseInt(document.getElementById('filtroUrgencia').value);
+    const texto = document.getElementById('filtroTexto').value.toLowerCase();
+
+    let filtered = expedientes.filter(e => {
+        if (estado && e.estado !== estado) return false;
+        if (tipo && e.tipo !== tipo) return false;
+        if (urgencia && e.urgencia < urgencia) return false;
+        if (texto && !e.id.toLowerCase().includes(texto) && !e.cliente.toLowerCase().includes(texto)) return false;
+        return true;
+    });
+
+    const tbody = document.getElementById('expedientesTableBody');
+    tbody.innerHTML = filtered.map(e => {
+        const statusClass = e.estado === 'Abierto' ? 'abierto' : e.estado === 'En gestion' ? 'gestion' : e.estado === 'Perito asignado' ? 'perito' : 'resuelto';
+        const urgClass = e.urgencia >= 9 ? 'critical' : e.urgencia >= 7 ? 'high' : e.urgencia >= 5 ? 'medium' : 'low';
+        const fraudClass = e.fraude >= 50 ? 'high' : e.fraude >= 20 ? 'medium' : 'low';
+        return `
+        <tr onclick="openHistory('${e.id}')">
+            <td><strong style="color:var(--ai-purple);font-size:.75rem">${e.id}</strong></td>
+            <td>${e.cliente}</td>
+            <td><span style="font-size:.75rem"><i class="fas ${getTypeIcon(e.tipo)}" style="color:var(--primary);margin-right:.2rem"></i>${e.tipo}</span></td>
+            <td><span class="status-badge status-${statusClass}">${e.estado}</span></td>
+            <td><span class="priority-badge priority-${urgClass}">${e.urgencia}</span></td>
+            <td><span class="fraud-badge fraud-${fraudClass}"><i class="fas fa-shield-alt"></i> ${e.fraude}%</span></td>
+            <td style="font-size:.75rem">${e.gestor}</td>
+            <td style="font-size:.75rem;color:var(--gray-500)">${e.fecha}</td>
+            <td>
+                <div class="table-actions">
+                    <button title="Ver historial" onclick="event.stopPropagation();openHistory('${e.id}')"><i class="fas fa-eye"></i></button>
+                    <button title="Sugerencias IA" onclick="event.stopPropagation();switchTab('ai-suggestions')"><i class="fas fa-robot"></i></button>
+                    <button title="Editar" onclick="event.stopPropagation()"><i class="fas fa-edit"></i></button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function getTypeIcon(tipo) {
+    const icons = { Auto: 'fa-car', Hogar: 'fa-home', Salud: 'fa-heartbeat', Robo: 'fa-mask' };
+    return icons[tipo] || 'fa-file';
+}
+
+// ===================== CLIENT HISTORY =====================
+function openHistory(expId) {
+    const exp = expedientes.find(e => e.id === expId);
+    if (!exp) return;
+
+    const initials = exp.cliente.split(' ').map(w => w[0]).join('').substring(0, 2);
+    const prevCases = Math.floor(Math.random() * 3) + 1;
+    const yearsClient = Math.floor(Math.random() * 8) + 2;
+
+    const body = document.getElementById('historyBody');
+    body.innerHTML = `
+        <div class="history-client-card">
+            <div class="history-client-avatar">${initials}</div>
+            <div class="history-client-name">${exp.cliente}</div>
+            <div class="history-client-info">${exp.email} | ${exp.telefono}</div>
+            <div class="history-client-info">Cliente desde hace ${yearsClient} anios</div>
+        </div>
+
+        <div class="history-section">
+            <h4><i class="fas fa-chart-pie"></i> Resumen</h4>
+            <div class="history-stat-row">
+                <div class="history-stat"><span class="history-stat-value">${prevCases + 1}</span><span class="history-stat-label">Siniestros totales</span></div>
+                <div class="history-stat"><span class="history-stat-value">${yearsClient} anos</span><span class="history-stat-label">Antiguedad</span></div>
+                <div class="history-stat"><span class="history-stat-value">${exp.valoracion.toLocaleString('es')} EUR</span><span class="history-stat-label">Valoracion actual</span></div>
+                <div class="history-stat"><span class="history-stat-value">${exp.fraude}%</span><span class="history-stat-label">Score fraude</span></div>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <h4><i class="fas fa-shield-alt"></i> Polizas Activas</h4>
+            <div class="history-polizas">
+                <div class="history-poliza"><i class="fas ${getTypeIcon(exp.tipo)}"></i><span class="history-poliza-type">${exp.tipo}</span><span class="history-poliza-num">${exp.poliza}</span></div>
+                ${exp.tipo !== 'Hogar' ? '<div class="history-poliza"><i class="fas fa-home"></i><span class="history-poliza-type">Hogar</span><span class="history-poliza-num">POL-HOG-' + Math.floor(Math.random()*9000+1000) + '</span></div>' : ''}
+                ${exp.tipo !== 'Salud' ? '<div class="history-poliza"><i class="fas fa-heartbeat"></i><span class="history-poliza-type">Salud</span><span class="history-poliza-num">POL-SAL-' + Math.floor(Math.random()*9000+1000) + '</span></div>' : ''}
+            </div>
+        </div>
+
+        <div class="history-section">
+            <h4><i class="fas fa-folder-open"></i> Expediente Actual: ${exp.id}</h4>
+            <div style="font-size:.75rem;color:var(--gray-600);line-height:1.5;margin-bottom:.75rem;padding:.6rem;background:var(--gray-50);border-radius:6px">
+                ${exp.descripcion}
+            </div>
+            <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+                <span class="status-badge status-${exp.estado === 'Abierto' ? 'abierto' : exp.estado === 'En gestion' ? 'gestion' : exp.estado === 'Perito asignado' ? 'perito' : 'resuelto'}">${exp.estado}</span>
+                <span class="priority-badge priority-${exp.urgencia >= 9 ? 'critical' : exp.urgencia >= 7 ? 'high' : 'medium'}" style="width:auto;padding:.2rem .5rem;border-radius:16px;font-size:.65rem">Urgencia ${exp.urgencia}/10</span>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <h4><i class="fas fa-history"></i> Timeline</h4>
+            <div class="history-timeline">
+                <div class="history-timeline-item">
+                    <div class="history-timeline-dot active"></div>
+                    <div class="history-timeline-content">
+                        <strong>Siniestro abierto</strong>
+                        <p>Registro automatico por IA desde ${getChannelLabel(inboxMessages.find(m => m.exp === exp.id)?.channel || 'call')}</p>
+                        <div class="history-timeline-date">${exp.fecha} 09:15</div>
+                    </div>
+                </div>
+                <div class="history-timeline-item">
+                    <div class="history-timeline-dot completed"></div>
+                    <div class="history-timeline-content">
+                        <strong>Documentacion recibida</strong>
+                        <p>Fotos y parte amistoso adjuntados</p>
+                        <div class="history-timeline-date">${exp.fecha} 10:30</div>
+                    </div>
+                </div>
+                <div class="history-timeline-item">
+                    <div class="history-timeline-dot completed"></div>
+                    <div class="history-timeline-content">
+                        <strong>Analisis IA completado</strong>
+                        <p>Score fraude: ${exp.fraude}% | Valoracion estimada: ${exp.valoracion.toLocaleString('es')} EUR</p>
+                        <div class="history-timeline-date">${exp.fecha} 10:32</div>
+                    </div>
+                </div>
+                ${exp.estado !== 'Abierto' ? `
+                <div class="history-timeline-item">
+                    <div class="history-timeline-dot ${exp.estado === 'Resuelto' ? 'completed' : 'active'}"></div>
+                    <div class="history-timeline-content">
+                        <strong>${exp.estado === 'Perito asignado' ? 'Perito asignado' : exp.estado === 'Resuelto' ? 'Caso resuelto' : 'En gestion'}</strong>
+                        <p>Asignado a ${exp.gestor}</p>
+                        <div class="history-timeline-date">${exp.fecha} 14:00</div>
+                    </div>
+                </div>` : ''}
+            </div>
+        </div>
+
+        <div class="history-section">
+            <h4><i class="fas fa-folder"></i> Siniestros Anteriores</h4>
+            ${Array.from({length: prevCases}, (_, i) => {
+                const pastTypes = ['Auto','Hogar','Salud'];
+                const t = pastTypes[i % 3];
+                const y = 2024 - i;
+                return `
+                <div style="display:flex;align-items:center;gap:.5rem;padding:.5rem;background:var(--gray-50);border-radius:6px;margin-bottom:.35rem;font-size:.75rem">
+                    <i class="fas ${getTypeIcon(t)}" style="color:var(--gray-400)"></i>
+                    <div style="flex:1">
+                        <strong>EXP-${y}-${Math.floor(Math.random()*900+100)}</strong>
+                        <div style="color:var(--gray-400);font-size:.65rem">${t} - ${y}</div>
+                    </div>
+                    <span class="status-badge status-resuelto">Resuelto</span>
+                </div>`;
+            }).join('')}
+        </div>
+    `;
+
+    document.getElementById('historyOverlay').classList.add('show');
+    document.getElementById('historyPanel').classList.add('show');
+}
+
+function closeHistory() {
+    document.getElementById('historyOverlay').classList.remove('show');
+    document.getElementById('historyPanel').classList.remove('show');
+}
+
+// ===================== SIMULATION =====================
+function startSimulation() {
+    // Simulate incoming messages every 6-12 seconds
+    scheduleNextMessage();
+
+    // Update notification badge periodically
+    setInterval(() => {
+        const badge = document.getElementById('notifBadge');
+        const n = parseInt(badge.textContent) + 1;
+        badge.textContent = n;
+        badge.style.animation = 'none';
+        badge.offsetHeight;
+        badge.style.animation = 'livePulse 1s 2';
+    }, 25000);
+}
+
+function scheduleNextMessage() {
+    const delay = 6000 + Math.random() * 8000;
+    setTimeout(() => {
+        addSimulatedMessage();
+        scheduleNextMessage();
+    }, delay);
+}
+
+function addSimulatedMessage() {
+    const template = simulatedNewMessages[simMsgIndex % simulatedNewMessages.length];
+    simMsgIndex++;
+    messageCounter++;
+
+    const newMsg = {
+        id: messageCounter,
+        channel: template.channel,
+        sender: template.sender,
+        preview: template.preview,
+        time: 'Ahora',
+        priority: template.priority,
+        exp: template.exp,
+        unread: true
+    };
+
+    inboxMessages.unshift(newMsg);
+    renderInbox();
+
+    // Show toast
+    showToast(`<i class="${getChannelIcon(template.channel)}"></i> ${template.sender}: ${template.preview.substring(0, 50)}...`, template.priority === 'urgente' ? 'warning' : 'ai');
+
+    // Animate badge
+    const badge = document.getElementById('inboxBadge');
+    badge.style.animation = 'none';
+    badge.offsetHeight;
+    badge.style.animation = 'livePulse 1s 3';
+}
+
+// ===================== UTILITIES =====================
+function showToast(html, type = 'ai') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = html;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        toast.style.transition = 'all .3s';
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
+</script>
+</body>
+</html>

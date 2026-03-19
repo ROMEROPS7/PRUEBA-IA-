@@ -34,7 +34,7 @@ const metricasController = {
         },
       });
     } catch (err) {
-      console.error('Error obteniendo metricas dashboard:', err);
+
       res.status(500).json({ error: 'Error interno' });
     }
   },
@@ -44,7 +44,7 @@ const metricasController = {
       const tipos = await dbAll('SELECT tipo, COUNT(*) as cantidad FROM siniestros GROUP BY tipo ORDER BY cantidad DESC');
       res.json(tipos);
     } catch (err) {
-      console.error('Error metricas por tipo:', err);
+
       res.status(500).json({ error: 'Error interno' });
     }
   },
@@ -54,7 +54,7 @@ const metricasController = {
       const estados = await dbAll('SELECT estado, COUNT(*) as cantidad FROM siniestros GROUP BY estado');
       res.json(estados);
     } catch (err) {
-      console.error('Error metricas por estado:', err);
+
       res.status(500).json({ error: 'Error interno' });
     }
   },
@@ -64,7 +64,7 @@ const metricasController = {
       const zonas = await dbAll('SELECT zona, COUNT(*) as cantidad, AVG(urgencia) as urgencia_media FROM siniestros WHERE zona IS NOT NULL GROUP BY zona ORDER BY cantidad DESC');
       res.json(zonas);
     } catch (err) {
-      console.error('Error metricas por zona:', err);
+
       res.status(500).json({ error: 'Error interno' });
     }
   },
@@ -77,7 +77,7 @@ const metricasController = {
         FROM siniestros GROUP BY mes ORDER BY mes DESC LIMIT 12`);
       res.json(tendencia);
     } catch (err) {
-      console.error('Error tendencia mensual:', err);
+
       res.status(500).json({ error: 'Error interno' });
     }
   },
@@ -88,7 +88,7 @@ const metricasController = {
         FROM agentes WHERE tipo = 'perito' ORDER BY valoracion DESC, expedientes_total DESC`);
       res.json(ranking);
     } catch (err) {
-      console.error('Error ranking peritos:', err);
+
       res.status(500).json({ error: 'Error interno' });
     }
   },
@@ -110,7 +110,7 @@ const metricasController = {
         tiempo_medio_humano: '20 min',
       });
     } catch (err) {
-      console.error('Error rendimiento IA:', err);
+
       res.status(500).json({ error: 'Error interno' });
     }
   },

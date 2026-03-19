@@ -1,13 +1,25 @@
 const jwt = require('jsonwebtoken');
 const { dbGet } = require('../database/db');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'siniestros_ai_secret_dev_key';
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? null : 'dev-only-key-change-in-production');
+if (!JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET not set in environment');
+  process.exit(1);
+}
 
 function generarToken(usuario) {
   return jwt.sign(
     { id: usuario.id, email: usuario.email, rol: usuario.rol, nombre: usuario.nombre },
     JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
+    { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
+  );
+}
+
+function generarRefreshToken(usuario) {
+  return jwt.sign(
+    { id: usuario.id, type: 'refresh' },
+    JWT_SECRET,
+    { expiresIn: '7d' }
   );
 }
 
@@ -57,4 +69,4 @@ function tokenOpcional(req, res, next) {
   next();
 }
 
-module.exports = { generarToken, verificarToken, requiereRol, tokenOpcional, JWT_SECRET };
+module.exports = { generarToken, generarRefreshToken, verificarToken, requiereRol, tokenOpcional, JWT_SECRET };

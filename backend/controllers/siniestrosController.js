@@ -30,7 +30,6 @@ const siniestrosController = {
       const total = await dbGet('SELECT COUNT(*) as total FROM siniestros');
       res.json({ siniestros, total: total.total });
     } catch (err) {
-      console.error('Error listando siniestros:', err);
       res.status(500).json({ error: 'Error interno' });
     }
   },
@@ -57,7 +56,6 @@ const siniestrosController = {
 
       res.json({ ...siniestro, timeline, documentos, llamadas, mensajes });
     } catch (err) {
-      console.error('Error obteniendo siniestro:', err);
       res.status(500).json({ error: 'Error interno' });
     }
   },
@@ -84,6 +82,7 @@ const siniestrosController = {
 
       await dbRun(`INSERT INTO siniestros (id, expediente, cliente_id, tipo, descripcion, urgencia, score_fraude, direccion, lat, lng, zona, ia_confianza, ia_gestion, ia_tiempo, humano_tiempo)
         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+        // Demo simulation values
         [id, expediente, cliente_id, tipo, descripcion, urgencia || 5, scoreFraude, direccion, lat, lng, zona, iaConfianza, scoreFraude > 40 ? 'partial' : 'full', (Math.random() * 2 + 0.5).toFixed(1) + ' min', Math.floor(Math.random() * 15 + 10) + ' min']);
 
       await dbRun('INSERT INTO expedientes (id, siniestro_id, tipo_evento, descripcion) VALUES (?,?,?,?)',
@@ -92,7 +91,6 @@ const siniestrosController = {
       const siniestro = await dbGet('SELECT * FROM siniestros WHERE id = ?', [id]);
       res.status(201).json(siniestro);
     } catch (err) {
-      console.error('Error creando siniestro:', err);
       res.status(500).json({ error: 'Error interno' });
     }
   },
@@ -143,7 +141,6 @@ const siniestrosController = {
       const actualizado = await dbGet('SELECT * FROM siniestros WHERE id = ?', [siniestro.id]);
       res.json(actualizado);
     } catch (err) {
-      console.error('Error actualizando siniestro:', err);
       res.status(500).json({ error: 'Error interno' });
     }
   },
@@ -157,7 +154,6 @@ const siniestrosController = {
       }
       res.json({ mensaje: 'Siniestro eliminado' });
     } catch (err) {
-      console.error('Error eliminando siniestro:', err);
       res.status(500).json({ error: 'Error interno' });
     }
   },
@@ -175,7 +171,6 @@ const siniestrosController = {
         [`%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`]);
       res.json(resultados);
     } catch (err) {
-      console.error('Error buscando:', err);
       res.status(500).json({ error: 'Error interno' });
     }
   },
@@ -189,7 +184,9 @@ function calcularScoreFraudeBasico(descripcion, urgencia) {
     if (desc.includes(p)) score += 15;
   }
   if (urgencia >= 9) score += 5;
-  score += Math.floor(Math.random() * 10);
+  // Deterministic hash-based adjustment
+  const hashVal = (descripcion || '').split('').reduce((a, c) => ((a << 5) - a + c.charCodeAt(0)) | 0, 0);
+  score += Math.abs(hashVal % 8);
   return Math.min(score, 100);
 }
 
