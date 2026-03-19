@@ -1,0 +1,25 @@
+{
+  "name": "siniestros-ai-backend",
+  "version": "1.0.0",
+  "description": "Backend completo para SiniestrosAI - Sistema Autonomo de Gestion de Siniestros",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node database/db.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "socket.io": "^4.8.1",
+    "sqlite3": "^5.1.7",
+    "twilio": "^5.4.0",
+    "uuid": "^11.0.3"
+  },
+  "keywords": ["siniestros", "seguros", "ia", "gestion"],
+  "license": "MIT"
+}

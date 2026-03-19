@@ -3,721 +3,497 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SiniestrosApp - Gestion de Siniestros</title>
+    <title>SiniestrosAI - Sistema Autonomo de Gestion de Siniestros</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
 </head>
 <body>
-    <!-- SIDEBAR -->
-    <nav class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="logo">
-                <i class="fas fa-shield-alt"></i>
-                <span>SiniestrosApp</span>
-            </div>
+
+<!-- ========== PANTALLA DE BIENVENIDA ========== -->
+<div class="welcome-screen" id="welcomeScreen">
+    <div class="welcome-particles" id="welcomeParticles"></div>
+    <div class="welcome-content">
+        <div class="welcome-logo">
+            <div class="welcome-logo-icon"><i class="fas fa-brain"></i></div>
+            <h1 class="typewriter" id="welcomeTitle"></h1>
         </div>
-        <ul class="nav-menu">
-            <li class="nav-item active" data-page="dashboard">
-                <i class="fas fa-chart-pie"></i>
-                <span>Dashboard</span>
-            </li>
-            <li class="nav-item" data-page="nuevo-siniestro">
-                <i class="fas fa-plus-circle"></i>
-                <span>Nuevo Siniestro</span>
-            </li>
-            <li class="nav-item" data-page="expedientes">
-                <i class="fas fa-folder-open"></i>
-                <span>Expedientes</span>
-            </li>
-            <li class="nav-item" data-page="metricas">
-                <i class="fas fa-chart-bar"></i>
-                <span>Metricas</span>
-            </li>
-        </ul>
-        <div class="sidebar-footer">
-            <div class="user-info">
-                <div class="user-avatar">AM</div>
-                <div class="user-details">
-                    <span class="user-name">Ana Martinez</span>
-                    <span class="user-role">Gestora Senior</span>
-                </div>
-            </div>
+        <p class="welcome-subtitle" id="welcomeSubtitle"></p>
+        <div class="welcome-counter">
+            <span class="welcome-counter-value" id="welcomeCounterValue">1.247.893</span>
+            <span class="welcome-counter-label">siniestros gestionados globalmente</span>
         </div>
-    </nav>
+        <button class="btn btn-ai btn-xl" id="btnEntrar">
+            <i class="fas fa-arrow-right"></i> Entrar al sistema
+        </button>
+    </div>
+</div>
 
-    <!-- MAIN CONTENT -->
-    <main class="main-content">
-        <!-- HEADER -->
-        <header class="top-header">
-            <button class="menu-toggle" id="menuToggle">
-                <i class="fas fa-bars"></i>
-            </button>
-            <div class="header-search">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="Buscar expediente, cliente o poliza..." id="globalSearch">
-            </div>
-            <div class="header-actions">
-                <button class="header-btn notification-btn" id="notifBtn">
-                    <i class="fas fa-bell"></i>
-                    <span class="badge">3</span>
-                </button>
-                <button class="header-btn" onclick="navigateTo('nuevo-siniestro')">
-                    <i class="fas fa-plus"></i>
-                    Nuevo Siniestro
-                </button>
-            </div>
-        </header>
+<!-- ========== BANNER CATASTROFE ========== -->
+<div class="catastrophe-banner" id="catastropheBanner" style="display:none;">
+    <div class="catastrophe-content">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>MODO CATASTROFE ACTIVO - <strong id="catCount">47</strong> siniestros detectados - Zona: Valencia y Murcia</span>
+        <button class="btn btn-sm" id="btnDesactivarCat" onclick="deactivateCatastrophe()">Desactivar</button>
+    </div>
+</div>
 
-        <!-- NOTIFICACIONES DROPDOWN -->
-        <div class="notifications-dropdown" id="notifDropdown">
-            <div class="notif-header">
-                <h4>Notificaciones</h4>
-                <button class="notif-clear">Marcar todas como leidas</button>
-            </div>
-            <div class="notif-list">
-                <div class="notif-item unread">
-                    <i class="fas fa-exclamation-triangle notif-icon urgent"></i>
-                    <div class="notif-content">
-                        <p>Siniestro <strong>EXP-2024-0891</strong> marcado como urgente</p>
-                        <span>Hace 15 minutos</span>
-                    </div>
-                </div>
-                <div class="notif-item unread">
-                    <i class="fas fa-user-check notif-icon info"></i>
-                    <div class="notif-content">
-                        <p>Perito Carlos Ruiz asignado a <strong>EXP-2024-0887</strong></p>
-                        <span>Hace 1 hora</span>
-                    </div>
-                </div>
-                <div class="notif-item">
-                    <i class="fas fa-check-circle notif-icon success"></i>
-                    <div class="notif-content">
-                        <p>Expediente <strong>EXP-2024-0879</strong> cerrado correctamente</p>
-                        <span>Hace 3 horas</span>
-                    </div>
-                </div>
-            </div>
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">
+            <div class="logo-icon"><i class="fas fa-brain"></i></div>
+            <span>SiniestrosAI <small class="ai-tag">IA</small></span>
         </div>
+    </div>
+    <ul class="nav-menu">
+        <li class="nav-item active" data-page="dashboard"><i class="fas fa-chart-pie"></i><span>Dashboard</span></li>
+        <li class="nav-item" data-page="nuevo-siniestro"><i class="fas fa-plus-circle"></i><span>Nuevo Siniestro</span></li>
+        <li class="nav-item" data-page="expedientes"><i class="fas fa-folder-open"></i><span>Expedientes</span></li>
+        <li class="nav-item" data-page="simulador"><i class="fas fa-phone-alt"></i><span>Simulador IA</span><span class="nav-badge-live">LIVE</span></li>
+        <li class="nav-item" data-page="antifraude"><i class="fas fa-shield-alt"></i><span>Anti-Fraude IA</span></li>
+        <li class="nav-item" data-page="comparativa"><i class="fas fa-balance-scale"></i><span>Humano vs IA</span></li>
+        <li class="nav-item" data-page="roi"><i class="fas fa-calculator"></i><span>Calculadora ROI</span></li>
+        <li class="nav-item" data-page="cliente"><i class="fas fa-mobile-alt"></i><span>App Cliente</span></li>
+        <li class="nav-item" data-page="metricas"><i class="fas fa-chart-bar"></i><span>Metricas</span></li>
+    </ul>
+    <div class="sidebar-footer">
+        <button class="btn-catastrophe" id="btnCatastrophe" onclick="activateCatastrophe()">
+            <i class="fas fa-exclamation-triangle"></i> SIMULAR DANA
+        </button>
+        <div class="ai-status-bar">
+            <div class="ai-pulse-dot"></div>
+            <span id="agentCountLabel">8 Agentes IA activos</span>
+        </div>
+        <div class="user-info">
+            <div class="user-avatar">AM</div>
+            <div class="user-details"><span class="user-name">Ana Martinez</span><span class="user-role">Gestora Senior</span></div>
+        </div>
+    </div>
+</nav>
 
-        <!-- PAGE: DASHBOARD -->
-        <section class="page active" id="page-dashboard">
-            <div class="page-header">
-                <h1>Dashboard</h1>
-                <div class="date-filter">
-                    <select id="dashboardPeriod">
-                        <option value="semana">Esta semana</option>
-                        <option value="mes" selected>Este mes</option>
-                        <option value="trimestre">Este trimestre</option>
-                        <option value="anio">Este anio</option>
-                    </select>
-                </div>
-            </div>
+<!-- MAIN CONTENT -->
+<main class="main-content" id="mainContent">
+    <header class="top-header">
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <div class="header-search"><i class="fas fa-search"></i><input type="text" placeholder="Buscar expediente, cliente o poliza..." id="globalSearch"></div>
+        <div class="header-actions">
+            <button class="header-btn btn-demo-guided" id="btnDemoGuiada" onclick="startGuidedDemo()"><i class="fas fa-play-circle"></i> VER DEMO (2 min)</button>
+            <button class="header-btn notification-btn" id="notifBtn"><i class="fas fa-bell"></i><span class="badge">3</span></button>
+            <button class="header-btn" onclick="navigateTo('nuevo-siniestro')"><i class="fas fa-plus"></i> Nuevo</button>
+        </div>
+    </header>
 
-            <!-- KPI CARDS -->
-            <div class="kpi-grid">
-                <div class="kpi-card kpi-abiertos">
-                    <div class="kpi-icon"><i class="fas fa-exclamation-circle"></i></div>
-                    <div class="kpi-info">
-                        <span class="kpi-value" id="kpiAbiertos">24</span>
-                        <span class="kpi-label">Abiertos</span>
-                    </div>
-                    <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> 12%</span>
-                </div>
-                <div class="kpi-card kpi-gestion">
-                    <div class="kpi-icon"><i class="fas fa-cogs"></i></div>
-                    <div class="kpi-info">
-                        <span class="kpi-value" id="kpiGestion">38</span>
-                        <span class="kpi-label">En Gestion</span>
-                    </div>
-                    <span class="kpi-trend down"><i class="fas fa-arrow-down"></i> 5%</span>
-                </div>
-                <div class="kpi-card kpi-resueltos">
-                    <div class="kpi-icon"><i class="fas fa-check-circle"></i></div>
-                    <div class="kpi-info">
-                        <span class="kpi-value" id="kpiResueltos">156</span>
-                        <span class="kpi-label">Resueltos</span>
-                    </div>
-                    <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> 23%</span>
-                </div>
-                <div class="kpi-card kpi-total">
-                    <div class="kpi-icon"><i class="fas fa-archive"></i></div>
-                    <div class="kpi-info">
-                        <span class="kpi-value" id="kpiTotal">218</span>
-                        <span class="kpi-label">Total</span>
-                    </div>
-                    <span class="kpi-trend neutral"><i class="fas fa-minus"></i> 0%</span>
-                </div>
-            </div>
-
-            <!-- CHARTS ROW -->
-            <div class="charts-row">
-                <div class="chart-card">
-                    <div class="card-header">
-                        <h3>Siniestros por Mes</h3>
-                    </div>
-                    <canvas id="chartSiniestrosMes"></canvas>
-                </div>
-                <div class="chart-card">
-                    <div class="card-header">
-                        <h3>Tipos de Siniestro</h3>
-                    </div>
-                    <canvas id="chartTipos"></canvas>
-                </div>
-            </div>
-
-            <!-- TABLA ULTIMOS SINIESTROS -->
-            <div class="card">
-                <div class="card-header">
-                    <h3>Ultimos Siniestros</h3>
-                    <button class="btn btn-outline" onclick="navigateTo('expedientes')">Ver todos</button>
-                </div>
-                <div class="table-wrapper">
-                    <table class="data-table" id="tablaDashboard">
-                        <thead>
-                            <tr>
-                                <th>Expediente</th>
-                                <th>Cliente</th>
-                                <th>Tipo</th>
-                                <th>Estado</th>
-                                <th>Fecha</th>
-                                <th>Urgencia</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="dashboardTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- MAPA DE CALOR -->
-            <div class="card">
-                <div class="card-header">
-                    <h3>Mapa de Calor por Zonas</h3>
-                </div>
-                <div class="heatmap-container" id="heatmapContainer">
-                    <div class="spain-map">
-                        <div class="map-region" data-region="galicia" data-count="12" style="top:15%;left:5%;">
-                            <div class="region-dot heat-low"></div>
-                            <span class="region-label">Galicia<br><strong>12</strong></span>
-                        </div>
-                        <div class="map-region" data-region="asturias" data-count="8" style="top:8%;left:22%;">
-                            <div class="region-dot heat-low"></div>
-                            <span class="region-label">Asturias<br><strong>8</strong></span>
-                        </div>
-                        <div class="map-region" data-region="cantabria" data-count="5" style="top:8%;left:35%;">
-                            <div class="region-dot heat-low"></div>
-                            <span class="region-label">Cantabria<br><strong>5</strong></span>
-                        </div>
-                        <div class="map-region" data-region="paisvasco" data-count="15" style="top:10%;left:45%;">
-                            <div class="region-dot heat-medium"></div>
-                            <span class="region-label">Pais Vasco<br><strong>15</strong></span>
-                        </div>
-                        <div class="map-region" data-region="navarra" data-count="7" style="top:12%;left:55%;">
-                            <div class="region-dot heat-low"></div>
-                            <span class="region-label">Navarra<br><strong>7</strong></span>
-                        </div>
-                        <div class="map-region" data-region="aragon" data-count="14" style="top:25%;left:55%;">
-                            <div class="region-dot heat-medium"></div>
-                            <span class="region-label">Aragon<br><strong>14</strong></span>
-                        </div>
-                        <div class="map-region" data-region="cataluna" data-count="42" style="top:20%;left:72%;">
-                            <div class="region-dot heat-high"></div>
-                            <span class="region-label">Cataluna<br><strong>42</strong></span>
-                        </div>
-                        <div class="map-region" data-region="castillaleon" data-count="11" style="top:28%;left:28%;">
-                            <div class="region-dot heat-low"></div>
-                            <span class="region-label">Castilla y Leon<br><strong>11</strong></span>
-                        </div>
-                        <div class="map-region" data-region="madrid" data-count="56" style="top:42%;left:38%;">
-                            <div class="region-dot heat-critical"></div>
-                            <span class="region-label">Madrid<br><strong>56</strong></span>
-                        </div>
-                        <div class="map-region" data-region="valencia" data-count="35" style="top:50%;left:62%;">
-                            <div class="region-dot heat-high"></div>
-                            <span class="region-label">Valencia<br><strong>35</strong></span>
-                        </div>
-                        <div class="map-region" data-region="extremadura" data-count="6" style="top:52%;left:18%;">
-                            <div class="region-dot heat-low"></div>
-                            <span class="region-label">Extremadura<br><strong>6</strong></span>
-                        </div>
-                        <div class="map-region" data-region="castillalamancha" data-count="10" style="top:52%;left:42%;">
-                            <div class="region-dot heat-low"></div>
-                            <span class="region-label">C. La Mancha<br><strong>10</strong></span>
-                        </div>
-                        <div class="map-region" data-region="murcia" data-count="18" style="top:68%;left:58%;">
-                            <div class="region-dot heat-medium"></div>
-                            <span class="region-label">Murcia<br><strong>18</strong></span>
-                        </div>
-                        <div class="map-region" data-region="andalucia" data-count="45" style="top:75%;left:32%;">
-                            <div class="region-dot heat-high"></div>
-                            <span class="region-label">Andalucia<br><strong>45</strong></span>
-                        </div>
-                        <div class="map-region" data-region="baleares" data-count="9" style="top:48%;left:82%;">
-                            <div class="region-dot heat-low"></div>
-                            <span class="region-label">Baleares<br><strong>9</strong></span>
-                        </div>
-                        <div class="map-region" data-region="canarias" data-count="13" style="top:88%;left:10%;">
-                            <div class="region-dot heat-medium"></div>
-                            <span class="region-label">Canarias<br><strong>13</strong></span>
-                        </div>
-                    </div>
-                    <div class="heatmap-legend">
-                        <span><span class="legend-dot heat-low"></span> 1-10</span>
-                        <span><span class="legend-dot heat-medium"></span> 11-20</span>
-                        <span><span class="legend-dot heat-high"></span> 21-45</span>
-                        <span><span class="legend-dot heat-critical"></span> 46+</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- PAGE: NUEVO SINIESTRO -->
-        <section class="page" id="page-nuevo-siniestro">
-            <div class="page-header">
-                <h1>Apertura de Nuevo Siniestro</h1>
-            </div>
-            <form class="form-container" id="formNuevoSiniestro">
-                <!-- DATOS CLIENTE -->
-                <div class="form-section">
-                    <h3><i class="fas fa-user"></i> Datos del Cliente</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="clienteNombre">Nombre completo *</label>
-                            <input type="text" id="clienteNombre" required placeholder="Ej: Juan Garcia Lopez">
-                        </div>
-                        <div class="form-group">
-                            <label for="clienteTelefono">Telefono *</label>
-                            <input type="tel" id="clienteTelefono" required placeholder="Ej: 612 345 678">
-                        </div>
-                        <div class="form-group">
-                            <label for="clienteEmail">Email *</label>
-                            <input type="email" id="clienteEmail" required placeholder="Ej: juan@email.com">
-                        </div>
-                        <div class="form-group">
-                            <label for="clientePoliza">N. de Poliza *</label>
-                            <input type="text" id="clientePoliza" required placeholder="Ej: POL-2024-00123">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- DATOS SINIESTRO -->
-                <div class="form-section">
-                    <h3><i class="fas fa-file-alt"></i> Datos del Siniestro</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="tipoSiniestro">Tipo de Siniestro *</label>
-                            <select id="tipoSiniestro" required>
-                                <option value="">Seleccionar tipo...</option>
-                                <option value="coche">Automovil</option>
-                                <option value="hogar">Hogar</option>
-                                <option value="salud">Salud</option>
-                                <option value="robo">Robo</option>
-                                <option value="otro">Otro</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="urgencia">Nivel de Urgencia (1-10) *</label>
-                            <div class="urgency-slider">
-                                <input type="range" id="urgencia" min="1" max="10" value="5">
-                                <span class="urgency-value" id="urgenciaValue">5</span>
-                            </div>
-                        </div>
-                        <div class="form-group full-width">
-                            <label for="descripcion">Descripcion del Incidente *</label>
-                            <textarea id="descripcion" rows="4" required placeholder="Describa detalladamente lo ocurrido..."></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- FOTOS -->
-                <div class="form-section">
-                    <h3><i class="fas fa-camera"></i> Documentacion Fotografica</h3>
-                    <div class="upload-area" id="uploadArea">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <p>Arrastre las fotos aqui o haga clic para seleccionar</p>
-                        <input type="file" id="fileInput" multiple accept="image/*" hidden>
-                        <span class="upload-hint">Formatos: JPG, PNG, WEBP | Max: 10MB por archivo</span>
-                    </div>
-                    <div class="preview-grid" id="previewGrid"></div>
-                </div>
-
-                <!-- GEOLOCALIZACION -->
-                <div class="form-section">
-                    <h3><i class="fas fa-map-marker-alt"></i> Geolocalizacion</h3>
-                    <div class="geo-container">
-                        <button type="button" class="btn btn-secondary" id="btnGeolocalizacion">
-                            <i class="fas fa-crosshairs"></i> Obtener ubicacion automatica
-                        </button>
-                        <div class="geo-info" id="geoInfo" style="display:none;">
-                            <div class="geo-data">
-                                <span><i class="fas fa-map-pin"></i> Latitud: <strong id="geoLat"></strong></span>
-                                <span><i class="fas fa-map-pin"></i> Longitud: <strong id="geoLng"></strong></span>
-                                <span><i class="fas fa-location-arrow"></i> Direccion: <strong id="geoAddress">Obteniendo...</strong></span>
-                            </div>
-                        </div>
-                        <div class="form-grid" style="margin-top: 1rem;">
-                            <div class="form-group">
-                                <label for="direccionManual">Direccion manual (opcional)</label>
-                                <input type="text" id="direccionManual" placeholder="Ej: Calle Gran Via 42, Madrid">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="btn btn-outline" onclick="resetForm()">Limpiar Formulario</button>
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="fas fa-paper-plane"></i> Registrar Siniestro
-                    </button>
-                </div>
-            </form>
-        </section>
-
-        <!-- PAGE: EXPEDIENTES -->
-        <section class="page" id="page-expedientes">
-            <div class="page-header">
-                <h1>Gestion de Expedientes</h1>
-                <button class="btn btn-primary" onclick="navigateTo('nuevo-siniestro')">
-                    <i class="fas fa-plus"></i> Nuevo
-                </button>
-            </div>
-
-            <!-- FILTROS -->
-            <div class="filters-bar">
-                <div class="filter-group">
-                    <label>Estado:</label>
-                    <select id="filtroEstado">
-                        <option value="">Todos</option>
-                        <option value="Abierto">Abierto</option>
-                        <option value="En gestion">En gestion</option>
-                        <option value="Perito asignado">Perito asignado</option>
-                        <option value="Resuelto">Resuelto</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Tipo:</label>
-                    <select id="filtroTipo">
-                        <option value="">Todos</option>
-                        <option value="coche">Automovil</option>
-                        <option value="hogar">Hogar</option>
-                        <option value="salud">Salud</option>
-                        <option value="robo">Robo</option>
-                        <option value="otro">Otro</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Urgencia min:</label>
-                    <select id="filtroUrgencia">
-                        <option value="0">Todas</option>
-                        <option value="7">Alta (7+)</option>
-                        <option value="8">Muy alta (8+)</option>
-                        <option value="9">Critica (9+)</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Ordenar:</label>
-                    <select id="filtroOrden">
-                        <option value="fecha-desc">Mas recientes</option>
-                        <option value="fecha-asc">Mas antiguos</option>
-                        <option value="urgencia-desc">Mayor urgencia</option>
-                        <option value="fraude-desc">Mayor fraude</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- TABLA EXPEDIENTES -->
-            <div class="card">
-                <div class="table-wrapper">
-                    <table class="data-table" id="tablaExpedientes">
-                        <thead>
-                            <tr>
-                                <th>Expediente</th>
-                                <th>Cliente</th>
-                                <th>Tipo</th>
-                                <th>Estado</th>
-                                <th>Fecha</th>
-                                <th>Urgencia</th>
-                                <th>Fraude</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="expedientesTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- PAGE: DETALLE SINIESTRO -->
-        <section class="page" id="page-detalle">
-            <div class="page-header">
-                <button class="btn btn-outline" onclick="navigateTo('expedientes')">
-                    <i class="fas fa-arrow-left"></i> Volver
-                </button>
-                <h1 id="detalleTitle">Expediente</h1>
-                <div class="detail-actions">
-                    <span class="status-badge" id="detalleEstadoBadge"></span>
-                </div>
-            </div>
-
-            <div class="detail-grid">
-                <!-- INFO PRINCIPAL -->
-                <div class="detail-main">
-                    <!-- DATOS SINIESTRO -->
-                    <div class="card">
-                        <div class="card-header"><h3>Informacion del Siniestro</h3></div>
-                        <div class="detail-info-grid" id="detalleInfo"></div>
-                    </div>
-
-                    <!-- TIMELINE -->
-                    <div class="card">
-                        <div class="card-header"><h3>Timeline del Expediente</h3></div>
-                        <div class="timeline" id="detalleTimeline"></div>
-                    </div>
-
-                    <!-- CHAT INTERNO -->
-                    <div class="card">
-                        <div class="card-header"><h3><i class="fas fa-comments"></i> Chat Interno del Equipo</h3></div>
-                        <div class="chat-container" id="chatContainer"></div>
-                        <div class="chat-input-area">
-                            <input type="text" id="chatInput" placeholder="Escribe un mensaje...">
-                            <button class="btn btn-primary" id="btnEnviarChat">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SIDEBAR DETALLE -->
-                <div class="detail-sidebar">
-                    <!-- ACCIONES RAPIDAS -->
-                    <div class="card">
-                        <div class="card-header"><h3>Acciones</h3></div>
-                        <div class="action-buttons">
-                            <button class="btn btn-action btn-perito" id="btnAsignarPerito">
-                                <i class="fas fa-user-tie"></i> Asignar Perito
-                            </button>
-                            <button class="btn btn-action btn-grua" id="btnEnviarGrua">
-                                <i class="fas fa-truck"></i> Enviar Grua
-                            </button>
-                            <button class="btn btn-action btn-cerrar" id="btnCerrarExpediente">
-                                <i class="fas fa-check-double"></i> Cerrar Expediente
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- SCORE FRAUDE -->
-                    <div class="card">
-                        <div class="card-header"><h3>Score de Fraude</h3></div>
-                        <div class="fraud-score-container" id="fraudScoreContainer"></div>
-                    </div>
-
-                    <!-- DOCUMENTOS -->
-                    <div class="card">
-                        <div class="card-header"><h3>Documentos Adjuntos</h3></div>
-                        <div class="documents-list" id="documentsList"></div>
-                    </div>
-
-                    <!-- HISTORIAL CAMBIOS -->
-                    <div class="card">
-                        <div class="card-header"><h3>Historial de Cambios</h3></div>
-                        <div class="changes-list" id="changesList"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- PAGE: METRICAS -->
-        <section class="page" id="page-metricas">
-            <div class="page-header">
-                <h1>Panel de Metricas</h1>
-            </div>
-
-            <!-- METRICAS PRINCIPALES -->
-            <div class="metrics-grid">
-                <div class="metric-card">
-                    <div class="metric-icon" style="background: #e8f4fd; color: #1a73e8;">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="metric-info">
-                        <span class="metric-value">4.2 dias</span>
-                        <span class="metric-label">Tiempo Medio de Resolucion</span>
-                        <span class="metric-trend positive"><i class="fas fa-arrow-down"></i> 18% vs mes anterior</span>
-                    </div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-icon" style="background: #e8fde8; color: #1e8e3e;">
-                        <i class="fas fa-euro-sign"></i>
-                    </div>
-                    <div class="metric-info">
-                        <span class="metric-value">47.320 EUR</span>
-                        <span class="metric-label">Ahorro Estimado vs Administrativos</span>
-                        <span class="metric-trend positive"><i class="fas fa-arrow-up"></i> 32% vs trimestre anterior</span>
-                    </div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-icon" style="background: #fdf4e8; color: #e8a01a;">
-                        <i class="fas fa-smile"></i>
-                    </div>
-                    <div class="metric-info">
-                        <span class="metric-value">8.7 / 10</span>
-                        <span class="metric-label">Satisfaccion del Cliente</span>
-                        <span class="metric-trend positive"><i class="fas fa-arrow-up"></i> 0.4 pts vs mes anterior</span>
-                    </div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-icon" style="background: #f4e8fd; color: #8e1ee3;">
-                        <i class="fas fa-brain"></i>
-                    </div>
-                    <div class="metric-info">
-                        <span class="metric-value">94.2%</span>
-                        <span class="metric-label">Precision Deteccion de Fraude</span>
-                        <span class="metric-trend positive"><i class="fas fa-arrow-up"></i> 2.1% vs mes anterior</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- GRAFICAS METRICAS -->
-            <div class="charts-row">
-                <div class="chart-card">
-                    <div class="card-header">
-                        <h3>Tiempo de Resolucion por Tipo (dias)</h3>
-                    </div>
-                    <canvas id="chartResolucion"></canvas>
-                </div>
-                <div class="chart-card">
-                    <div class="card-header">
-                        <h3>Ahorro Mensual Acumulado (EUR)</h3>
-                    </div>
-                    <canvas id="chartAhorro"></canvas>
-                </div>
-            </div>
-
-            <!-- SATISFACCION Y RANKING -->
-            <div class="charts-row">
-                <div class="chart-card">
-                    <div class="card-header">
-                        <h3>Evolucion Satisfaccion del Cliente</h3>
-                    </div>
-                    <canvas id="chartSatisfaccion"></canvas>
-                </div>
-                <div class="chart-card">
-                    <div class="card-header">
-                        <h3>Ranking de Peritos</h3>
-                    </div>
-                    <div class="ranking-list" id="rankingPeritos">
-                        <div class="ranking-item">
-                            <span class="ranking-pos gold">1</span>
-                            <div class="ranking-info">
-                                <span class="ranking-name">Carlos Ruiz Martinez</span>
-                                <span class="ranking-stats">87 expedientes | 4.9 estrellas | 3.1 dias media</span>
-                            </div>
-                            <div class="ranking-bar" style="width:95%"></div>
-                        </div>
-                        <div class="ranking-item">
-                            <span class="ranking-pos silver">2</span>
-                            <div class="ranking-info">
-                                <span class="ranking-name">Elena Torres Vidal</span>
-                                <span class="ranking-stats">72 expedientes | 4.8 estrellas | 3.4 dias media</span>
-                            </div>
-                            <div class="ranking-bar" style="width:88%"></div>
-                        </div>
-                        <div class="ranking-item">
-                            <span class="ranking-pos bronze">3</span>
-                            <div class="ranking-info">
-                                <span class="ranking-name">Miguel Angel Fernandez</span>
-                                <span class="ranking-stats">65 expedientes | 4.7 estrellas | 3.8 dias media</span>
-                            </div>
-                            <div class="ranking-bar" style="width:82%"></div>
-                        </div>
-                        <div class="ranking-item">
-                            <span class="ranking-pos">4</span>
-                            <div class="ranking-info">
-                                <span class="ranking-name">Laura Sanchez Gil</span>
-                                <span class="ranking-stats">58 expedientes | 4.6 estrellas | 4.0 dias media</span>
-                            </div>
-                            <div class="ranking-bar" style="width:75%"></div>
-                        </div>
-                        <div class="ranking-item">
-                            <span class="ranking-pos">5</span>
-                            <div class="ranking-info">
-                                <span class="ranking-name">Pedro Jimenez Ruiz</span>
-                                <span class="ranking-stats">51 expedientes | 4.5 estrellas | 4.2 dias media</span>
-                            </div>
-                            <div class="ranking-bar" style="width:68%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- MODAL: Asignar Perito -->
-    <div class="modal-overlay" id="modalPerito">
-        <div class="modal">
-            <div class="modal-header">
-                <h3>Asignar Perito</h3>
-                <button class="modal-close" onclick="closeModal('modalPerito')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>Seleccionar perito disponible:</label>
-                    <select id="selectPerito">
-                        <option value="Carlos Ruiz Martinez">Carlos Ruiz Martinez - Automovil/Hogar</option>
-                        <option value="Elena Torres Vidal">Elena Torres Vidal - Hogar/Salud</option>
-                        <option value="Miguel Angel Fernandez">Miguel Angel Fernandez - Automovil</option>
-                        <option value="Laura Sanchez Gil">Laura Sanchez Gil - Robo/Hogar</option>
-                        <option value="Pedro Jimenez Ruiz">Pedro Jimenez Ruiz - Todos</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Notas para el perito:</label>
-                    <textarea id="notasPerito" rows="3" placeholder="Instrucciones especiales..."></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline" onclick="closeModal('modalPerito')">Cancelar</button>
-                <button class="btn btn-primary" id="btnConfirmarPerito">Confirmar Asignacion</button>
-            </div>
+    <div class="notifications-dropdown" id="notifDropdown">
+        <div class="notif-header"><h4>Notificaciones</h4><button class="notif-clear">Marcar leidas</button></div>
+        <div class="notif-list">
+            <div class="notif-item unread"><i class="fas fa-robot notif-icon ai-color"></i><div class="notif-content"><p>Agente Anti-Fraude detecto anomalia en <strong>EXP-2024-0883</strong></p><span>Hace 2 min</span></div></div>
+            <div class="notif-item unread"><i class="fas fa-robot notif-icon ai-color"></i><div class="notif-content"><p>Agente Recepcionista atendio llamada automaticamente</p><span>Hace 15 min</span></div></div>
+            <div class="notif-item"><i class="fas fa-check-circle notif-icon success"></i><div class="notif-content"><p>Expediente <strong>EXP-2024-0879</strong> cerrado por IA</p><span>Hace 1 hora</span></div></div>
         </div>
     </div>
 
-    <!-- MODAL: Enviar Grua -->
-    <div class="modal-overlay" id="modalGrua">
-        <div class="modal">
-            <div class="modal-header">
-                <h3>Solicitar Servicio de Grua</h3>
-                <button class="modal-close" onclick="closeModal('modalGrua')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>Empresa de grua:</label>
-                    <select id="selectGrua">
-                        <option value="GruasMadrid24h">Gruas Madrid 24h</option>
-                        <option value="AsistenciaTotal">Asistencia Total S.L.</option>
-                        <option value="GruasRapidas">Gruas Rapidas Express</option>
-                    </select>
+    <!-- ============ PAGE: DASHBOARD ============ -->
+    <section class="page active" id="page-dashboard">
+        <div class="page-header"><h1>Dashboard</h1>
+            <div class="date-filter"><select id="dashboardPeriod"><option value="semana">Esta semana</option><option value="mes" selected>Este mes</option><option value="trimestre">Este trimestre</option><option value="anio">Este anio</option></select></div>
+        </div>
+
+        <!-- SAVINGS BANNER -->
+        <div class="savings-banner">
+            <div class="savings-bg-particles"></div>
+            <div class="savings-content">
+                <div class="savings-main">
+                    <div class="savings-icon"><i class="fas fa-robot"></i></div>
+                    <div class="savings-info">
+                        <span class="savings-label">Ahorro en tiempo real vs administrativos humanos</span>
+                        <span class="savings-value" id="savingsCounter">47.320</span>
+                        <span class="savings-currency">EUR ahorrados hoy</span>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Direccion de recogida:</label>
-                    <input type="text" id="direccionGrua" placeholder="Direccion donde enviar la grua">
+                <div class="savings-stats">
+                    <div class="savings-stat"><span class="savings-stat-value" id="llamadasIA">142</span><span class="savings-stat-label">Llamadas IA</span></div>
+                    <div class="savings-stat"><span class="savings-stat-value" id="partesAuto">89</span><span class="savings-stat-label">Partes auto</span></div>
+                    <div class="savings-stat"><span class="savings-stat-value ai-highlight">2 min</span><span class="savings-stat-label">Tiempo IA</span></div>
+                    <div class="savings-stat"><span class="savings-stat-value human-highlight">18 min</span><span class="savings-stat-label">Tiempo humano</span></div>
                 </div>
-                <div class="form-group">
-                    <label>Observaciones:</label>
-                    <textarea id="notasGrua" rows="3" placeholder="Detalles adicionales..."></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline" onclick="closeModal('modalGrua')">Cancelar</button>
-                <button class="btn btn-primary" id="btnConfirmarGrua">Enviar Solicitud</button>
             </div>
         </div>
+
+        <!-- KPIs -->
+        <div class="kpi-grid">
+            <div class="kpi-card kpi-abiertos"><div class="kpi-icon"><i class="fas fa-exclamation-circle"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiAbiertos">0</span><span class="kpi-label">Abiertos</span></div><span class="kpi-trend up"><i class="fas fa-arrow-up"></i> 12%</span></div>
+            <div class="kpi-card kpi-gestion"><div class="kpi-icon"><i class="fas fa-cogs"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiGestion">0</span><span class="kpi-label">En Gestion</span></div><span class="kpi-trend down"><i class="fas fa-arrow-down"></i> 5%</span></div>
+            <div class="kpi-card kpi-resueltos"><div class="kpi-icon"><i class="fas fa-check-circle"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiResueltos">0</span><span class="kpi-label">Resueltos</span></div><span class="kpi-trend up"><i class="fas fa-arrow-up"></i> 23%</span></div>
+            <div class="kpi-card kpi-total"><div class="kpi-icon"><i class="fas fa-archive"></i></div><div class="kpi-info"><span class="kpi-value" id="kpiTotal">0</span><span class="kpi-label">Total</span></div><span class="kpi-trend neutral"><i class="fas fa-minus"></i> 0%</span></div>
+        </div>
+
+        <!-- AI AGENTS + FEED -->
+        <div class="ai-section">
+            <div class="ai-agents-panel">
+                <div class="card-header"><h3><i class="fas fa-robot ai-color"></i> Agentes IA Trabajando</h3><span class="ai-live-badge"><span class="live-dot"></span> EN VIVO</span></div>
+                <div class="agents-grid" id="agentsGrid"></div>
+            </div>
+            <div class="ai-feed-panel">
+                <div class="card-header"><h3><i class="fas fa-stream ai-color"></i> Actividad IA en Tiempo Real</h3><span class="ai-live-badge"><span class="live-dot"></span> LIVE</span></div>
+                <div class="ai-feed" id="aiFeed"></div>
+            </div>
+        </div>
+
+        <!-- MAPA SVG INTERACTIVO -->
+        <div class="card">
+            <div class="card-header"><h3><i class="fas fa-map-marked-alt"></i> Mapa de Siniestros en Tiempo Real</h3><span class="ai-live-badge"><span class="live-dot"></span> EN VIVO</span></div>
+            <div class="spain-svg-container">
+                <div class="spain-svg-map" id="spainSvgMap">
+                    <svg viewBox="0 0 800 600" id="spainSvg"></svg>
+                    <div class="map-points" id="mapPoints"></div>
+                    <div class="map-popup" id="mapPopup" style="display:none;"></div>
+                </div>
+                <div class="map-legend-sidebar" id="mapLegendSidebar"></div>
+            </div>
+        </div>
+
+        <!-- CHARTS -->
+        <div class="charts-row">
+            <div class="chart-card"><div class="card-header"><h3>Siniestros por Mes</h3></div><canvas id="chartSiniestrosMes"></canvas></div>
+            <div class="chart-card"><div class="card-header"><h3>Tipos de Siniestro</h3></div><canvas id="chartTipos"></canvas></div>
+        </div>
+
+        <!-- TABLA -->
+        <div class="card">
+            <div class="card-header"><h3>Ultimos Siniestros</h3><button class="btn btn-outline" onclick="navigateTo('expedientes')">Ver todos</button></div>
+            <div class="table-wrapper"><table class="data-table"><thead><tr><th>Expediente</th><th>Cliente</th><th>Tipo</th><th>Estado</th><th>Fecha</th><th>Urgencia</th><th>Acciones</th></tr></thead><tbody id="dashboardTableBody"></tbody></table></div>
+        </div>
+
+        <!-- CREDIBILIDAD -->
+        <div class="credibility-section">
+            <h2 class="section-title">Confian en SiniestrosAI</h2>
+            <div class="logos-row">
+                <div class="company-logo"><i class="fas fa-shield-alt"></i><span>AseguraTech</span></div>
+                <div class="company-logo"><i class="fas fa-building"></i><span>MutualSur</span></div>
+                <div class="company-logo"><i class="fas fa-umbrella"></i><span>ProtectoPlus</span></div>
+                <div class="company-logo"><i class="fas fa-hands-helping"></i><span>SegurosIberia</span></div>
+                <div class="company-logo"><i class="fas fa-globe-europe"></i><span>EuroSeguro</span></div>
+                <div class="company-logo"><i class="fas fa-star"></i><span>PremiumGuard</span></div>
+            </div>
+            <div class="stats-row">
+                <div class="credibility-stat"><span class="cred-value">67%</span><span class="cred-label">Reduccion de costes</span></div>
+                <div class="credibility-stat"><span class="cred-value">94%</span><span class="cred-label">Satisfaccion cliente</span></div>
+                <div class="credibility-stat"><span class="cred-value">2.3 min</span><span class="cred-label">Tiempo medio resolucion</span></div>
+                <div class="credibility-stat"><span class="cred-value">99.7%</span><span class="cred-label">Disponibilidad</span></div>
+            </div>
+            <div class="testimonials-row">
+                <div class="testimonial"><div class="test-avatar" style="background:#3b82f6;">JR</div><p>"SiniestrosAI redujo nuestros tiempos de gestion un 85%. El ROI fue inmediato."</p><span class="test-name">Javier Romero</span><span class="test-role">Director de Operaciones, AseguraTech</span></div>
+                <div class="testimonial"><div class="test-avatar" style="background:#8b5cf6;">ML</div><p>"La deteccion de fraude nos ha ahorrado mas de 2M EUR en el primer ano."</p><span class="test-name">Marta Lopez</span><span class="test-role">CTO, MutualSur</span></div>
+                <div class="testimonial"><div class="test-avatar" style="background:#06b6d4;">PS</div><p>"Nuestros clientes no distinguen al agente IA de uno humano. Increible."</p><span class="test-name">Pablo Sanchez</span><span class="test-role">Dir. Atencion al Cliente, ProtectoPlus</span></div>
+            </div>
+            <div class="badges-row">
+                <div class="cert-badge"><i class="fas fa-lock"></i> RGPD</div>
+                <div class="cert-badge"><i class="fas fa-certificate"></i> ISO 27001</div>
+                <div class="cert-badge"><i class="fas fa-shield-alt"></i> ENS Alta</div>
+                <div class="cert-badge"><i class="fas fa-check-double"></i> SOC 2 Type II</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ PAGE: NUEVO SINIESTRO ============ -->
+    <section class="page" id="page-nuevo-siniestro">
+        <div class="page-header"><h1>Apertura de Nuevo Siniestro</h1></div>
+        <form class="form-container" id="formNuevoSiniestro">
+            <div class="form-section"><h3><i class="fas fa-user"></i> Datos del Cliente</h3><div class="form-grid">
+                <div class="form-group"><label>Nombre completo *</label><input type="text" id="clienteNombre" required placeholder="Ej: Juan Garcia Lopez"></div>
+                <div class="form-group"><label>Telefono *</label><input type="tel" id="clienteTelefono" required placeholder="Ej: 612 345 678"></div>
+                <div class="form-group"><label>Email *</label><input type="email" id="clienteEmail" required placeholder="Ej: juan@email.com"></div>
+                <div class="form-group"><label>N. de Poliza *</label><input type="text" id="clientePoliza" required placeholder="Ej: POL-2024-00123"></div>
+            </div></div>
+            <div class="form-section"><h3><i class="fas fa-file-alt"></i> Datos del Siniestro</h3><div class="form-grid">
+                <div class="form-group"><label>Tipo *</label><select id="tipoSiniestro" required><option value="">Seleccionar...</option><option value="coche">Automovil</option><option value="hogar">Hogar</option><option value="salud">Salud</option><option value="robo">Robo</option><option value="otro">Otro</option></select></div>
+                <div class="form-group"><label>Urgencia (1-10) *</label><div class="urgency-slider"><input type="range" id="urgencia" min="1" max="10" value="5"><span class="urgency-value" id="urgenciaValue">5</span></div></div>
+                <div class="form-group full-width"><label>Descripcion *</label><textarea id="descripcion" rows="4" required placeholder="Describa lo ocurrido..."></textarea></div>
+            </div></div>
+            <div class="form-section"><h3><i class="fas fa-camera"></i> Fotos</h3><div class="upload-area" id="uploadArea"><i class="fas fa-cloud-upload-alt"></i><p>Arrastre fotos o haga clic</p><input type="file" id="fileInput" multiple accept="image/*" hidden><span class="upload-hint">JPG, PNG, WEBP | Max 10MB</span></div><div class="preview-grid" id="previewGrid"></div></div>
+            <div class="form-section"><h3><i class="fas fa-map-marker-alt"></i> Geolocalizacion</h3><div class="geo-container"><button type="button" class="btn btn-secondary" id="btnGeolocalizacion"><i class="fas fa-crosshairs"></i> Ubicacion automatica</button><div class="geo-info" id="geoInfo" style="display:none;"><div class="geo-data"><span><i class="fas fa-map-pin"></i> Lat: <strong id="geoLat"></strong></span><span><i class="fas fa-map-pin"></i> Lng: <strong id="geoLng"></strong></span><span><i class="fas fa-location-arrow"></i> <strong id="geoAddress">Obteniendo...</strong></span></div></div><div class="form-grid" style="margin-top:1rem"><div class="form-group"><label>Direccion manual</label><input type="text" id="direccionManual" placeholder="Calle Gran Via 42, Madrid"></div></div></div></div>
+            <div class="form-actions"><button type="button" class="btn btn-outline" onclick="resetForm()">Limpiar</button><button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-paper-plane"></i> Registrar Siniestro</button></div>
+        </form>
+    </section>
+
+    <!-- ============ PAGE: EXPEDIENTES ============ -->
+    <section class="page" id="page-expedientes">
+        <div class="page-header"><h1>Expedientes</h1><button class="btn btn-primary" onclick="navigateTo('nuevo-siniestro')"><i class="fas fa-plus"></i> Nuevo</button></div>
+        <div class="filters-bar">
+            <div class="filter-group"><label>Estado:</label><select id="filtroEstado"><option value="">Todos</option><option value="Abierto">Abierto</option><option value="En gestion">En gestion</option><option value="Perito asignado">Perito asignado</option><option value="Resuelto">Resuelto</option></select></div>
+            <div class="filter-group"><label>Tipo:</label><select id="filtroTipo"><option value="">Todos</option><option value="coche">Automovil</option><option value="hogar">Hogar</option><option value="salud">Salud</option><option value="robo">Robo</option><option value="otro">Otro</option></select></div>
+            <div class="filter-group"><label>Urgencia:</label><select id="filtroUrgencia"><option value="0">Todas</option><option value="7">Alta 7+</option><option value="8">Muy alta 8+</option><option value="9">Critica 9+</option></select></div>
+            <div class="filter-group"><label>Orden:</label><select id="filtroOrden"><option value="fecha-desc">Recientes</option><option value="fecha-asc">Antiguos</option><option value="urgencia-desc">Urgencia</option><option value="fraude-desc">Fraude</option></select></div>
+        </div>
+        <div class="card"><div class="table-wrapper"><table class="data-table"><thead><tr><th>Exp.</th><th>Cliente</th><th>Tipo</th><th>Estado</th><th>Fecha</th><th>Urg.</th><th>Fraude</th><th>IA</th><th>Acciones</th></tr></thead><tbody id="expedientesTableBody"></tbody></table></div></div>
+    </section>
+
+    <!-- ============ PAGE: DETALLE ============ -->
+    <section class="page" id="page-detalle">
+        <div class="page-header"><button class="btn btn-outline" onclick="navigateTo('expedientes')"><i class="fas fa-arrow-left"></i> Volver</button><h1 id="detalleTitle">Expediente</h1><div class="detail-actions"><span class="status-badge" id="detalleEstadoBadge"></span></div></div>
+        <div class="detail-grid">
+            <div class="detail-main">
+                <div class="card ai-score-card" id="iaScoreCard"></div>
+                <div class="card"><div class="card-header"><h3>Informacion</h3></div><div class="detail-info-grid" id="detalleInfo"></div></div>
+                <div class="card"><div class="card-header"><h3>Timeline</h3></div><div class="timeline" id="detalleTimeline"></div></div>
+                <div class="card"><div class="card-header"><h3><i class="fas fa-comments"></i> Chat Interno</h3></div><div class="chat-container" id="chatContainer"></div><div class="chat-input-area"><input type="text" id="chatInput" placeholder="Mensaje..."><button class="btn btn-primary" id="btnEnviarChat"><i class="fas fa-paper-plane"></i></button></div></div>
+            </div>
+            <div class="detail-sidebar">
+                <div class="card"><div class="card-header"><h3>Acciones</h3></div><div class="action-buttons"><button class="btn btn-action btn-perito" id="btnAsignarPerito"><i class="fas fa-user-tie"></i> Asignar Perito</button><button class="btn btn-action btn-grua" id="btnEnviarGrua"><i class="fas fa-truck"></i> Enviar Grua</button><button class="btn btn-action btn-cerrar" id="btnCerrarExpediente"><i class="fas fa-check-double"></i> Cerrar</button></div></div>
+                <div class="card"><div class="card-header"><h3>Score Fraude</h3></div><div class="fraud-score-container" id="fraudScoreContainer"></div></div>
+                <div class="card"><div class="card-header"><h3>Documentos</h3></div><div class="documents-list" id="documentsList"></div></div>
+                <div class="card"><div class="card-header"><h3>Historial</h3></div><div class="changes-list" id="changesList"></div></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ PAGE: SIMULADOR ============ -->
+    <section class="page" id="page-simulador">
+        <div class="page-header"><h1><i class="fas fa-robot ai-color"></i> Simulador IA</h1></div>
+        <div class="simulators-grid">
+            <div class="simulator-card">
+                <div class="simulator-header"><div class="simulator-icon call-icon"><i class="fas fa-phone-alt"></i></div><div><h3>Llamada IA</h3><p>La IA gestiona una llamada en vivo</p></div></div>
+                <div class="call-simulator"><div class="call-screen" id="callScreen">
+                    <div class="call-idle" id="callIdle"><div class="call-avatar-big"><i class="fas fa-headset"></i></div><h3>Agente IA Recepcionista</h3><p>Pulse para simular llamada</p><button class="btn btn-ai btn-lg" id="btnStartCall"><i class="fas fa-phone-alt"></i> Simular Llamada</button><button class="btn btn-ai btn-lg" id="btnStartVoice" style="margin-top:.5rem;background:linear-gradient(135deg,#06b6d4,#8b5cf6)"><i class="fas fa-microphone-alt"></i> Escuchar Llamada IA</button></div>
+                    <div class="call-active" id="callActive" style="display:none;"><div class="call-top-bar"><div class="call-avatar-small"><i class="fas fa-user"></i></div><div class="call-info"><span class="call-name" id="callName">Entrante...</span><span class="call-timer" id="callTimer">00:00</span></div><div class="voice-wave" id="voiceWave"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div><div class="call-transcript" id="callTranscript"></div><button class="btn btn-danger" id="btnEndCall" style="display:none;"><i class="fas fa-phone-slash"></i> Finalizar</button></div>
+                </div></div>
+            </div>
+            <div class="simulator-card">
+                <div class="simulator-header"><div class="simulator-icon whatsapp-icon"><i class="fab fa-whatsapp"></i></div><div><h3>WhatsApp IA</h3><p>Chat automatico con cliente</p></div></div>
+                <div class="whatsapp-simulator">
+                    <div class="wa-header"><div class="wa-avatar"><i class="fas fa-robot"></i></div><div class="wa-contact"><span class="wa-name">Seguros IA</span><span class="wa-status">en linea</span></div><div class="wa-actions"><i class="fas fa-video"></i><i class="fas fa-phone"></i></div></div>
+                    <div class="wa-chat" id="waChat"><div class="wa-date-divider"><span>Hoy</span></div></div>
+                    <div class="wa-input-area"><button class="btn btn-ai" id="btnStartWhatsapp"><i class="fab fa-whatsapp"></i> Iniciar</button></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ PAGE: ANTI-FRAUDE ============ -->
+    <section class="page" id="page-antifraude">
+        <div class="page-header"><h1><i class="fas fa-shield-alt ai-color"></i> Demo Anti-Fraude IA</h1></div>
+        <div class="antifraud-container">
+            <div class="antifraud-intro">
+                <div class="antifraud-icon"><i class="fas fa-search-dollar"></i></div>
+                <h2>Motor de Deteccion de Fraude</h2>
+                <p>Nuestro sistema analiza multiples dimensiones en tiempo real para detectar fraudes antes de que se materialicen.</p>
+                <button class="btn btn-ai btn-xl" id="btnAnalizarFraude"><i class="fas fa-microscope"></i> Analizar Expediente Sospechoso</button>
+            </div>
+            <div class="antifraud-analysis" id="antifraudAnalysis" style="display:none;">
+                <div class="analysis-header"><div class="analysis-spinner" id="analysisSpinner"><div class="spinner-ring"></div><i class="fas fa-brain"></i></div><h3 id="analysisTitle">Iniciando analisis...</h3></div>
+                <div class="analysis-steps" id="analysisSteps"></div>
+                <div class="analysis-result" id="analysisResult" style="display:none;"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ PAGE: COMPARATIVA ============ -->
+    <section class="page" id="page-comparativa">
+        <div class="page-header"><h1><i class="fas fa-balance-scale ai-color"></i> Humano vs IA en Tiempo Real</h1></div>
+        <div class="comparison-container">
+            <button class="btn btn-ai btn-xl" id="btnStartComparison" style="margin:0 auto 2rem;display:flex;"><i class="fas fa-play"></i> Iniciar Comparativa en Vivo</button>
+            <div class="comparison-grid" id="comparisonGrid" style="display:none;">
+                <div class="comp-side comp-human">
+                    <div class="comp-header human-header"><i class="fas fa-user-tie"></i><h3>Administrativo Humano</h3></div>
+                    <div class="comp-progress"><div class="comp-bar human-bar" id="humanBar"></div></div>
+                    <div class="comp-time"><span id="humanTime">00:00</span></div>
+                    <div class="comp-steps" id="humanSteps"></div>
+                </div>
+                <div class="comp-vs"><span>VS</span></div>
+                <div class="comp-side comp-ai">
+                    <div class="comp-header ai-header"><i class="fas fa-robot"></i><h3>SiniestrosAI</h3></div>
+                    <div class="comp-progress"><div class="comp-bar ai-bar" id="aiBar"></div></div>
+                    <div class="comp-time"><span id="aiTime">00:00</span></div>
+                    <div class="comp-steps" id="aiSteps"></div>
+                </div>
+            </div>
+            <div class="comparison-result" id="comparisonResult" style="display:none;"></div>
+        </div>
+    </section>
+
+    <!-- ============ PAGE: ROI ============ -->
+    <section class="page" id="page-roi">
+        <div class="page-header"><h1><i class="fas fa-calculator ai-color"></i> Calculadora ROI</h1></div>
+        <div class="roi-container">
+            <div class="roi-header-banner">
+                <h2>Cuanto estas perdiendo sin SiniestrosAI?</h2>
+                <p>Mueve los controles y descubre tu ahorro real</p>
+            </div>
+            <div class="roi-grid">
+                <div class="roi-controls">
+                    <div class="roi-slider-group"><label>Administrativos actuales: <strong id="roiAdminLabel">5</strong></label><input type="range" id="roiAdmin" min="1" max="20" value="5" class="roi-range"></div>
+                    <div class="roi-slider-group"><label>Sueldo medio mensual: <strong id="roiSueldoLabel">2.000 EUR</strong></label><input type="range" id="roiSueldo" min="1000" max="3000" value="2000" step="100" class="roi-range"></div>
+                    <div class="roi-slider-group"><label>Siniestros al mes: <strong id="roiSiniestrosLabel">100</strong></label><input type="range" id="roiSiniestros" min="10" max="500" value="100" step="10" class="roi-range"></div>
+                </div>
+                <div class="roi-results">
+                    <div class="roi-result-card bad"><span class="roi-result-label">Coste actual mensual</span><span class="roi-result-value" id="roiCostActual">10.000 EUR</span></div>
+                    <div class="roi-result-card good"><span class="roi-result-label">Coste con SiniestrosAI</span><span class="roi-result-value" id="roiCostIA">2.500 EUR</span></div>
+                    <div class="roi-result-card accent"><span class="roi-result-label">Ahorro mensual</span><span class="roi-result-value" id="roiAhorroMes">7.500 EUR</span></div>
+                    <div class="roi-result-card accent"><span class="roi-result-label">Ahorro anual</span><span class="roi-result-value" id="roiAhorroAnual">90.000 EUR</span></div>
+                    <div class="roi-result-card mega"><span class="roi-result-label">Ahorro a 5 anios</span><span class="roi-result-value" id="roiAhorro5">450.000 EUR</span></div>
+                </div>
+            </div>
+            <div class="roi-chart-wrapper"><canvas id="roiChart"></canvas></div>
+            <button class="btn btn-ai btn-xl roi-cta" id="roiCta"><i class="fas fa-rocket"></i> QUIERO AHORRAR <span id="roiCtaAmount">90.000</span> EUR AL ANO</button>
+        </div>
+    </section>
+
+    <!-- ============ PAGE: CLIENTE MOVIL ============ -->
+    <section class="page" id="page-cliente">
+        <div class="page-header"><h1><i class="fas fa-mobile-alt ai-color"></i> Experiencia del Cliente</h1></div>
+        <div class="mobile-demo-container">
+            <div class="mobile-frame">
+                <div class="mobile-notch"></div>
+                <div class="mobile-screen" id="mobileScreen">
+                    <!-- Screen 1: SOS -->
+                    <div class="mobile-page active" id="mobPage1">
+                        <div class="mob-header"><img class="mob-logo-img" alt=""><span class="mob-logo-text">SegurosAI</span></div>
+                        <div class="mob-sos-area">
+                            <p class="mob-greeting">Hola, Maria</p>
+                            <p class="mob-sub">Poliza activa: Auto + Hogar</p>
+                            <button class="mob-sos-btn" onclick="nextMobScreen()"><i class="fas fa-exclamation-triangle"></i><span>ABRIR SINIESTRO</span></button>
+                            <p class="mob-hint">Pulsa en caso de emergencia</p>
+                        </div>
+                    </div>
+                    <!-- Screen 2: Form -->
+                    <div class="mobile-page" id="mobPage2">
+                        <div class="mob-header"><i class="fas fa-arrow-left mob-back" onclick="prevMobScreen()"></i><span>Nuevo Siniestro</span></div>
+                        <div class="mob-form">
+                            <div class="mob-type-grid">
+                                <div class="mob-type active"><i class="fas fa-car-crash"></i><span>Auto</span></div>
+                                <div class="mob-type"><i class="fas fa-house-damage"></i><span>Hogar</span></div>
+                                <div class="mob-type"><i class="fas fa-heartbeat"></i><span>Salud</span></div>
+                                <div class="mob-type"><i class="fas fa-mask"></i><span>Robo</span></div>
+                            </div>
+                            <div class="mob-photo-area"><i class="fas fa-camera"></i><span>Anadir foto</span><div class="mob-photo-preview"><i class="fas fa-check-circle"></i> 2 fotos</div></div>
+                            <button class="mob-btn-primary" onclick="nextMobScreen()">Enviar a IA</button>
+                        </div>
+                    </div>
+                    <!-- Screen 3: Processing -->
+                    <div class="mobile-page" id="mobPage3">
+                        <div class="mob-header"><span>Procesando...</span></div>
+                        <div class="mob-processing">
+                            <div class="mob-spinner"><div class="spinner-ring"></div><i class="fas fa-brain"></i></div>
+                            <h3>Parte #1043 abierto</h3>
+                            <p>IA procesando tu siniestro...</p>
+                            <div class="mob-steps-list">
+                                <div class="mob-step done"><i class="fas fa-check"></i> Datos verificados</div>
+                                <div class="mob-step done"><i class="fas fa-check"></i> Fotos analizadas</div>
+                                <div class="mob-step done"><i class="fas fa-check"></i> Perito asignado</div>
+                                <div class="mob-step active"><i class="fas fa-spinner fa-spin"></i> Enviando grua...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Screen 4: Tracker -->
+                    <div class="mobile-page" id="mobPage4">
+                        <div class="mob-header"><i class="fas fa-arrow-left mob-back" onclick="prevMobScreen()"></i><span>Grua en camino</span></div>
+                        <div class="mob-tracker">
+                            <div class="mob-map-placeholder">
+                                <div class="mob-map-route"></div>
+                                <div class="mob-map-truck"><i class="fas fa-truck"></i></div>
+                                <div class="mob-map-pin"><i class="fas fa-map-marker-alt"></i></div>
+                            </div>
+                            <div class="mob-tracker-info">
+                                <div class="mob-tracker-eta"><i class="fas fa-clock"></i><strong>8 min</strong><span>llegada estimada</span></div>
+                                <div class="mob-tracker-driver"><i class="fas fa-user"></i><strong>Juan R.</strong><span>Gruas Madrid 24h</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Screen 5: Resolved -->
+                    <div class="mobile-page" id="mobPage5">
+                        <div class="mob-header"><span>Siniestro Resuelto</span></div>
+                        <div class="mob-resolved">
+                            <div class="mob-check-big"><i class="fas fa-check-circle"></i></div>
+                            <h3>Siniestro resuelto</h3>
+                            <p>Parte #1043 cerrado correctamente</p>
+                            <p class="mob-amount">Indemnizacion: <strong>3.450 EUR</strong></p>
+                            <div class="mob-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                            <p class="mob-rate-text">Valora tu experiencia</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mobile-nav-dots">
+                    <span class="mob-dot active" onclick="goMobScreen(1)"></span>
+                    <span class="mob-dot" onclick="goMobScreen(2)"></span>
+                    <span class="mob-dot" onclick="goMobScreen(3)"></span>
+                    <span class="mob-dot" onclick="goMobScreen(4)"></span>
+                    <span class="mob-dot" onclick="goMobScreen(5)"></span>
+                </div>
+                <div class="mobile-home-bar"></div>
+            </div>
+            <div class="mobile-demo-info">
+                <h2>La experiencia que tus clientes merecen</h2>
+                <p>Desde el SOS hasta las 5 estrellas. Todo automatico, sin esperas, sin llamadas, sin frustracion.</p>
+                <div class="mobile-demo-features">
+                    <div class="mob-feature"><i class="fas fa-bolt ai-color"></i><strong>Apertura en 30 segundos</strong><span>Sin formularios complejos</span></div>
+                    <div class="mob-feature"><i class="fas fa-camera ai-color"></i><strong>IA analiza las fotos</strong><span>Valoracion instantanea</span></div>
+                    <div class="mob-feature"><i class="fas fa-truck ai-color"></i><strong>Tracker de grua en vivo</strong><span>Estilo Uber/Glovo</span></div>
+                    <div class="mob-feature"><i class="fas fa-star ai-color"></i><strong>Satisfaccion 9.2/10</strong><span>Resolucion en horas</span></div>
+                </div>
+                <button class="btn btn-ai btn-lg" onclick="startMobileAutoplay()"><i class="fas fa-play"></i> Ver demo automatica</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ PAGE: METRICAS ============ -->
+    <section class="page" id="page-metricas">
+        <div class="page-header"><h1>Metricas</h1></div>
+        <div class="metrics-grid">
+            <div class="metric-card"><div class="metric-icon" style="background:#e8f4fd;color:#1a73e8;"><i class="fas fa-clock"></i></div><div class="metric-info"><span class="metric-value">4.2 dias</span><span class="metric-label">Tiempo Resolucion</span><span class="metric-trend positive"><i class="fas fa-arrow-down"></i> 18%</span></div></div>
+            <div class="metric-card"><div class="metric-icon" style="background:#e8fde8;color:#1e8e3e;"><i class="fas fa-euro-sign"></i></div><div class="metric-info"><span class="metric-value">47.320 EUR</span><span class="metric-label">Ahorro vs Humanos</span><span class="metric-trend positive"><i class="fas fa-arrow-up"></i> 32%</span></div></div>
+            <div class="metric-card"><div class="metric-icon" style="background:#fdf4e8;color:#e8a01a;"><i class="fas fa-smile"></i></div><div class="metric-info"><span class="metric-value">8.7/10</span><span class="metric-label">Satisfaccion</span><span class="metric-trend positive"><i class="fas fa-arrow-up"></i> 0.4</span></div></div>
+            <div class="metric-card"><div class="metric-icon" style="background:#f4e8fd;color:#8e1ee3;"><i class="fas fa-brain"></i></div><div class="metric-info"><span class="metric-value">94.2%</span><span class="metric-label">Precision Fraude</span><span class="metric-trend positive"><i class="fas fa-arrow-up"></i> 2.1%</span></div></div>
+        </div>
+        <div class="charts-row">
+            <div class="chart-card"><div class="card-header"><h3>Resolucion por Tipo (dias)</h3></div><canvas id="chartResolucion"></canvas></div>
+            <div class="chart-card"><div class="card-header"><h3>Ahorro Acumulado (EUR)</h3></div><canvas id="chartAhorro"></canvas></div>
+        </div>
+        <div class="charts-row">
+            <div class="chart-card"><div class="card-header"><h3>Satisfaccion</h3></div><canvas id="chartSatisfaccion"></canvas></div>
+            <div class="chart-card"><div class="card-header"><h3>Ranking Peritos</h3></div>
+                <div class="ranking-list">
+                    <div class="ranking-item"><span class="ranking-pos gold">1</span><div class="ranking-info"><span class="ranking-name">Carlos Ruiz</span><span class="ranking-stats">87 exp | 4.9* | 3.1d</span></div><div class="ranking-bar" style="width:95%"></div></div>
+                    <div class="ranking-item"><span class="ranking-pos silver">2</span><div class="ranking-info"><span class="ranking-name">Elena Torres</span><span class="ranking-stats">72 exp | 4.8* | 3.4d</span></div><div class="ranking-bar" style="width:88%"></div></div>
+                    <div class="ranking-item"><span class="ranking-pos bronze">3</span><div class="ranking-info"><span class="ranking-name">Miguel A. Fernandez</span><span class="ranking-stats">65 exp | 4.7* | 3.8d</span></div><div class="ranking-bar" style="width:82%"></div></div>
+                    <div class="ranking-item"><span class="ranking-pos">4</span><div class="ranking-info"><span class="ranking-name">Laura Sanchez</span><span class="ranking-stats">58 exp | 4.6* | 4.0d</span></div><div class="ranking-bar" style="width:75%"></div></div>
+                    <div class="ranking-item"><span class="ranking-pos">5</span><div class="ranking-info"><span class="ranking-name">Pedro Jimenez</span><span class="ranking-stats">51 exp | 4.5* | 4.2d</span></div><div class="ranking-bar" style="width:68%"></div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- MODALES -->
+<div class="modal-overlay" id="modalPerito"><div class="modal"><div class="modal-header"><h3>Asignar Perito</h3><button class="modal-close" onclick="closeModal('modalPerito')">&times;</button></div><div class="modal-body"><div class="form-group"><label>Perito:</label><select id="selectPerito"><option value="Carlos Ruiz Martinez">Carlos Ruiz - Auto/Hogar</option><option value="Elena Torres Vidal">Elena Torres - Hogar/Salud</option><option value="Miguel Angel Fernandez">Miguel A. Fernandez - Auto</option><option value="Laura Sanchez Gil">Laura Sanchez - Robo/Hogar</option><option value="Pedro Jimenez Ruiz">Pedro Jimenez - Todos</option></select></div><div class="form-group"><label>Notas:</label><textarea id="notasPerito" rows="3" placeholder="Instrucciones..."></textarea></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modalPerito')">Cancelar</button><button class="btn btn-primary" id="btnConfirmarPerito">Confirmar</button></div></div></div>
+<div class="modal-overlay" id="modalGrua"><div class="modal"><div class="modal-header"><h3>Solicitar Grua</h3><button class="modal-close" onclick="closeModal('modalGrua')">&times;</button></div><div class="modal-body"><div class="form-group"><label>Empresa:</label><select id="selectGrua"><option value="GruasMadrid24h">Gruas Madrid 24h</option><option value="AsistenciaTotal">Asistencia Total</option><option value="GruasRapidas">Gruas Rapidas Express</option></select></div><div class="form-group"><label>Direccion:</label><input type="text" id="direccionGrua" placeholder="Direccion..."></div><div class="form-group"><label>Notas:</label><textarea id="notasGrua" rows="3" placeholder="Detalles..."></textarea></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modalGrua')">Cancelar</button><button class="btn btn-primary" id="btnConfirmarGrua">Enviar</button></div></div></div>
+<div class="modal-overlay" id="modalContacto"><div class="modal"><div class="modal-header"><h3><i class="fas fa-rocket ai-color"></i> Solicitar Demo</h3><button class="modal-close" onclick="closeModal('modalContacto')">&times;</button></div><div class="modal-body"><div class="form-group"><label>Empresa:</label><input type="text" placeholder="Tu empresa"></div><div class="form-group"><label>Nombre:</label><input type="text" placeholder="Tu nombre"></div><div class="form-group"><label>Email:</label><input type="email" placeholder="email@empresa.com"></div><div class="form-group"><label>Telefono:</label><input type="tel" placeholder="+34 612 345 678"></div></div><div class="modal-footer"><button class="btn btn-ai">Solicitar Demo Personalizada</button></div></div></div>
+
+<!-- CONFETI -->
+<canvas id="confettiCanvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;"></canvas>
+
+<!-- PUSH NOTIFICATIONS -->
+<div class="push-notifications" id="pushNotifications"></div>
+
+<!-- GUIDED DEMO OVERLAY -->
+<div class="demo-overlay" id="demoOverlay" style="display:none;">
+    <div class="demo-progress-bar"><div class="demo-progress-fill" id="demoProgressFill"></div></div>
+    <div class="demo-spotlight" id="demoSpotlight"></div>
+    <div class="demo-tooltip" id="demoTooltip">
+        <div class="demo-tooltip-step" id="demoStepLabel">Paso 1/10</div>
+        <h3 id="demoTooltipTitle"></h3>
+        <p id="demoTooltipText"></p>
+        <div class="demo-tooltip-actions">
+            <button class="btn btn-outline btn-sm" onclick="skipGuidedDemo()">Saltar demo</button>
+            <button class="btn btn-ai btn-sm" id="btnDemoNext" onclick="nextDemoStep()">Siguiente <i class="fas fa-arrow-right"></i></button>
+        </div>
     </div>
+</div>
 
-    <!-- TOAST NOTIFICATIONS -->
-    <div class="toast-container" id="toastContainer"></div>
-
-    <script src="app.js"></script>
+<div class="toast-container" id="toastContainer"></div>
+<script src="app.js"></script>
+<script src="backend-connector.js"></script>
 </body>
 </html>
