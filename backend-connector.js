@@ -1,268 +1,281 @@
-// ============================================================
-// BACKEND CONNECTOR - Conecta el frontend con el backend
-// ============================================================
+/**
+ * SiniestrosAI - Conector Frontend → Backend Real
+ * Conecta todos los portales HTML con la API REST
+ * v2.0 - Conexión real con agentes IA
+ */
 
-const API_URL = window.location.hostname.includes('app.github.dev')
-  ? window.location.origin.replace('-8080.', '-3001.')
-  : window.location.port === '3001' ? window.location.origin
-  : 'http://localhost:3001';
+const API = {
+  baseUrl: window.location.hostname === 'localhost' 
+    ? 'http://localhost:3001/api/v1' 
+    : `${window.location.origin}/api/v1`,
+  token: localStorage.getItem('siniestrosai_token'),
+  refreshToken: localStorage.getItem('siniestrosai_refresh'),
+  usuario: JSON.parse(localStorage.getItem('siniestrosai_usuario') || 'null'),
 
-let socket = null;
-let authToken = null;
-let backendConectado = false;
+  // ==================== HTTP ====================
+  async request(method, endpoint, body = null, options = {}) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (this.token) headers['Authorization'] = `Bearer ${this.token}`;
 
-// ============================================================
-// CONEXION WEBSOCKET
-// ============================================================
-function initBackendConnection() {
-  if (typeof io === 'undefined') {
-    console.warn('[Backend] Socket.IO no disponible. Modo offline.');
-    return;
-  }
+    const config = { method, headers };
+    if (body && method !== 'GET') config.body = JSON.stringify(body);
 
-  try {
-    socket = io(API_URL, {
-      transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionDelay: 2000,
-    });
-
-    socket.on('connect', () => {
-      console.log('[Backend] WebSocket conectado:', socket.id);
-      backendConectado = true;
-      showToast('Backend conectado', 'success');
-    });
-
-    socket.on('disconnect', () => {
-      console.log('[Backend] WebSocket desconectado');
-      backendConectado = false;
-    });
-
-    socket.on('connect_error', () => {
-      if (backendConectado) {
-        console.warn('[Backend] Error de conexion. Modo offline.');
-        backendConectado = false;
+    try {
+      const res = await fetch(`${this.baseUrl}${endpoint}`, config);
+      
+      // Token expirado → refresh
+      if (res.status === 401 && this.refreshToken) {
+        const refreshed = await this.refreshAuth();
+        if (refreshed) return this.request(method, endpoint, body, options);
+        this.logout();
+        return null;
       }
-    });
 
-    // Escuchar eventos del backend
-    socket.on('feed:actividad', (data) => {
-      if (typeof addFeed === 'function') {
-        const f = document.getElementById('aiFeed');
-        if (f) {
-          const d = document.createElement('div');
-          d.className = 'feed-item';
-          const t = new Date(data.timestamp || Date.now()).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-          d.innerHTML = `<div class="feed-icon"><i class="fas fa-robot"></i></div><div class="feed-text"><strong>${data.agente}:</strong> ${data.texto}</div><span class="feed-time">${t}</span>`;
-          f.insertBefore(d, f.firstChild);
-          if (f.children.length > 15) f.removeChild(f.lastChild);
-        }
-      }
-    });
-
-    socket.on('siniestro:creado', (data) => {
-      console.log('[Backend] Siniestro creado:', data);
-      if (typeof updateKPIs === 'function') updateKPIs();
-      if (typeof renderDashboardTable === 'function') renderDashboardTable();
-      if (typeof renderExpTable === 'function') renderExpTable();
-    });
-
-    socket.on('siniestro:actualizado', (data) => {
-      console.log('[Backend] Siniestro actualizado:', data);
-      if (typeof updateKPIs === 'function') updateKPIs();
-    });
-
-    socket.on('chat:respuesta', (data) => {
-      console.log('[Backend] Chat IA:', data);
-    });
-
-    socket.on('fraude:analisis', (data) => {
-      console.log('[Backend] Analisis fraude:', data);
-    });
-  } catch (err) {
-    console.warn('[Backend] No se pudo conectar:', err.message);
-  }
-}
-
-// ============================================================
-// API HELPERS
-// ============================================================
-async function apiRequest(endpoint, options = {}) {
-  const url = `${API_URL}/api${endpoint}`;
-  const config = {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  };
-
-  if (authToken) {
-    config.headers['Authorization'] = `Bearer ${authToken}`;
-  }
-
-  try {
-    const response = await fetch(url, config);
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || `Error ${response.status}`);
-    return data;
-  } catch (err) {
-    if (err.message === 'Failed to fetch') {
-      console.warn(`[API] Backend no disponible para ${endpoint}. Usando datos locales.`);
-      return null;
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+      return data;
+    } catch (err) {
+      console.error(`[API] ${method} ${endpoint}:`, err.message);
+      if (options.showError !== false) this.mostrarError(err.message);
+      throw err;
     }
-    throw err;
-  }
-}
+  },
 
-// ============================================================
-// AUTH
-// ============================================================
-async function backendLogin(email, password) {
-  const data = await apiRequest('/auth/login', {
-    method: 'POST',
-    body: JSON.stringify({ email, password }),
-  });
-  if (data?.token) {
-    authToken = data.token;
-    localStorage.setItem('siniestrosai_token', data.token);
-    return data.usuario;
-  }
-  return null;
-}
+  get(endpoint) { return this.request('GET', endpoint); },
+  post(endpoint, body) { return this.request('POST', endpoint, body); },
+  patch(endpoint, body) { return this.request('PATCH', endpoint, body); },
+  delete(endpoint) { return this.request('DELETE', endpoint); },
 
-function backendLogout() {
-  authToken = null;
-  localStorage.removeItem('siniestrosai_token');
-}
-
-// ============================================================
-// SINIESTROS
-// ============================================================
-async function fetchSiniestros(filtros = {}) {
-  const params = new URLSearchParams(filtros).toString();
-  return apiRequest(`/siniestros?${params}`);
-}
-
-async function fetchSiniestro(id) {
-  return apiRequest(`/siniestros/${id}`);
-}
-
-async function crearSiniestroBackend(datos) {
-  const data = await apiRequest('/siniestros', {
-    method: 'POST',
-    body: JSON.stringify(datos),
-  });
-  if (data && socket) {
-    socket.emit('siniestro:nuevo', data);
-  }
-  return data;
-}
-
-async function actualizarSiniestroBackend(id, cambios) {
-  const data = await apiRequest(`/siniestros/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(cambios),
-  });
-  if (data && socket) {
-    socket.emit('siniestro:actualizar', data);
-  }
-  return data;
-}
-
-// ============================================================
-// CLIENTES
-// ============================================================
-async function fetchClientes(buscar) {
-  const params = buscar ? `?buscar=${encodeURIComponent(buscar)}` : '';
-  return apiRequest(`/clientes${params}`);
-}
-
-async function crearClienteBackend(datos) {
-  return apiRequest('/clientes', { method: 'POST', body: JSON.stringify(datos) });
-}
-
-// ============================================================
-// METRICAS
-// ============================================================
-async function fetchMetricasDashboard() {
-  return apiRequest('/metricas/dashboard');
-}
-
-async function fetchRankingPeritos() {
-  return apiRequest('/metricas/ranking-peritos');
-}
-
-async function fetchRendimientoIA() {
-  return apiRequest('/metricas/rendimiento-ia');
-}
-
-// ============================================================
-// AGENTE IA
-// ============================================================
-async function analizarFraude(siniestroId) {
-  return apiRequest(`/fraude/analizar/${siniestroId}`, { method: 'POST' });
-}
-
-async function clasificarSiniestro(siniestroId) {
-  return apiRequest(`/agente/clasificar/${siniestroId}`, { method: 'POST' });
-}
-
-async function consultarAgenteIA(prompt, contexto) {
-  return apiRequest('/agente/consultar', {
-    method: 'POST',
-    body: JSON.stringify({ prompt, contexto }),
-  });
-}
-
-async function chatExpediente(siniestroId, mensaje, usuario) {
-  const data = await apiRequest(`/agente/chat/${siniestroId}`, {
-    method: 'POST',
-    body: JSON.stringify({ mensaje, usuario }),
-  });
-  if (socket) {
-    socket.emit('chat:mensaje', { siniestroId, mensaje, usuario });
-  }
-  return data;
-}
-
-// ============================================================
-// HEALTH CHECK
-// ============================================================
-async function checkBackendHealth() {
-  try {
-    const data = await apiRequest('/health');
-    return data?.status === 'ok';
-  } catch {
-    return false;
-  }
-}
-
-// ============================================================
-// INICIALIZACION
-// ============================================================
-(function initConnector() {
-  // Recuperar token guardado
-  const savedToken = localStorage.getItem('siniestrosai_token');
-  if (savedToken) authToken = savedToken;
-
-  // Conectar WebSocket
-  initBackendConnection();
-
-  // Intentar cargar datos del backend
-  setTimeout(async () => {
-    const healthy = await checkBackendHealth();
-    if (healthy) {
-      console.log('[Backend] Servidor disponible. Cargando datos...');
-
-      // Cargar metricas reales del backend
-      const metricas = await fetchMetricasDashboard();
-      if (metricas?.kpis) {
-        const el = (id) => document.getElementById(id);
-        if (el('kpiAbiertos')) el('kpiAbiertos').textContent = metricas.kpis.abiertos;
-        if (el('kpiGestion')) el('kpiGestion').textContent = metricas.kpis.en_gestion;
-        if (el('kpiResueltos')) el('kpiResueltos').textContent = metricas.kpis.resueltos;
-        if (el('kpiTotal')) el('kpiTotal').textContent = metricas.kpis.total;
-      }
-    } else {
-      console.log('[Backend] Servidor no disponible. Usando datos locales del frontend.');
+  // ==================== AUTH ====================
+  async login(email, password) {
+    try {
+      const data = await this.request('POST', '/auth/login', { email, password });
+      this.token = data.token;
+      this.refreshToken = data.refresh_token;
+      this.usuario = data.usuario;
+      localStorage.setItem('siniestrosai_token', data.token);
+      localStorage.setItem('siniestrosai_refresh', data.refresh_token);
+      localStorage.setItem('siniestrosai_usuario', JSON.stringify(data.usuario));
+      return data;
+    } catch (err) {
+      throw err;
     }
-  }, 1500);
-})();
+  },
+
+  async refreshAuth() {
+    try {
+      const data = await fetch(`${this.baseUrl}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: this.refreshToken })
+      }).then(r => r.json());
+      
+      if (data.token) {
+        this.token = data.token;
+        localStorage.setItem('siniestrosai_token', data.token);
+        return true;
+      }
+      return false;
+    } catch { return false; }
+  },
+
+  logout() {
+    this.token = null;
+    this.refreshToken = null;
+    this.usuario = null;
+    localStorage.removeItem('siniestrosai_token');
+    localStorage.removeItem('siniestrosai_refresh');
+    localStorage.removeItem('siniestrosai_usuario');
+    window.location.href = 'index.html';
+  },
+
+  isLoggedIn() { return !!this.token && !!this.usuario; },
+
+  requireAuth(rolesPermitidos = []) {
+    if (!this.isLoggedIn()) { window.location.href = 'index.html'; return false; }
+    if (rolesPermitidos.length > 0 && !rolesPermitidos.includes(this.usuario.tipo)) {
+      this.mostrarError('No tienes permisos para acceder a esta sección');
+      return false;
+    }
+    return true;
+  },
+
+  // ==================== SINIESTROS ====================
+  async crearSiniestro(datos) {
+    return this.post('/siniestros', datos);
+  },
+
+  async listarSiniestros(filtros = {}) {
+    const params = new URLSearchParams(filtros).toString();
+    return this.get(`/siniestros${params ? '?' + params : ''}`);
+  },
+
+  async obtenerSiniestro(id) {
+    return this.get(`/siniestros/${id}`);
+  },
+
+  async actualizarSiniestro(id, datos) {
+    return this.patch(`/siniestros/${id}`, datos);
+  },
+
+  async reprocesarSiniestro(id) {
+    return this.post(`/siniestros/${id}/reprocesar`);
+  },
+
+  async timelineSiniestro(id) {
+    return this.get(`/siniestros/${id}/timeline`);
+  },
+
+  // ==================== PÓLIZAS ====================
+  async listarPolizas(filtros = {}) {
+    const params = new URLSearchParams(filtros).toString();
+    return this.get(`/polizas${params ? '?' + params : ''}`);
+  },
+
+  async buscarPoliza(numero) {
+    return this.get(`/polizas/numero/${numero}`);
+  },
+
+  // ==================== DASHBOARD ====================
+  async obtenerDashboard(desde, hasta) {
+    const params = new URLSearchParams();
+    if (desde) params.set('desde', desde);
+    if (hasta) params.set('hasta', hasta);
+    return this.get(`/dashboard${params.toString() ? '?' + params : ''}`);
+  },
+
+  async rendimientoAgentes() {
+    return this.get('/dashboard/rendimiento-agentes');
+  },
+
+  // ==================== AGENTES ====================
+  async listarAgentes() {
+    return this.get('/agentes');
+  },
+
+  async configurarAgente(nombre, config) {
+    return this.patch(`/agentes/${nombre}`, config);
+  },
+
+  // ==================== TALLERES / PERITOS ====================
+  async listarTalleres(filtros = {}) {
+    const params = new URLSearchParams(filtros).toString();
+    return this.get(`/talleres${params ? '?' + params : ''}`);
+  },
+
+  async listarPeritos() {
+    return this.get('/peritos');
+  },
+
+  // ==================== DOCUMENTOS ====================
+  async subirDocumento(siniestroId, archivo, categoria) {
+    const formData = new FormData();
+    formData.append('archivo', archivo);
+    formData.append('siniestro_id', siniestroId);
+    formData.append('categoria', categoria);
+
+    const res = await fetch(`${this.baseUrl}/documentos`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${this.token}` },
+      body: formData
+    });
+    return res.json();
+  },
+
+  // ==================== ADMIN ====================
+  async listarUsuarios() {
+    return this.get('/admin/usuarios');
+  },
+
+  async auditLog(filtros = {}) {
+    const params = new URLSearchParams(filtros).toString();
+    return this.get(`/admin/audit-log${params ? '?' + params : ''}`);
+  },
+
+  async statsistema() {
+    return this.get('/admin/stats/sistema');
+  },
+
+  async exportarRGPD(userId) {
+    return this.get(`/admin/rgpd/export/${userId}`);
+  },
+
+  // ==================== NOTIFICACIONES ====================
+  async listarNotificaciones(siniestroId) {
+    const params = siniestroId ? `?siniestro_id=${siniestroId}` : '';
+    return this.get(`/notificaciones${params}`);
+  },
+
+  // ==================== UI HELPERS ====================
+  mostrarError(mensaje) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-error';
+    toast.innerHTML = `<span>❌</span> ${mensaje}`;
+    toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#EF4444;color:white;padding:16px 24px;border-radius:12px;font-size:14px;font-weight:500;z-index:10000;animation:slideIn .3s ease;box-shadow:0 4px 20px rgba(239,68,68,.3);max-width:400px;';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 5000);
+  },
+
+  mostrarExito(mensaje) {
+    const toast = document.createElement('div');
+    toast.innerHTML = `<span>✅</span> ${mensaje}`;
+    toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#10B981;color:white;padding:16px 24px;border-radius:12px;font-size:14px;font-weight:500;z-index:10000;animation:slideIn .3s ease;box-shadow:0 4px 20px rgba(16,185,129,.3);max-width:400px;';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+  },
+
+  mostrarCargando(contenedor, mensaje = 'Procesando...') {
+    const el = typeof contenedor === 'string' ? document.querySelector(contenedor) : contenedor;
+    if (!el) return;
+    el.innerHTML = `<div style="text-align:center;padding:40px;"><div class="spinner" style="width:40px;height:40px;border:3px solid rgba(0,102,255,.2);border-top-color:#0066FF;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;"></div><p style="color:#94A3B8;font-size:14px;">${mensaje}</p></div>`;
+  },
+
+  // Formatear fecha
+  fecha(iso) {
+    if (!iso) return '-';
+    return new Date(iso).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  },
+
+  // Estado con color
+  badgeEstado(estado) {
+    const colores = {
+      recibido: '#3B82F6', clasificando: '#8B5CF6', en_analisis: '#6366F1',
+      verificando_fraude: '#F59E0B', peritaje: '#EC4899', valoracion: '#06B6D4',
+      negociacion: '#14B8A6', aprobado: '#10B981', rechazado: '#EF4444',
+      en_pago: '#F97316', pagado: '#10B981', cerrado: '#6B7280', reabierto: '#F59E0B'
+    };
+    const color = colores[estado] || '#6B7280';
+    const label = estado.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    return `<span style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;background:${color}22;color:${color};border:1px solid ${color}33;">${label}</span>`;
+  },
+
+  // Prioridad con color
+  badgePrioridad(prioridad) {
+    const colores = { baja: '#10B981', media: '#3B82F6', alta: '#F59E0B', urgente: '#EF4444', critica: '#DC2626' };
+    const color = colores[prioridad] || '#6B7280';
+    return `<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:${color}22;color:${color};">${(prioridad || '').toUpperCase()}</span>`;
+  }
+};
+
+// CSS global para animaciones
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+`;
+document.head.appendChild(style);
+
+// Verificar salud del backend al cargar
+window.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const health = await fetch(`${API.baseUrl.replace('/api/v1', '')}/api/health`).then(r => r.json());
+    if (health.status === 'ok') {
+      console.log('✅ Backend SiniestrosAI conectado', health);
+    }
+  } catch (e) {
+    console.warn('⚠️ Backend no disponible. Algunas funciones no estarán operativas.');
+  }
+});
+
+// Export global
+window.API = API;

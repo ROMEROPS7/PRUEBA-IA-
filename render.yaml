@@ -1,0 +1,64 @@
+services:
+  - type: web
+    name: siniestrosai-backend
+    env: node
+    plan: starter
+    buildCommand: cd backend && npm ci --only=production
+    startCommand: cd backend && node src/server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-sonnet-4-20250514
+      - key: DB_HOST
+        fromDatabase:
+          name: siniestrosai-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: siniestrosai-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: siniestrosai-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: siniestrosai-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: siniestrosai-db
+          property: password
+      - key: DB_SSL
+        value: true
+      - key: CORS_ORIGINS
+        value: "*"
+
+  - type: web
+    name: siniestrosai-frontend
+    env: static
+    buildCommand: echo "Static site"
+    staticPublishPath: .
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://siniestrosai-backend.onrender.com/api/*
+
+databases:
+  - name: siniestrosai-db
+    plan: starter
+    databaseName: siniestrosai
