@@ -3,496 +3,593 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SegurCaixa Adeslas - Demo en Directo</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<title>SiniestrosAI — Demo en Vivo · SegurCaixa Adeslas</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:#000;color:#fff;min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
-
-/* ===== CURSOR GLOW ===== */
-.cursor-glow{position:fixed;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(15,119,174,.05) 0%,transparent 70%);pointer-events:none;z-index:9999;transform:translate(-50%,-50%)}
-
-/* ===== HEADER ===== */
-.demo-header{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.8);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.05)}
-.demo-logo{font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.7)}
-.demo-badge{padding:5px 14px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:1px;background:rgba(15,119,174,.15);color:#0F77AE;border:1px solid rgba(15,119,174,.2)}
-.demo-live{display:flex;align-items:center;gap:8px}
-.live-dot{width:8px;height:8px;border-radius:50%;background:#ef4444;animation:livePulse 1.5s infinite}
-@keyframes livePulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}50%{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
-.live-text{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#ef4444}
-
-/* ===== INTRO ===== */
-.intro{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:40px;position:relative}
-.intro-content{max-width:800px}
-.intro-label{font-size:10px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#0F77AE;margin-bottom:24px}
-.intro h1{font-size:clamp(2.5rem,6vw,5rem);font-weight:200;line-height:1;letter-spacing:-2px;margin-bottom:24px}
-.intro h1 strong{font-weight:800}
-.intro p{font-size:1rem;font-weight:300;color:rgba(255,255,255,.4);line-height:1.8;max-width:500px;margin:0 auto 48px}
-.btn-start{padding:16px 48px;background:linear-gradient(135deg,#0F77AE,#2D4F9E);border:none;border-radius:60px;color:#fff;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;letter-spacing:1px;transition:all .3s;position:relative;overflow:hidden}
-.btn-start:hover{transform:translateY(-2px);box-shadow:0 20px 40px rgba(15,119,174,.3)}
-
-/* ===== TIMELINE ===== */
-.timeline{max-width:1200px;margin:0 auto;padding:80px 40px 120px}
-.timeline-title{text-align:center;margin-bottom:80px}
-.timeline-title h2{font-size:clamp(1.5rem,3vw,2.5rem);font-weight:200;letter-spacing:-1px}
-.timeline-title h2 strong{font-weight:700}
-
-.steps{position:relative}
-.steps::before{content:'';position:absolute;left:24px;top:0;bottom:0;width:1px;background:rgba(255,255,255,.06)}
-
-.demo-step{display:flex;gap:40px;margin-bottom:60px;opacity:0;transform:translateY(40px);transition:all .8s cubic-bezier(.23,1,.32,1)}
-.demo-step.visible{opacity:1;transform:translateY(0)}
-.demo-step.active .step-dot{background:#0F77AE;box-shadow:0 0 20px rgba(15,119,174,.5)}
-.demo-step.completed .step-dot{background:#259271;box-shadow:0 0 20px rgba(37,146,113,.3)}
-
-.step-indicator{flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding-top:4px}
-.step-dot{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.08);transition:all .5s;position:relative;z-index:1}
-.step-num{font-size:10px;font-weight:600;color:rgba(255,255,255,.15);margin-top:8px;letter-spacing:1px}
-
-.step-content{flex:1}
-.step-header{display:flex;align-items:center;gap:16px;margin-bottom:12px}
-.step-role{padding:3px 12px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
-.step-role.cliente{background:rgba(15,119,174,.15);color:#0F77AE}
-.step-role.ia{background:rgba(45,79,158,.2);color:#6486C3}
-.step-role.gestor{background:rgba(37,146,113,.15);color:#9EC6B7}
-.step-role.sistema{background:rgba(37,146,113,.2);color:#259271}
-.step-time{font-size:11px;color:rgba(255,255,255,.2);font-weight:300}
-
-.step-content h3{font-size:18px;font-weight:600;margin-bottom:8px;letter-spacing:-.3px}
-.step-content p{font-size:13px;font-weight:300;color:rgba(255,255,255,.35);line-height:1.7;margin-bottom:16px}
-
-.step-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:20px;margin-bottom:12px}
-.step-card .label{font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.2);margin-bottom:10px}
-.step-card .value{font-size:14px;font-weight:500;line-height:1.6}
-.step-card .highlight{color:#6486C3}
-.step-card .success{color:#259271}
-.step-card .warning{color:#0F77AE}
-
-.step-link{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;text-decoration:none;font-size:12px;font-weight:500;transition:all .3s;letter-spacing:.5px}
-.step-link:hover{background:rgba(255,255,255,.05);border-color:rgba(15,119,174,.3);gap:12px}
-.step-link .arrow{transition:transform .3s}
-.step-link:hover .arrow{transform:translateX(3px)}
-
-/* ===== RESULT ===== */
-.result{text-align:center;padding:120px 40px;border-top:1px solid rgba(255,255,255,.04)}
-.result-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;max-width:900px;margin:48px auto 0}
-.result-item{padding:40px 20px}
-.result-value{font-size:clamp(2rem,4vw,3.5rem);font-weight:800;letter-spacing:-1px}
-.result-value.blue{color:#0F77AE}
-.result-value.green{color:#259271}
-.result-value.purple{color:#6486C3}
-.result-value.yellow{color:#9EC6B7}
-.result-label{font-size:11px;color:rgba(255,255,255,.25);margin-top:8px;letter-spacing:1px;text-transform:uppercase;font-weight:500}
-
-/* ===== PORTALS CTA ===== */
-.portals-cta{padding:80px 40px 120px;text-align:center}
-.portals-cta h2{font-size:clamp(1.5rem,3vw,2.5rem);font-weight:200;letter-spacing:-1px;margin-bottom:48px}
-.portals-cta h2 strong{font-weight:700}
-.portal-buttons{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
-.portal-btn{display:flex;align-items:center;gap:12px;padding:20px 32px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;color:#fff;text-decoration:none;transition:all .4s;min-width:220px}
-.portal-btn:hover{background:rgba(255,255,255,.06);transform:translateY(-4px);border-color:rgba(15,119,174,.2)}
-.portal-btn .icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-.portal-btn.p1 .icon{background:linear-gradient(135deg,#0F77AE,#2D4F9E)}
-.portal-btn.p2 .icon{background:linear-gradient(135deg,#259271,#9EC6B7)}
-.portal-btn.p3 .icon{background:linear-gradient(135deg,#6486C3,#2D4F9E)}
-.portal-btn .text{text-align:left}
-.portal-btn .text h4{font-size:14px;font-weight:600}
-.portal-btn .text p{font-size:11px;color:rgba(255,255,255,.3);margin-top:2px}
-
-/* ===== FOOTER ===== */
-.demo-footer{padding:32px;text-align:center;border-top:1px solid rgba(255,255,255,.04)}
-.demo-footer p{font-size:10px;color:rgba(255,255,255,.15);letter-spacing:1px}
-
-/* ===== ANIMATION HELPERS ===== */
-.fade-in{opacity:0;transform:translateY(30px);transition:all .8s cubic-bezier(.23,1,.32,1)}
-.fade-in.visible{opacity:1;transform:translateY(0)}
-
-/* ===== RESPONSIVE ===== */
-@media(max-width:768px){
-  .demo-header{padding:12px 20px}
-  .timeline{padding:60px 20px}
-  .demo-step{gap:20px}
-  .result-grid{grid-template-columns:repeat(2,1fr)}
-  .portal-buttons{flex-direction:column;align-items:center}
-  .steps::before{left:18px}
+:root{
+  --bg:#06080F;--surface:#0C1017;--card:#111820;--border:#1A2230;
+  --green:#00D68F;--green-dim:#00D68F22;--blue:#3B82F6;--blue-dim:#3B82F622;
+  --purple:#8B5CF6;--purple-dim:#8B5CF622;--red:#EF4444;--red-dim:#EF444422;
+  --yellow:#F59E0B;--yellow-dim:#F59E0B22;--cyan:#06B6D4;--cyan-dim:#06B6D422;
+  --white:#F1F5F9;--gray:#64748B;--gray-light:#94A3B8;
+  --font:'DM Sans',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
 }
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--white);overflow-x:hidden;-webkit-font-smoothing:antialiased}
 
-/* ===== AUTO-PLAY PROGRESS ===== */
-.progress-bar{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#0F77AE,#2D4F9E);z-index:200;transition:width .3s;width:0}
+/* ====== NAV ====== */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;background:rgba(6,8,15,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px}
+.topbar-logo{font-size:16px;font-weight:800;letter-spacing:-.5px}
+.topbar-logo span{color:var(--green)}
+.topbar-badge{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:var(--green-dim);color:var(--green);border:1px solid rgba(0,214,143,.2);margin-left:12px}
+.topbar-tabs{display:flex;gap:2px;background:var(--surface);border-radius:10px;padding:3px}
+.topbar-tab{padding:8px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;color:var(--gray);border:none;background:none;font-family:var(--font)}
+.topbar-tab.active{background:var(--green);color:var(--bg)}
+.topbar-tab:hover:not(.active){color:var(--white);background:rgba(255,255,255,.05)}
+.topbar-status{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--gray)}
+.dot-live{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 8px var(--green)}50%{box-shadow:0 0 20px var(--green),0 0 40px rgba(0,214,143,.3)}}
+
+/* ====== PANELS ====== */
+.panel{display:none;padding:72px 24px 24px;min-height:100vh}
+.panel.active{display:block;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* ====== PANEL 1: GESTOR ====== */
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden;transition:all .3s}
+.kpi:hover{border-color:rgba(0,214,143,.3);transform:translateY(-2px)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi:nth-child(1)::before{background:var(--green)}.kpi:nth-child(2)::before{background:var(--blue)}
+.kpi:nth-child(3)::before{background:var(--purple)}.kpi:nth-child(4)::before{background:var(--yellow)}
+.kpi:nth-child(5)::before{background:var(--cyan)}
+.kpi-val{font-size:28px;font-weight:900;letter-spacing:-1px;margin-bottom:2px}
+.kpi:nth-child(1) .kpi-val{color:var(--green)}.kpi:nth-child(2) .kpi-val{color:var(--blue)}
+.kpi:nth-child(3) .kpi-val{color:var(--purple)}.kpi:nth-child(4) .kpi-val{color:var(--yellow)}
+.kpi:nth-child(5) .kpi-val{color:var(--cyan)}
+.kpi-label{font-size:11px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+
+.section-title{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.section-title .icon{font-size:16px}
+
+.siniestros-table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.siniestros-table th{background:var(--surface);padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px}
+.siniestros-table td{padding:12px 16px;font-size:13px;border-top:1px solid var(--border)}
+.siniestros-table tr:hover td{background:rgba(255,255,255,.02)}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700}
+.badge-green{background:var(--green-dim);color:var(--green)}.badge-blue{background:var(--blue-dim);color:var(--blue)}
+.badge-purple{background:var(--purple-dim);color:var(--purple)}.badge-yellow{background:var(--yellow-dim);color:var(--yellow)}
+.badge-red{background:var(--red-dim);color:var(--red)}.badge-cyan{background:var(--cyan-dim);color:var(--cyan)}
+
+/* ====== PANEL 2: AGENTES ====== */
+.agents-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+.agent-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;text-align:center;transition:all .3s;position:relative;overflow:hidden}
+.agent-card:hover{transform:translateY(-4px);border-color:rgba(0,214,143,.3)}
+.agent-card.processing{border-color:var(--green);box-shadow:0 0 20px rgba(0,214,143,.1)}
+.agent-card.processing::after{content:'';position:absolute;bottom:0;left:0;height:3px;background:var(--green);animation:agentProgress 3s ease-in-out infinite}
+@keyframes agentProgress{0%{width:0}50%{width:100%}100%{width:0}}
+.agent-icon{font-size:32px;margin-bottom:8px}
+.agent-name{font-size:13px;font-weight:700;margin-bottom:4px}
+.agent-status{font-size:10px;font-weight:600;color:var(--gray)}
+.agent-status.active{color:var(--green)}
+.agent-stats{margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--gray-light)}
+
+.agent-log{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;max-height:400px;overflow-y:auto;font-family:var(--mono);font-size:12px;line-height:1.8}
+.log-entry{padding:4px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.log-time{color:var(--gray);margin-right:8px}
+.log-agent{font-weight:700;margin-right:6px}
+.log-msg{color:var(--gray-light)}
+
+/* ====== PANEL 3: CHAT ====== */
+.chat-container{display:grid;grid-template-columns:1fr 360px;gap:16px;height:calc(100vh - 80px)}
+.chat-main{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.chat-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.chat-header h3{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.chat-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:80%;padding:12px 16px;border-radius:14px;font-size:13.5px;line-height:1.6;animation:msgIn .3s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg.user{align-self:flex-end;background:var(--green);color:var(--bg);border-bottom-right-radius:4px;font-weight:500}
+.msg.ai{align-self:flex-start;background:var(--surface);border:1px solid var(--border);border-bottom-left-radius:4px}
+.msg.ai .ai-label{font-size:10px;font-weight:700;color:var(--green);margin-bottom:4px;display:flex;align-items:center;gap:4px}
+.msg.system{align-self:center;background:var(--blue-dim);color:var(--blue);font-size:12px;font-weight:600;border-radius:20px;padding:6px 16px}
+.typing{align-self:flex-start;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:14px;display:none}
+.typing span{display:inline-block;width:6px;height:6px;background:var(--gray);border-radius:50%;margin:0 2px;animation:typing 1.4s infinite}
+.typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+@keyframes typing{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-6px);opacity:1}}
+
+.chat-input{display:flex;gap:8px;padding:16px;border-top:1px solid var(--border)}
+.chat-input input{flex:1;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--white);font-size:14px;font-family:var(--font);outline:none;transition:border .2s}
+.chat-input input:focus{border-color:var(--green)}
+.chat-input input::placeholder{color:var(--gray)}
+.btn-send{padding:12px 24px;background:var(--green);border:none;border-radius:10px;color:var(--bg);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .2s}
+.btn-send:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,214,143,.3)}
+.btn-send:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+.chat-sidebar{display:flex;flex-direction:column;gap:12px}
+.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px}
+.sidebar-card h4{font-size:12px;font-weight:700;margin-bottom:12px;color:var(--gray-light);text-transform:uppercase;letter-spacing:.5px}
+.quick-btn{display:block;width:100%;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:12px;text-align:left;cursor:pointer;margin-bottom:6px;transition:all .2s;font-family:var(--font)}
+.quick-btn:hover{background:var(--green-dim);border-color:rgba(0,214,143,.3);transform:translateX(4px)}
+.quick-btn .emoji{margin-right:6px}
+
+.expediente-live{display:none}
+.expediente-live .exp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.exp-num{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--green)}
+.exp-estado{font-size:11px}
+.timeline-mini{border-left:2px solid var(--border);padding-left:12px;margin-top:8px}
+.tl-step{padding:6px 0;font-size:11px;color:var(--gray-light);position:relative}
+.tl-step::before{content:'';position:absolute;left:-17px;top:10px;width:8px;height:8px;border-radius:50%;background:var(--border)}
+.tl-step.done::before{background:var(--green)}
+.tl-step.active::before{background:var(--green);box-shadow:0 0 8px var(--green)}
+.tl-step.active{color:var(--green);font-weight:600}
+
+/* ====== RESPONSIVE ====== */
+@media(max-width:1024px){
+  .kpi-grid{grid-template-columns:repeat(3,1fr)}
+  .agents-grid{grid-template-columns:repeat(3,1fr)}
+  .chat-container{grid-template-columns:1fr}
+  .chat-sidebar{display:none}
+}
+@media(max-width:768px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .agents-grid{grid-template-columns:repeat(2,1fr)}
+}
 </style>
 </head>
 <body>
 
-<div class="cursor-glow" id="cursorGlow"></div>
-<div class="progress-bar" id="progressBar"></div>
-
-<!-- HEADER -->
-<div class="demo-header">
-  <div class="demo-logo">SegurCaixa Adeslas</div>
-  <div class="demo-badge">Demo en directo</div>
-  <div class="demo-live">
-    <div class="live-dot"></div>
-    <div class="live-text">Live</div>
+<!-- ====== TOP BAR ====== -->
+<div class="topbar">
+  <div style="display:flex;align-items:center">
+    <div class="topbar-logo">Siniestros<span>AI</span></div>
+    <span class="topbar-badge">SegurCaixa Adeslas · Demo en Vivo</span>
+  </div>
+  <div class="topbar-tabs" id="tabs">
+    <button class="topbar-tab active" onclick="switchPanel('gestor')">📊 Panel Gestor</button>
+    <button class="topbar-tab" onclick="switchPanel('agentes')">🤖 Agentes IA</button>
+    <button class="topbar-tab" onclick="switchPanel('chat')">💬 Chat en Vivo</button>
+  </div>
+  <div class="topbar-status">
+    <div class="dot-live"></div>
+    <span>Sistema activo · <span id="agentCount">10</span> agentes</span>
   </div>
 </div>
 
-<!-- INTRO -->
-<div class="intro" id="intro">
-  <div class="intro-content">
-    <div class="intro-label">Demo interactiva</div>
-    <h1>Un siniestro real,<br><strong>gestionado por IA</strong></h1>
-    <p>Vamos a seguir el caso de Maria Garcia paso a paso. Desde la llamada inicial hasta el pago de la indemnizacion. Todo automatico.</p>
-    <button class="btn-start" id="btnStart" onclick="startDemo()">Comenzar demo &rarr;</button>
+<!-- ====== PANEL 1: GESTOR ====== -->
+<div class="panel active" id="panel-gestor">
+  <div class="kpi-grid" id="kpis">
+    <div class="kpi"><div class="kpi-val" id="kpi-total">-</div><div class="kpi-label">Siniestros totales</div></div>
+    <div class="kpi"><div class="kpi-val" id="kpi-auto">-</div><div class="kpi-label">Tasa automatización</div></div>
+    <div class="kpi"><div class="kpi-val" id="kpi-tiempo">-</div><div class="kpi-label">Tiempo medio resolución</div></div>
+    <div class="kpi"><div class="kpi-val" id="kpi-fraude">-</div><div class="kpi-label">Fraudes detectados</div></div>
+    <div class="kpi"><div class="kpi-val" id="kpi-coste">-</div><div class="kpi-label">Coste IA total</div></div>
+  </div>
+
+  <div class="section-title"><span class="icon">📋</span> Siniestros recientes</div>
+  <table class="siniestros-table">
+    <thead><tr><th>Expediente</th><th>Cliente</th><th>Tipo</th><th>Estado</th><th>Prioridad</th><th>Importe IA</th><th>Fecha</th></tr></thead>
+    <tbody id="siniestrosBody"><tr><td colspan="7" style="text-align:center;color:var(--gray);padding:40px">Cargando siniestros...</td></tr></tbody>
+  </table>
+</div>
+
+<!-- ====== PANEL 2: AGENTES IA ====== -->
+<div class="panel" id="panel-agentes">
+  <div class="section-title" style="margin-bottom:16px"><span class="icon">🤖</span> Ecosistema de Agentes IA — 10 agentes especializados</div>
+  <div class="agents-grid" id="agentsGrid"></div>
+
+  <div class="section-title" style="margin-top:24px"><span class="icon">📜</span> Log de actividad en tiempo real</div>
+  <div class="agent-log" id="agentLog">
+    <div class="log-entry"><span class="log-time">--:--:--</span><span class="log-agent" style="color:var(--green)">Sistema</span><span class="log-msg">Esperando actividad de agentes...</span></div>
   </div>
 </div>
 
-<!-- TIMELINE -->
-<div class="timeline" id="timeline" style="display:none">
-  <div class="timeline-title fade-in">
-    <h2>Caso <strong>EXP-2026-0847</strong></h2>
-    <p style="font-size:13px;color:rgba(255,255,255,.3);margin-top:8px">Maria Garcia &middot; Golpe en parking &middot; Poliza POL-2024-00456</p>
-  </div>
-
-  <div class="steps">
-
-    <!-- STEP 1 -->
-    <div class="demo-step" data-delay="0">
-      <div class="step-indicator">
-        <div class="step-dot"></div>
-        <div class="step-num">01</div>
+<!-- ====== PANEL 3: CHAT EN VIVO ====== -->
+<div class="panel" id="panel-chat">
+  <div class="chat-container">
+    <div class="chat-main">
+      <div class="chat-header">
+        <h3><span class="dot-live"></span> Asistente IA — SegurCaixa Adeslas</h3>
+        <span style="font-size:11px;color:var(--gray)">Powered by Claude AI</span>
       </div>
-      <div class="step-content">
-        <div class="step-header">
-          <span class="step-role cliente">Cliente</span>
-          <span class="step-time">09:14 - Lunes 17 marzo</span>
+      <div class="chat-messages" id="chatMessages">
+        <div class="msg system">🟢 Asistente IA conectado — puede reportar un siniestro o hacer consultas</div>
+        <div class="msg ai">
+          <div class="ai-label">🤖 Asistente IA</div>
+          Hola, soy el asistente virtual de SegurCaixa Adeslas. Estoy aquí para ayudarle con la gestión de siniestros. Puede:<br><br>
+          • <strong>Reportar un siniestro nuevo</strong> describiendo lo que ha ocurrido<br>
+          • <strong>Consultar el estado</strong> de un expediente existente<br>
+          • <strong>Hacer preguntas</strong> sobre sus pólizas o coberturas<br><br>
+          ¿En qué puedo ayudarle?
         </div>
-        <h3>Maria llama para reportar un siniestro</h3>
-        <p>Ha encontrado su coche con un golpe en el parking del trabajo. No hay testigos ni grabaciones. Llama al 900 de SegurCaixa Adeslas.</p>
-        <div class="step-card">
-          <div class="label">Transcripcion de la llamada</div>
-          <div class="value" id="transcript">
-            <span style="color:rgba(255,255,255,.2)">Cargando transcripcion...</span>
-          </div>
-        </div>
-        <a href="cliente-adeslas.html" class="step-link" target="_blank">Ver portal del cliente <span class="arrow">&rarr;</span></a>
+      </div>
+      <div class="typing" id="typing"><span></span><span></span><span></span></div>
+      <div class="chat-input">
+        <input type="text" id="chatInput" placeholder="Escriba su mensaje aquí..." onkeyup="if(event.key==='Enter')sendMessage()">
+        <button class="btn-send" id="btnSend" onclick="sendMessage()">Enviar →</button>
       </div>
     </div>
 
-    <!-- STEP 2 -->
-    <div class="demo-step" data-delay="1500">
-      <div class="step-indicator">
-        <div class="step-dot"></div>
-        <div class="step-num">02</div>
+    <div class="chat-sidebar">
+      <div class="sidebar-card">
+        <h4>💡 Mensajes de ejemplo</h4>
+        <button class="quick-btn" onclick="quickMsg('Me han dado un golpe por detrás en la M-30, el paragolpes está roto y el maletero no cierra. Tengo fotos. Mi póliza es AUT-2024-001234')"><span class="emoji">🚗</span> Siniestro de coche</button>
+        <button class="quick-btn" onclick="quickMsg('Se ha roto una tubería en mi restaurante y hay una inundación. El agua ha dañado el suelo y los muebles del comedor. Póliza NEG-2024-002345')"><span class="emoji">💧</span> Siniestro de negocio</button>
+        <button class="quick-btn" onclick="quickMsg('Han entrado a robar en mi oficina esta noche, se han llevado 3 portátiles y una impresora. Mi póliza es NEG-2024-003456')"><span class="emoji">🔓</span> Robo en oficina</button>
+        <button class="quick-btn" onclick="quickMsg('¿Cuál es el estado de mi expediente SIN-2026-AUT-38217?')"><span class="emoji">🔍</span> Consultar expediente</button>
       </div>
-      <div class="step-content">
-        <div class="step-header">
-          <span class="step-role ia">IA &middot; Agente Clasificador</span>
-          <span class="step-time">09:14 - Automatico</span>
-        </div>
-        <h3>Clasificacion y apertura de expediente</h3>
-        <p>La IA analiza la transcripcion, extrae los datos clave y abre el expediente automaticamente.</p>
-        <div class="step-card">
-          <div class="label">Datos extraidos por la IA</div>
-          <div class="value">
-            <span class="highlight">Tipo:</span> Dano propio en parking<br>
-            <span class="highlight">Vehiculo:</span> Seat Leon 2022 &middot; 4523-KMN<br>
-            <span class="highlight">Poliza:</span> POL-2024-00456 &middot; Todo Riesgo<br>
-            <span class="highlight">Cobertura:</span> <span class="success">&#10003; Verificada - Activa</span><br>
-            <span class="highlight">Franquicia:</span> 150&euro;<br>
-            <span class="highlight">Prioridad:</span> Normal
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- STEP 3 -->
-    <div class="demo-step" data-delay="3000">
-      <div class="step-indicator">
-        <div class="step-dot"></div>
-        <div class="step-num">03</div>
-      </div>
-      <div class="step-content">
-        <div class="step-header">
-          <span class="step-role ia">IA &middot; Agente Fraude</span>
-          <span class="step-time">09:14 - Automatico</span>
+      <div class="sidebar-card expediente-live" id="expedienteLive">
+        <h4>📋 Expediente en curso</h4>
+        <div class="exp-header">
+          <span class="exp-num" id="expNum">-</span>
+          <span class="exp-estado badge badge-blue" id="expEstado">-</span>
         </div>
-        <h3>Analisis de fraude</h3>
-        <p>El agente de fraude cruza datos del cliente, la poliza y el historial para detectar anomalias.</p>
-        <div class="step-card">
-          <div class="label">Resultado del analisis</div>
-          <div class="value">
-            <span class="success">&#10003; Score de fraude: 8/100 - BAJO</span><br><br>
-            Cliente desde 2019 &middot; 1 siniestro previo (2022) &middot; Pagos al dia<br>
-            Sin coincidencias con redes de fraude conocidas<br>
-            Sin reclamaciones similares recientes en la zona
-          </div>
-        </div>
+        <div class="timeline-mini" id="expTimeline"></div>
       </div>
-    </div>
 
-    <!-- STEP 4 -->
-    <div class="demo-step" data-delay="4500">
-      <div class="step-indicator">
-        <div class="step-dot"></div>
-        <div class="step-num">04</div>
+      <div class="sidebar-card">
+        <h4>ℹ️ Sobre esta demo</h4>
+        <p style="font-size:11px;color:var(--gray);line-height:1.6">
+          Esta es una demostración en vivo del sistema SiniestrosAI. Los mensajes son procesados por la IA de Claude (Anthropic). Los siniestros se crean realmente en la base de datos y son procesados por los 10 agentes especializados.
+        </p>
       </div>
-      <div class="step-content">
-        <div class="step-header">
-          <span class="step-role ia">IA &middot; Agente Valoracion</span>
-          <span class="step-time">09:15 - Automatico</span>
-        </div>
-        <h3>Valoracion automatica del dano</h3>
-        <p>Con las fotos enviadas por Maria y la base de datos de siniestros similares, la IA estima el coste de reparacion.</p>
-        <div class="step-card">
-          <div class="label">Valoracion</div>
-          <div class="value">
-            <span class="highlight">Dano estimado:</span> 1.850&euro;<br>
-            <span class="highlight">Franquicia:</span> -150&euro;<br>
-            <span class="highlight">Indemnizacion propuesta:</span> <strong>1.700&euro;</strong><br>
-            <span class="highlight">Confianza IA:</span> 94%<br>
-            <span class="highlight">Umbral auto-aprobacion:</span> &lt;3.000&euro; <span class="success">&#10003;</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- STEP 5 -->
-    <div class="demo-step" data-delay="6000">
-      <div class="step-indicator">
-        <div class="step-dot"></div>
-        <div class="step-num">05</div>
-      </div>
-      <div class="step-content">
-        <div class="step-header">
-          <span class="step-role ia">IA &middot; Agente Perito</span>
-          <span class="step-time">09:15 - Automatico</span>
-        </div>
-        <h3>Asignacion de perito</h3>
-        <p>La IA selecciona al perito mas adecuado por zona, disponibilidad y especialidad.</p>
-        <div class="step-card">
-          <div class="label">Perito asignado</div>
-          <div class="value">
-            <span class="highlight">Nombre:</span> Carlos Ruiz Martinez<br>
-            <span class="highlight">Zona:</span> Madrid Centro (4.2 km del siniestro)<br>
-            <span class="highlight">Especialidad:</span> Vehiculos<br>
-            <span class="highlight">Rating:</span> 4.8/5 (312 pericias)<br>
-            <span class="highlight">Disponibilidad:</span> <span class="success">Martes 18 marzo, 10:00-12:00</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- STEP 6 -->
-    <div class="demo-step" data-delay="7500">
-      <div class="step-indicator">
-        <div class="step-dot"></div>
-        <div class="step-num">06</div>
-      </div>
-      <div class="step-content">
-        <div class="step-header">
-          <span class="step-role sistema">Sistema &middot; Auto-aprobacion</span>
-          <span class="step-time">09:15 - Automatico</span>
-        </div>
-        <h3>Aprobacion automatica del pago</h3>
-        <p>Como el importe es inferior a 3.000&euro;, el score de fraude es bajo y la confianza de la IA es superior al 90%, el sistema aprueba automaticamente.</p>
-        <div class="step-card">
-          <div class="label">Decision</div>
-          <div class="value">
-            <span class="success" style="font-size:16px;font-weight:700">&#10003; APROBADO AUTOMATICAMENTE</span><br><br>
-            Pago de <strong>1.700&euro;</strong> autorizado<br>
-            Transferencia programada: 48h habiles<br>
-            Referencia: PAG-2026-0847
-          </div>
-        </div>
-        <a href="gestor-adeslas.html" class="step-link" target="_blank">Ver panel del gestor <span class="arrow">&rarr;</span></a>
-      </div>
-    </div>
-
-    <!-- STEP 7 -->
-    <div class="demo-step" data-delay="9000">
-      <div class="step-indicator">
-        <div class="step-dot"></div>
-        <div class="step-num">07</div>
-      </div>
-      <div class="step-content">
-        <div class="step-header">
-          <span class="step-role ia">IA &middot; Agente Comunicacion</span>
-          <span class="step-time">09:16 - Automatico</span>
-        </div>
-        <h3>Notificacion al cliente</h3>
-        <p>Maria recibe confirmacion por todos los canales configurados.</p>
-        <div class="step-card">
-          <div class="label">Mensajes enviados</div>
-          <div class="value">
-            <span class="success">&#10003;</span> SMS: "Su siniestro EXP-2026-0847 ha sido aprobado. Recibira 1.700&euro; en 48h"<br>
-            <span class="success">&#10003;</span> Email: Detalle completo con desglose de valoracion<br>
-            <span class="success">&#10003;</span> App: Push notification + actualizacion del estado en tiempo real<br>
-            <span class="success">&#10003;</span> WhatsApp: Confirmacion con enlace de seguimiento
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- RESULT -->
-<div class="result fade-in" id="result" style="display:none">
-  <div class="intro-label">Resultado</div>
-  <h2 style="font-size:clamp(1.5rem,3vw,2.5rem);font-weight:200;letter-spacing:-1px">Siniestro resuelto en <strong style="color:#259271">2 minutos</strong></h2>
-  <p style="font-size:13px;color:rgba(255,255,255,.3);margin-top:12px;font-weight:300">Sin intervencion humana. Proceso manual equivalente: 18 dias.</p>
-  <div class="result-grid">
-    <div class="result-item">
-      <div class="result-value blue">2 min</div>
-      <div class="result-label">Tiempo total</div>
-    </div>
-    <div class="result-item">
-      <div class="result-value green">1.700&euro;</div>
-      <div class="result-label">Indemnizacion</div>
-    </div>
-    <div class="result-item">
-      <div class="result-value purple">8&euro;</div>
-      <div class="result-label">Coste gestion</div>
-    </div>
-    <div class="result-item">
-      <div class="result-value yellow">9.1/10</div>
-      <div class="result-label">Satisfaccion</div>
     </div>
   </div>
 </div>
 
-<!-- PORTALS CTA -->
-<div class="portals-cta fade-in" id="portalsCta" style="display:none">
-  <h2>Explorar los <strong>portales</strong></h2>
-  <div class="portal-buttons">
-    <a href="cliente-adeslas.html" class="portal-btn p1" target="_blank">
-      <div class="icon">&#128100;</div>
-      <div class="text">
-        <h4>Area Cliente</h4>
-        <p>Lo que ve Maria Garcia</p>
-      </div>
-    </a>
-    <a href="adeslas-demo.html" class="portal-btn p2" target="_blank">
-      <div class="icon">&#128202;</div>
-      <div class="text">
-        <h4>Panel de Control</h4>
-        <p>KPIs y rentabilidad</p>
-      </div>
-    </a>
-    <a href="gestor-adeslas.html" class="portal-btn p3" target="_blank">
-      <div class="icon">&#128188;</div>
-      <div class="text">
-        <h4>Area Gestor</h4>
-        <p>Supervision y aprobaciones</p>
-      </div>
-    </a>
-  </div>
-</div>
-
-<!-- FOOTER -->
-<div class="demo-footer" id="demoFooter" style="display:none">
-  <p>SegurCaixa Adeslas &middot; Gestion Inteligente de Siniestros &middot; Powered by 27 Agentes IA</p>
-</div>
-
+<script src="backend-connector.js"></script>
 <script>
-// ===== CURSOR GLOW =====
-const glow = document.getElementById('cursorGlow');
-document.addEventListener('mousemove', e => {
-  glow.style.left = e.clientX + 'px';
-  glow.style.top = e.clientY + 'px';
-});
+// ============================================
+// CONFIG
+// ============================================
+const API_BASE = window.location.hostname === 'localhost'
+  ? 'http://localhost:3001/api/v1'
+  : `${window.location.origin}/api/v1`;
 
-// ===== TRANSCRIPT ANIMATION =====
-const transcriptLines = [
-  {who:'ia', text:'Buenos dias, soy Laura, su asistente de SegurCaixa Adeslas. ¿En que puedo ayudarle?'},
-  {who:'cli', text:'Hola, he encontrado mi coche con un golpe en el parking del trabajo y quiero reportarlo.'},
-  {who:'ia', text:'Lamento escuchar eso. Voy a abrir un expediente. ¿Puede confirmarme su DNI y numero de poliza?'},
-  {who:'cli', text:'Si, DNI 12345678A, poliza POL-2024-00456.'},
-  {who:'ia', text:'Perfecto, Maria. Veo su poliza Todo Riesgo para el Seat Leon 2022. ¿Donde se encuentra el vehiculo ahora?'},
-  {who:'cli', text:'En el parking de la oficina, calle Gran Via 42, Madrid.'},
-  {who:'ia', text:'Entendido. Le he enviado un enlace por WhatsApp para que suba fotos del dano. Un perito se pondra en contacto manana. Su expediente es EXP-2026-0847.'},
-  {who:'cli', text:'Genial, muchas gracias. Ha sido muy rapido.'},
+let authToken = null;
+let adminToken = null;
+let currentSiniestroId = null;
+
+// Auto-login para la demo
+async function autoLogin() {
+  try {
+    // Login como admin para dashboard
+    const adminRes = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({email:'admin@segurcaixa.demo',password:'Demo2024!'})
+    }).then(r => r.json());
+    adminToken = adminRes.token;
+
+    // Login como cliente para chat
+    const clientRes = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({email:'maria.lopez@demo.com',password:'Demo2024!'})
+    }).then(r => r.json());
+    authToken = clientRes.token;
+
+    loadDashboard();
+    loadAgentes();
+    addLog('Sistema', 'Sesión iniciada. 10 agentes IA listos.', 'var(--green)');
+  } catch(e) {
+    console.error('Auto-login failed:', e);
+    addLog('Sistema', 'Error conectando al backend. Verifica que está corriendo.', 'var(--red)');
+  }
+}
+
+// ============================================
+// PANEL 1: GESTOR
+// ============================================
+async function loadDashboard() {
+  if (!adminToken) return;
+  try {
+    const dash = await fetch(`${API_BASE}/dashboard`, {
+      headers: {'Authorization': `Bearer ${adminToken}`}
+    }).then(r => r.json());
+
+    const k = dash.kpis;
+    document.getElementById('kpi-total').textContent = k.total_siniestros || 0;
+    document.getElementById('kpi-auto').textContent = (k.tasa_automatizacion || 0) + '%';
+    document.getElementById('kpi-tiempo').textContent = (k.tiempo_medio_resolucion_min || 0) + ' min';
+    document.getElementById('kpi-fraude').textContent = k.fraudes_detectados || 0;
+    document.getElementById('kpi-coste').textContent = (k.coste_ia_total || '0.00') + '€';
+
+    // Cargar siniestros
+    const sins = await fetch(`${API_BASE}/siniestros?limit=10`, {
+      headers: {'Authorization': `Bearer ${adminToken}`}
+    }).then(r => r.json());
+
+    const tbody = document.getElementById('siniestrosBody');
+    if (sins.data && sins.data.length > 0) {
+      tbody.innerHTML = sins.data.map(s => {
+        const estadoColor = {recibido:'blue',clasificando:'purple',en_analisis:'purple',aprobado:'green',cerrado:'green',rechazado:'red',pagado:'green'}[s.estado] || 'yellow';
+        const prioColor = {baja:'green',media:'blue',alta:'yellow',urgente:'red',critica:'red'}[s.prioridad] || 'blue';
+        return `<tr>
+          <td><strong style="font-family:var(--mono);font-size:12px">${s.numero_expediente}</strong></td>
+          <td>${s.cliente_nombre || '-'} ${s.cliente_apellidos || ''}</td>
+          <td style="font-size:12px">${(s.tipo||'').replace(/_/g,' ')}</td>
+          <td><span class="badge badge-${estadoColor}">${(s.estado||'').replace(/_/g,' ').toUpperCase()}</span></td>
+          <td><span class="badge badge-${prioColor}">${(s.prioridad||'').toUpperCase()}</span></td>
+          <td style="font-family:var(--mono)">${s.valoracion_ia ? s.valoracion_ia+'€' : '-'}</td>
+          <td style="font-size:11px;color:var(--gray)">${new Date(s.created_at).toLocaleString('es-ES')}</td>
+        </tr>`;
+      }).join('');
+    } else {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--gray);padding:30px">No hay siniestros. ¡Crea uno desde el Chat en Vivo!</td></tr>';
+    }
+  } catch(e) { console.error('Dashboard error:', e); }
+}
+
+// ============================================
+// PANEL 2: AGENTES
+// ============================================
+const AGENTES = [
+  {id:'recepcionista',icon:'📞',name:'Recepcionista',desc:'Recibe y valida'},
+  {id:'clasificador',icon:'🏷️',name:'Clasificador',desc:'Categoriza y prioriza'},
+  {id:'antifraude',icon:'🛡️',name:'Anti-Fraude',desc:'Detecta fraude'},
+  {id:'legal',icon:'⚖️',name:'Legal',desc:'Verifica coberturas'},
+  {id:'valorador',icon:'💰',name:'Valorador',desc:'Estima daños'},
+  {id:'perito_virtual',icon:'🔍',name:'Perito Virtual',desc:'Peritaje remoto'},
+  {id:'negociador',icon:'🤝',name:'Negociador',desc:'Negocia con talleres'},
+  {id:'comunicaciones',icon:'📧',name:'Comunicaciones',desc:'Informa al cliente'},
+  {id:'pagos',icon:'💳',name:'Pagos',desc:'Procesa pagos'},
+  {id:'calidad',icon:'⭐',name:'Calidad',desc:'Mide satisfacción'}
 ];
 
-function typeTranscript() {
-  const container = document.getElementById('transcript');
-  container.innerHTML = '';
-  let i = 0;
-  function addLine() {
-    if (i >= transcriptLines.length) return;
-    const line = transcriptLines[i];
-    const color = line.who === 'ia' ? '#6486C3' : 'rgba(255,255,255,.6)';
-    const label = line.who === 'ia' ? '&#129504; IA Laura' : '&#128100; Maria';
-    const div = document.createElement('div');
-    div.style.cssText = 'margin-bottom:10px;opacity:0;transform:translateY(8px);transition:all .4s';
-    div.innerHTML = `<span style="font-size:10px;font-weight:700;color:${color};display:block;margin-bottom:2px">${label}</span><span style="color:rgba(255,255,255,.5);font-size:13px">${line.text}</span>`;
-    container.appendChild(div);
-    requestAnimationFrame(() => { div.style.opacity = '1'; div.style.transform = 'translateY(0)'; });
-    i++;
-    setTimeout(addLine, 1800);
-  }
-  addLine();
+function loadAgentes() {
+  const grid = document.getElementById('agentsGrid');
+  grid.innerHTML = AGENTES.map(a => `
+    <div class="agent-card" id="agent-${a.id}">
+      <div class="agent-icon">${a.icon}</div>
+      <div class="agent-name">${a.name}</div>
+      <div class="agent-status">En espera</div>
+      <div class="agent-stats">0 tareas · 0ms</div>
+    </div>
+  `).join('');
 }
 
-// ===== START DEMO =====
-function startDemo() {
-  document.getElementById('intro').style.display = 'none';
-  document.getElementById('timeline').style.display = 'block';
+function activateAgent(agentId, status='Procesando...') {
+  const card = document.getElementById(`agent-${agentId}`);
+  if (!card) return;
+  card.classList.add('processing');
+  card.querySelector('.agent-status').textContent = status;
+  card.querySelector('.agent-status').classList.add('active');
+}
 
-  const steps = document.querySelectorAll('.demo-step');
-  const totalSteps = steps.length;
-  const bar = document.getElementById('progressBar');
-
-  // Reveal timeline title
+function deactivateAgent(agentId, stats='') {
+  const card = document.getElementById(`agent-${agentId}`);
+  if (!card) return;
+  card.classList.remove('processing');
+  card.querySelector('.agent-status').textContent = 'Completado ✓';
+  if (stats) card.querySelector('.agent-stats').textContent = stats;
   setTimeout(() => {
-    document.querySelector('.timeline-title').classList.add('visible');
-  }, 200);
-
-  steps.forEach((step, idx) => {
-    const delay = parseInt(step.dataset.delay) + 800;
-    setTimeout(() => {
-      step.classList.add('visible', 'active');
-
-      // Mark previous as completed
-      if (idx > 0) steps[idx - 1].classList.remove('active');
-      if (idx > 0) steps[idx - 1].classList.add('completed');
-
-      // Progress bar
-      bar.style.width = ((idx + 1) / totalSteps * 100) + '%';
-
-      // Scroll to step
-      step.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-      // Trigger transcript on step 1
-      if (idx === 0) setTimeout(typeTranscript, 500);
-
-      // Show results after last step
-      if (idx === totalSteps - 1) {
-        step.classList.add('completed');
-        bar.style.width = '100%';
-        setTimeout(() => {
-          const result = document.getElementById('result');
-          const portals = document.getElementById('portalsCta');
-          const footer = document.getElementById('demoFooter');
-          result.style.display = 'block';
-          portals.style.display = 'block';
-          footer.style.display = 'block';
-          setTimeout(() => {
-            result.classList.add('visible');
-            portals.classList.add('visible');
-          }, 100);
-          result.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 2000);
-      }
-    }, delay);
-  });
+    card.querySelector('.agent-status').textContent = 'En espera';
+    card.querySelector('.agent-status').classList.remove('active');
+  }, 5000);
 }
 
-// ===== SCROLL REVEAL FOR STATIC ELEMENTS =====
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-}, { threshold: 0.15 });
-document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+function addLog(agent, msg, color='var(--gray-light)') {
+  const log = document.getElementById('agentLog');
+  const time = new Date().toLocaleTimeString('es-ES');
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  entry.innerHTML = `<span class="log-time">${time}</span><span class="log-agent" style="color:${color}">[${agent}]</span><span class="log-msg">${msg}</span>`;
+  log.prepend(entry);
+}
+
+// ============================================
+// PANEL 3: CHAT EN VIVO
+// ============================================
+function addChatMsg(text, type='ai') {
+  const container = document.getElementById('chatMessages');
+  const msg = document.createElement('div');
+  msg.className = `msg ${type}`;
+  if (type === 'ai') {
+    msg.innerHTML = `<div class="ai-label">🤖 Asistente IA</div>${text}`;
+  } else if (type === 'system') {
+    msg.textContent = text;
+  } else {
+    msg.textContent = text;
+  }
+  container.appendChild(msg);
+  container.scrollTop = container.scrollHeight;
+}
+
+function showTyping(show) {
+  document.getElementById('typing').style.display = show ? 'block' : 'none';
+  if (show) {
+    const c = document.getElementById('chatMessages');
+    c.scrollTop = c.scrollHeight;
+  }
+}
+
+function quickMsg(text) {
+  document.getElementById('chatInput').value = text;
+  sendMessage();
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  addChatMsg(text, 'user');
+  document.getElementById('btnSend').disabled = true;
+  showTyping(true);
+
+  // Detectar si es un siniestro
+  const esSiniestro = detectarSiniestro(text);
+
+  if (esSiniestro) {
+    await procesarSiniestroChat(text, esSiniestro);
+  } else {
+    // Consulta general — usar IA directamente
+    await responderConsulta(text);
+  }
+
+  document.getElementById('btnSend').disabled = false;
+}
+
+function detectarSiniestro(text) {
+  const lower = text.toLowerCase();
+  // Auto
+  if (lower.includes('golpe') || lower.includes('colision') || lower.includes('choque') || lower.includes('accidente') || lower.includes('paragolpes') || lower.includes('coche'))
+    return 'auto_colision';
+  if (lower.includes('robado') && (lower.includes('coche') || lower.includes('vehiculo') || lower.includes('moto')))
+    return 'auto_robo';
+  if (lower.includes('cristal') || lower.includes('luna') || lower.includes('parabrisas'))
+    return 'auto_cristales';
+  // Negocio
+  if (lower.includes('agua') || lower.includes('inundacion') || lower.includes('tuberia') || lower.includes('goteras'))
+    return 'negocio_agua';
+  if (lower.includes('incendio') || lower.includes('fuego') || lower.includes('quemado'))
+    return 'negocio_incendio';
+  if (lower.includes('robar') || lower.includes('robo') || lower.includes('entrado') || lower.includes('ladron'))
+    return 'negocio_robo';
+  if (lower.includes('electri') || lower.includes('cortocircuito'))
+    return 'negocio_danos_electricos';
+  return null;
+}
+
+async function procesarSiniestroChat(descripcion, tipo) {
+  addLog('Recepcionista', 'Nuevo siniestro detectado en chat en vivo', 'var(--cyan)');
+
+  // Extraer número de póliza si existe
+  const polizaMatch = descripcion.match(/(?:poliza|póliza)\s+(?:es\s+)?([A-Z]{3}-\d{4}-\d{3,6})/i);
+  const numPoliza = polizaMatch ? polizaMatch[1].toUpperCase() : null;
+
+  // Simular procesamiento visual
+  await simulateAgentProcessing();
+
+  try {
+    // Crear siniestro real en el backend
+    const resultado = await fetch(`${API_BASE}/siniestros`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':`Bearer ${authToken}`},
+      body: JSON.stringify({
+        tipo, descripcion, canal_entrada: 'web',
+        fecha_ocurrencia: new Date().toISOString(),
+        ...(numPoliza && {numero_poliza: numPoliza})
+      })
+    }).then(r => r.json());
+
+    showTyping(false);
+
+    if (resultado.numero_expediente) {
+      currentSiniestroId = resultado.id;
+
+      addChatMsg(`He registrado su siniestro correctamente. Aquí tiene los detalles:<br><br>
+        📋 <strong>Expediente:</strong> ${resultado.numero_expediente}<br>
+        📊 <strong>Estado:</strong> Recibido y en procesamiento<br>
+        🤖 <strong>Agentes IA:</strong> 10 agentes analizando su caso<br><br>
+        Nuestro sistema de inteligencia artificial está procesando su siniestro ahora mismo. Los agentes están:<br>
+        ✅ Verificando su póliza y coberturas<br>
+        ✅ Clasificando el tipo de siniestro<br>
+        ✅ Analizando indicadores de fraude<br>
+        ✅ Estimando la valoración de daños<br><br>
+        Le mantendremos informado del progreso. ¿Tiene fotos del siniestro que quiera adjuntar?`);
+
+      // Mostrar expediente en sidebar
+      showExpediente(resultado.numero_expediente);
+
+      // Actualizar dashboard
+      setTimeout(loadDashboard, 2000);
+
+      // Monitorizar estado del siniestro
+      setTimeout(() => pollSiniestroStatus(resultado.id), 5000);
+
+      addLog('Orquestador', `Siniestro ${resultado.numero_expediente} creado y en procesamiento`, 'var(--green)');
+    } else {
+      addChatMsg(`Ha ocurrido un problema al registrar el siniestro. ${resultado.error || 'Por favor, inténtelo de nuevo.'}. ¿Puede darme más detalles?`);
+    }
+  } catch(e) {
+    showTyping(false);
+    addChatMsg('Disculpe, ha habido un error de conexión. Estamos trabajando para resolverlo. ¿Puede intentarlo de nuevo en unos segundos?');
+    addLog('Sistema', `Error: ${e.message}`, 'var(--red)');
+  }
+}
+
+async function simulateAgentProcessing() {
+  const order = ['recepcionista','clasificador','legal','antifraude','valorador','perito_virtual','negociador','comunicaciones','pagos','calidad'];
+  for (let i = 0; i < order.length; i++) {
+    const a = order[i];
+    const agente = AGENTES.find(ag => ag.id === a);
+    activateAgent(a, 'Procesando...');
+    addLog(agente.name, `Procesando siniestro...`, getAgentColor(i));
+    await sleep(400 + Math.random() * 600);
+    deactivateAgent(a, `${Math.floor(Math.random()*500+100)}ms`);
+    addLog(agente.name, `Análisis completado ✓`, getAgentColor(i));
+  }
+}
+
+function getAgentColor(i) {
+  const colors = ['var(--cyan)','var(--purple)','var(--blue)','var(--red)','var(--yellow)','var(--cyan)','var(--green)','var(--blue)','var(--yellow)','var(--purple)'];
+  return colors[i % colors.length];
+}
+
+function showExpediente(num) {
+  const el = document.getElementById('expedienteLive');
+  el.style.display = 'block';
+  document.getElementById('expNum').textContent = num;
+  document.getElementById('expEstado').textContent = 'PROCESANDO';
+  document.getElementById('expTimeline').innerHTML = `
+    <div class="tl-step done">Recibido</div>
+    <div class="tl-step active">Clasificando</div>
+    <div class="tl-step">Análisis anti-fraude</div>
+    <div class="tl-step">Valoración</div>
+    <div class="tl-step">Resolución</div>
+  `;
+}
+
+async function pollSiniestroStatus(id) {
+  if (!id || !adminToken) return;
+  try {
+    const s = await fetch(`${API_BASE}/siniestros/${id}`, {
+      headers: {'Authorization': `Bearer ${adminToken}`}
+    }).then(r => r.json());
+
+    if (s.estado && s.estado !== 'recibido') {
+      const estado = s.estado.replace(/_/g,' ').toUpperCase();
+      document.getElementById('expEstado').textContent = estado;
+      addChatMsg(`📊 <strong>Actualización:</strong> Su expediente ha avanzado al estado <strong>${estado}</strong>.${s.valoracion_ia ? ` Valoración estimada: <strong>${s.valoracion_ia}€</strong>` : ''}`, 'system');
+      addLog('Orquestador', `Estado actualizado: ${estado}`, 'var(--green)');
+      loadDashboard();
+    }
+    if (!['cerrado','rechazado','pagado'].includes(s.estado)) {
+      setTimeout(() => pollSiniestroStatus(id), 8000);
+    }
+  } catch(e) {}
+}
+
+async function responderConsulta(text) {
+  await sleep(1500 + Math.random() * 1000);
+  showTyping(false);
+
+  if (text.toLowerCase().includes('expediente') || text.toLowerCase().includes('estado')) {
+    addChatMsg('Permítame consultar el estado de su expediente...<br><br>He encontrado su último siniestro. El expediente está siendo procesado por nuestros agentes de IA. ¿Necesita más información sobre algún aspecto específico?');
+  } else if (text.toLowerCase().includes('poliza') || text.toLowerCase().includes('póliza') || text.toLowerCase().includes('cobertura')) {
+    addChatMsg('He consultado sus pólizas activas. Tiene cobertura de <strong>todo riesgo</strong> para su vehículo y una póliza de <strong>comercio</strong> para su negocio. Ambas incluyen responsabilidad civil, daños propios y asistencia. ¿Sobre cuál quiere más detalles?');
+  } else {
+    addChatMsg('Entendido. Estoy aquí para ayudarle con cualquier gestión relacionada con sus seguros. Puedo:<br><br>• Registrar un nuevo siniestro<br>• Consultar el estado de un expediente<br>• Informarle sobre sus coberturas<br><br>¿En qué más puedo ayudarle?');
+  }
+}
+
+// ============================================
+// NAVIGATION
+// ============================================
+function switchPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.topbar-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`panel-${name}`).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'gestor') loadDashboard();
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// Init
+autoLogin();
 </script>
 </body>
 </html>
