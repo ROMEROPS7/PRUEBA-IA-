@@ -1,0 +1,1849 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adeslas Gesti&oacute;n Inteligente - Panel de Control</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* =========================================================================
+   ADESLAS DESIGN SYSTEM
+   ========================================================================= */
+:root {
+  --adeslas-blue: #00529B;
+  --adeslas-blue-dark: #003D73;
+  --adeslas-blue-light: #E8F1F8;
+  --adeslas-red: #E30613;
+  --adeslas-red-dark: #B8050F;
+  --adeslas-red-light: #FDE8E9;
+  --adeslas-accent: #009FE3;
+  --adeslas-accent-light: #E0F4FD;
+  --gray-50: #F8FAFC;
+  --gray-100: #F1F5F9;
+  --gray-200: #E2E8F0;
+  --gray-300: #CBD5E1;
+  --gray-400: #94A3B8;
+  --gray-500: #64748B;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1E293B;
+  --green: #059669;
+  --green-light: #ECFDF5;
+  --yellow: #D97706;
+  --yellow-light: #FFFBEB;
+  --orange: #EA580C;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--gray-50);
+  color: var(--gray-800);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* =========================================================================
+   HEADER
+   ========================================================================= */
+.header {
+  background: linear-gradient(135deg, var(--adeslas-blue) 0%, var(--adeslas-blue-dark) 100%);
+  color: white;
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0,82,155,0.3);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.header-logo .brain-icon {
+  width: 36px;
+  height: 36px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 13px;
+}
+
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.1);
+  padding: 6px 14px;
+  border-radius: 20px;
+}
+
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #34D399;
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.back-link {
+  color: rgba(255,255,255,0.8);
+  text-decoration: none;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s;
+}
+.back-link:hover { color: white; }
+
+/* =========================================================================
+   TAB NAVIGATION
+   ========================================================================= */
+.tab-nav {
+  background: white;
+  border-bottom: 1px solid var(--gray-200);
+  padding: 0 24px;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  box-shadow: var(--shadow-sm);
+}
+
+.tab-btn {
+  padding: 14px 20px;
+  border: none;
+  background: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-500);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tab-btn:hover {
+  color: var(--adeslas-blue);
+  background: var(--adeslas-blue-light);
+}
+
+.tab-btn.active {
+  color: var(--adeslas-blue);
+  border-bottom-color: var(--adeslas-blue);
+  font-weight: 600;
+}
+
+/* =========================================================================
+   MAIN CONTENT
+   ========================================================================= */
+.main-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* =========================================================================
+   CARDS & COMPONENTS
+   ========================================================================= */
+.card {
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--gray-200);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--gray-100);
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+/* KPI Cards */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.kpi-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--gray-200);
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.kpi-card.blue::before { background: var(--adeslas-blue); }
+.kpi-card.green::before { background: var(--green); }
+.kpi-card.accent::before { background: var(--adeslas-accent); }
+.kpi-card.red::before { background: var(--adeslas-red); }
+.kpi-card.yellow::before { background: var(--yellow); }
+
+.kpi-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.kpi-value {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--gray-800);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.kpi-sub {
+  font-size: 12px;
+  color: var(--gray-400);
+}
+
+.kpi-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.kpi-badge.positive { background: var(--green-light); color: var(--green); }
+.kpi-badge.warning { background: var(--yellow-light); color: var(--yellow); }
+
+/* Highlight Banner */
+.highlight-banner {
+  background: linear-gradient(135deg, var(--adeslas-blue) 0%, var(--adeslas-accent) 100%);
+  color: white;
+  padding: 20px 24px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 12px rgba(0,82,155,0.25);
+}
+
+.highlight-banner .value {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.highlight-banner .label {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* Activity Feed */
+.activity-feed {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--gray-100);
+  animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.activity-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.activity-icon.auto { background: var(--green-light); }
+.activity-icon.alert { background: var(--yellow-light); }
+.activity-icon.fraud { background: var(--adeslas-red-light); }
+.activity-icon.info { background: var(--adeslas-accent-light); }
+
+.activity-text {
+  flex: 1;
+  font-size: 13px;
+  color: var(--gray-700);
+}
+
+.activity-time {
+  font-size: 11px;
+  color: var(--gray-400);
+  white-space: nowrap;
+}
+
+/* =========================================================================
+   WORKFLOW PIPELINE
+   ========================================================================= */
+.pipeline-container {
+  overflow-x: auto;
+  padding: 20px 0;
+}
+
+.pipeline {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  min-width: 1200px;
+  padding: 10px 0;
+}
+
+.pipeline-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+  min-width: 80px;
+}
+
+.pipeline-step::after {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  width: 100%;
+  height: 3px;
+  background: var(--gray-200);
+  z-index: 0;
+}
+
+.pipeline-step:last-child::after { display: none; }
+
+.step-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  z-index: 1;
+  transition: all 0.5s ease;
+  border: 3px solid white;
+  box-shadow: var(--shadow-sm);
+}
+
+.step-circle.completed {
+  background: var(--green);
+  color: white;
+}
+
+.step-circle.active {
+  background: var(--adeslas-accent);
+  color: white;
+  animation: pulse-step 1.5s infinite;
+  box-shadow: 0 0 0 4px rgba(0,159,227,0.2);
+}
+
+.step-circle.waiting {
+  background: var(--yellow);
+  color: white;
+  animation: pulse-step 2s infinite;
+}
+
+@keyframes pulse-step {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.step-label {
+  margin-top: 8px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--gray-500);
+  text-align: center;
+  max-width: 80px;
+  line-height: 1.3;
+}
+
+.step-time {
+  font-size: 9px;
+  color: var(--green);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.step-detail {
+  font-size: 9px;
+  color: var(--adeslas-blue);
+  margin-top: 2px;
+  text-align: center;
+  max-width: 90px;
+}
+
+.sim-controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radius);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background: var(--adeslas-blue);
+  color: white;
+}
+.btn-primary:hover { background: var(--adeslas-blue-dark); }
+
+.btn-danger {
+  background: var(--adeslas-red);
+  color: white;
+}
+.btn-danger:hover { background: var(--adeslas-red-dark); }
+
+.btn-outline {
+  background: white;
+  color: var(--adeslas-blue);
+  border: 1.5px solid var(--adeslas-blue);
+}
+.btn-outline:hover { background: var(--adeslas-blue-light); }
+
+.btn-success {
+  background: var(--green);
+  color: white;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sim-result {
+  margin-top: 20px;
+  padding: 16px 20px;
+  background: var(--green-light);
+  border: 1px solid #A7F3D0;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--green);
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+
+.sim-result.show { display: flex; }
+
+/* =========================================================================
+   CONFIGURATION SLIDERS
+   ========================================================================= */
+.config-section {
+  margin-bottom: 24px;
+}
+
+.config-section h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--gray-800);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.slider-group {
+  margin-bottom: 20px;
+}
+
+.slider-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.slider-label span {
+  font-size: 13px;
+  color: var(--gray-600);
+}
+
+.slider-value {
+  font-weight: 700;
+  color: var(--adeslas-blue) !important;
+  font-size: 14px !important;
+}
+
+input[type="range"] {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--gray-200);
+  outline: none;
+  -webkit-appearance: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--adeslas-blue);
+  cursor: pointer;
+  border: 3px solid white;
+  box-shadow: var(--shadow-md);
+}
+
+.toggle-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px 24px;
+  align-items: center;
+}
+
+.toggle-label {
+  font-size: 13px;
+  color: var(--gray-700);
+}
+
+.toggle-select {
+  font-family: 'Inter', sans-serif;
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  border: 1.5px solid var(--gray-200);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  min-width: 140px;
+  background: white;
+}
+
+.toggle-select.auto { border-color: var(--green); color: var(--green); background: var(--green-light); }
+.toggle-select.supervised { border-color: var(--yellow); color: var(--yellow); background: var(--yellow-light); }
+.toggle-select.manual { border-color: var(--gray-400); color: var(--gray-600); }
+
+/* Kill Switch */
+.kill-switch-area {
+  margin-top: 32px;
+  padding: 24px;
+  background: #FFF5F5;
+  border: 2px solid var(--adeslas-red-light);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.kill-switch-btn {
+  padding: 16px 48px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 14px rgba(227,6,19,0.3);
+}
+
+.kill-switch-btn:hover {
+  box-shadow: 0 6px 20px rgba(227,6,19,0.4);
+  transform: translateY(-1px);
+}
+
+/* =========================================================================
+   ROI TABLE
+   ========================================================================= */
+.roi-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.roi-table th {
+  background: var(--adeslas-blue);
+  color: white;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.roi-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.roi-table tr:hover td {
+  background: var(--gray-50);
+}
+
+.roi-table .highlight {
+  font-weight: 700;
+  color: var(--green);
+}
+
+.roi-table .negative {
+  color: var(--adeslas-red);
+}
+
+.roi-chart-placeholder {
+  height: 250px;
+  background: linear-gradient(180deg, var(--adeslas-blue-light) 0%, white 100%);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-top: 20px;
+  border: 1px solid var(--gray-200);
+  position: relative;
+}
+
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  flex: 1;
+  padding: 20px 20px 0;
+}
+
+.chart-bar-group {
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chart-bar {
+  width: 32px;
+  border-radius: 4px 4px 0 0;
+  transition: height 1s ease;
+}
+
+.chart-bar.ia { background: var(--adeslas-blue); }
+.chart-bar.manual { background: var(--gray-300); }
+
+.chart-bar-pair {
+  display: flex;
+  gap: 3px;
+  align-items: flex-end;
+}
+
+.chart-label {
+  font-size: 11px;
+  color: var(--gray-500);
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+.chart-legend {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  padding: 12px;
+  border-top: 1px solid var(--gray-100);
+  font-size: 12px;
+  color: var(--gray-600);
+}
+
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chart-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.roi-big-number {
+  text-align: center;
+  padding: 32px;
+  background: linear-gradient(135deg, var(--green-light) 0%, white 100%);
+  border-radius: var(--radius-lg);
+  border: 1px solid #A7F3D0;
+  margin-top: 24px;
+}
+
+.roi-big-number .amount {
+  font-size: 48px;
+  font-weight: 800;
+  color: var(--green);
+  line-height: 1;
+}
+
+.roi-big-number .desc {
+  font-size: 14px;
+  color: var(--gray-600);
+  margin-top: 8px;
+}
+
+/* =========================================================================
+   PRODUCTS
+   ========================================================================= */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.product-card {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+  background: white;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.product-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.product-card-header {
+  padding: 16px 20px;
+  background: linear-gradient(135deg, var(--adeslas-blue) 0%, var(--adeslas-blue-dark) 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.product-icon {
+  width: 36px;
+  height: 36px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.product-name {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.product-card-body {
+  padding: 16px 20px;
+}
+
+.product-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 12px;
+  border-bottom: 1px solid var(--gray-50);
+}
+
+.product-row:last-child { border-bottom: none; }
+
+.product-row .label { color: var(--gray-500); }
+.product-row .value { font-weight: 600; color: var(--gray-700); }
+
+.product-prima {
+  margin-top: 12px;
+  padding: 10px;
+  background: var(--adeslas-blue-light);
+  border-radius: var(--radius);
+  text-align: center;
+}
+
+.product-prima .from { font-size: 11px; color: var(--gray-500); }
+.product-prima .price { font-size: 22px; font-weight: 800; color: var(--adeslas-blue); }
+.product-prima .period { font-size: 11px; color: var(--gray-400); }
+
+/* =========================================================================
+   SYSTEM STATUS (simplified)
+   ========================================================================= */
+.mode-indicator {
+  padding: 20px 24px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.mode-indicator.auto {
+  background: var(--green-light);
+  border: 2px solid #6EE7B7;
+  color: var(--green);
+}
+
+.mode-indicator.supervised {
+  background: var(--yellow-light);
+  border: 2px solid #FCD34D;
+  color: var(--yellow);
+}
+
+.mode-indicator.disabled {
+  background: var(--adeslas-red-light);
+  border: 2px solid #FCA5A5;
+  color: var(--adeslas-red);
+}
+
+.status-simple-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.status-simple-item {
+  padding: 16px;
+  background: white;
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-200);
+}
+
+.status-simple-item .label { font-size: 12px; color: var(--gray-500); margin-bottom: 4px; }
+.status-simple-item .value { font-size: 20px; font-weight: 700; color: var(--green); }
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-overlay.show { display: flex; }
+
+.modal {
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+  text-align: center;
+}
+
+.modal h2 {
+  color: var(--adeslas-red);
+  margin-bottom: 12px;
+  font-size: 20px;
+}
+
+.modal p {
+  color: var(--gray-600);
+  font-size: 14px;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* Grid helpers */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+
+/* Fraud alerts section */
+.fraud-alerts-section {
+  margin-top: 24px;
+}
+
+.fraud-alert-card {
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border-radius: var(--radius);
+  border-left: 4px solid var(--gray-300);
+}
+
+.fraud-alert-card .severity {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.fraud-alert-card .title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--gray-800);
+}
+
+.fraud-alert-card .desc {
+  font-size: 12px;
+  color: var(--gray-600);
+  line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .pipeline { min-width: 900px; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
+</style>
+</head>
+<body>
+
+<!-- ====================================================================
+     HEADER
+     ==================================================================== -->
+<header class="header">
+  <div class="header-logo">
+    <div class="brain-icon">&#129504;</div>
+    <span>Adeslas Gesti&oacute;n Inteligente</span>
+  </div>
+  <div class="header-right">
+    <div class="header-status">
+      <span class="status-dot"></span>
+      <span>Sistema Activo</span>
+    </div>
+    <div class="header-user">
+      <span>&#128100;</span>
+      <span>Director de Operaciones - SegurCaixa Adeslas</span>
+    </div>
+    <a href="segurcaixa.html" class="back-link">&#8592; Volver al inicio</a>
+  </div>
+</header>
+
+<!-- ====================================================================
+     TAB NAVIGATION (4 tabs)
+     ==================================================================== -->
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('resumen')">&#128202; Resumen</button>
+  <button class="tab-btn" onclick="switchTab('siniestros')">&#128203; Siniestros</button>
+  <button class="tab-btn" onclick="switchTab('rentabilidad')">&#128176; Rentabilidad</button>
+  <button class="tab-btn" onclick="switchTab('ajustes')">&#9881; Ajustes</button>
+</nav>
+
+<!-- ====================================================================
+     MAIN CONTENT
+     ==================================================================== -->
+<div class="main-content">
+
+  <!-- ================================================================
+       TAB 1: RESUMEN
+       ================================================================ -->
+  <div id="tab-resumen" class="tab-panel active">
+
+    <div class="highlight-banner">
+      <div>
+        <div class="label">Ahorro estimado este mes</div>
+        <div class="value">28.500&euro;</div>
+      </div>
+      <div style="text-align:right">
+        <div class="label">Equivalente a</div>
+        <div class="value">4.2 empleados a tiempo completo</div>
+      </div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card blue">
+        <div class="kpi-label">Siniestros abiertos hoy</div>
+        <div class="kpi-value">24</div>
+        <div class="kpi-sub">de ~800/mes esperados</div>
+        <div class="kpi-badge positive">&#9650; 3 vs ayer</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Resueltos autom&aacute;ticamente</div>
+        <div class="kpi-value">18</div>
+        <div class="kpi-sub">75% del total de hoy</div>
+        <div class="kpi-badge positive">&#9650; 5% vs semana pasada</div>
+      </div>
+      <div class="kpi-card yellow">
+        <div class="kpi-label">Tiempo medio resoluci&oacute;n</div>
+        <div class="kpi-value">2.3 d&iacute;as</div>
+        <div class="kpi-sub">vs 18 d&iacute;as manual</div>
+        <div class="kpi-badge positive">&#9660; 87% reducci&oacute;n</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Satisfacci&oacute;n cliente</div>
+        <div class="kpi-value">9.1/10</div>
+        <div class="kpi-sub">NPS: +72</div>
+        <div class="kpi-badge positive">&#9650; 0.3 vs trimestre ant.</div>
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-header">
+          <span>&#9889; Actividad en tiempo real</span>
+          <span style="font-size:11px;color:var(--gray-400)">Auto-actualiza cada 5s</span>
+        </div>
+        <div class="card-body activity-feed" id="activity-feed">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">&#128200; Hoy en n&uacute;meros</div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div><span style="font-size:12px;color:var(--gray-500)">Llamadas atendidas</span><div style="font-size:20px;font-weight:700">37</div></div>
+            <div><span style="font-size:12px;color:var(--gray-500)">WhatsApps procesados</span><div style="font-size:20px;font-weight:700">86</div></div>
+            <div><span style="font-size:12px;color:var(--gray-500)">Documentos analizados</span><div style="font-size:20px;font-weight:700">54</div></div>
+            <div><span style="font-size:12px;color:var(--gray-500)">Peritaciones virtuales</span><div style="font-size:20px;font-weight:700">12</div></div>
+            <div><span style="font-size:12px;color:var(--gray-500)">Posibles fraudes detectados</span><div style="font-size:20px;font-weight:700;color:var(--adeslas-red)">2</div></div>
+            <div><span style="font-size:12px;color:var(--gray-500)">Pagos auto-aprobados</span><div style="font-size:20px;font-weight:700;color:var(--green)">15</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================
+       TAB 2: SINIESTROS
+       ================================================================ -->
+  <div id="tab-siniestros" class="tab-panel">
+
+    <!-- Pipeline Simulation -->
+    <div class="card">
+      <div class="card-header">
+        <span>&#128640; Simulaci&oacute;n de flujo de siniestro - Auto</span>
+      </div>
+      <div class="card-body">
+        <div class="sim-controls">
+          <button class="btn btn-primary" id="btn-simular" onclick="startSimulation()">&#9654; Simular siniestro de Auto</button>
+          <button class="btn btn-outline" id="btn-reset" onclick="resetSimulation()" disabled>&#8634; Reiniciar</button>
+          <span id="sim-timer" style="font-size:13px;color:var(--gray-500);margin-left:12px;"></span>
+        </div>
+
+        <div class="pipeline-container">
+          <div class="pipeline" id="pipeline">
+            <!-- Steps populated by JS -->
+          </div>
+        </div>
+
+        <div class="sim-result" id="sim-result">
+          <span>&#10003;</span>
+          <span>Siniestro resuelto en <strong>2 minutos</strong>. Sin IA: <strong>18 d&iacute;as</strong>. Reducci&oacute;n del <strong>99.99%</strong> del tiempo.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <div class="card-header">&#128196; Detalle del paso actual</div>
+      <div class="card-body" id="step-detail-area">
+        <p style="color:var(--gray-400);font-size:13px;">Pulsa "Simular siniestro de Auto" para ver el flujo completo paso a paso.</p>
+      </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div style="margin-top:24px;">
+      <h3 style="font-size:16px;font-weight:700;color:var(--gray-800);margin-bottom:6px;">Productos configurados</h3>
+      <p style="font-size:13px;color:var(--gray-500);margin-bottom:20px;">La IA conoce todas las coberturas y exclusiones para gestionar cada siniestro correctamente.</p>
+      <div class="products-grid" id="products-grid">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- Fraud Alerts (simplified) -->
+    <div class="fraud-alerts-section">
+      <div class="card" style="margin-top:24px;">
+        <div class="card-header">
+          <span>&#9888; Alertas de riesgo</span>
+          <span style="font-size:11px;color:var(--gray-400)" id="fraud-alerts-count"></span>
+        </div>
+        <div class="card-body" id="fraud-alerts-container">
+          <p style="color:var(--gray-400);font-size:13px;">Las alertas se cargar&aacute;n al abrir esta pesta&ntilde;a.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================
+       TAB 3: RENTABILIDAD
+       ================================================================ -->
+  <div id="tab-rentabilidad" class="tab-panel">
+    <div class="card">
+      <div class="card-header">&#128200; Comparativa: Con IA vs Sin IA</div>
+      <div class="card-body">
+        <table class="roi-table">
+          <thead>
+            <tr>
+              <th>M&eacute;trica</th>
+              <th>Con IA (SiniestrosAI)</th>
+              <th>Sin IA (Manual)</th>
+              <th>Mejora</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Tiempo medio resoluci&oacute;n</td>
+              <td class="highlight">2.3 d&iacute;as</td>
+              <td class="negative">18 d&iacute;as</td>
+              <td class="highlight">-87%</td>
+            </tr>
+            <tr>
+              <td>Coste por siniestro</td>
+              <td class="highlight">8&euro;</td>
+              <td class="negative">45&euro;</td>
+              <td class="highlight">-82%</td>
+            </tr>
+            <tr>
+              <td>Siniestros/gestor/d&iacute;a</td>
+              <td class="highlight">45</td>
+              <td class="negative">8</td>
+              <td class="highlight">+462%</td>
+            </tr>
+            <tr>
+              <td>Tasa detecci&oacute;n fraude</td>
+              <td class="highlight">94%</td>
+              <td class="negative">23%</td>
+              <td class="highlight">+308%</td>
+            </tr>
+            <tr>
+              <td>Satisfacci&oacute;n cliente (NPS)</td>
+              <td class="highlight">9.1/10</td>
+              <td class="negative">6.2/10</td>
+              <td class="highlight">+47%</td>
+            </tr>
+            <tr>
+              <td>Errores documentales</td>
+              <td class="highlight">0.3%</td>
+              <td class="negative">8.5%</td>
+              <td class="highlight">-96%</td>
+            </tr>
+            <tr>
+              <td>Disponibilidad atenci&oacute;n</td>
+              <td class="highlight">24/7</td>
+              <td class="negative">L-V 9-18h</td>
+              <td class="highlight">+300%</td>
+            </tr>
+            <tr>
+              <td>Tiempo primera respuesta</td>
+              <td class="highlight">8 segundos</td>
+              <td class="negative">4.2 horas</td>
+              <td class="highlight">-99.9%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top:20px;">
+      <div class="card">
+        <div class="card-header">&#128200; Ahorro mensual (6 meses)</div>
+        <div class="card-body">
+          <div class="roi-chart-placeholder">
+            <div class="chart-bars" id="roi-chart">
+              <!-- Populated by JS -->
+            </div>
+            <div class="chart-legend">
+              <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--adeslas-blue)"></div> Ahorro con IA</div>
+              <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--gray-300)"></div> Coste manual equiv.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">&#128176; C&aacute;lculo ROI</div>
+        <div class="card-body">
+          <table class="roi-table">
+            <tbody>
+              <tr><td>Inversi&oacute;n anual SiniestrosAI</td><td style="text-align:right;font-weight:600">48.000&euro;</td></tr>
+              <tr><td>Coste manual anual (6 gestores)</td><td style="text-align:right;font-weight:600">234.000&euro;</td></tr>
+              <tr><td>Ahorro personal</td><td style="text-align:right" class="highlight">186.000&euro;</td></tr>
+              <tr><td>Ahorro por fraudes detectados</td><td style="text-align:right" class="highlight">89.000&euro;</td></tr>
+              <tr><td>Ahorro por rapidez (retenci&oacute;n)</td><td style="text-align:right" class="highlight">67.000&euro;</td></tr>
+              <tr style="border-top:2px solid var(--gray-200)"><td><strong>Retorno total anual</strong></td><td style="text-align:right"><strong class="highlight">342.000&euro;</strong></td></tr>
+              <tr><td><strong>ROI</strong></td><td style="text-align:right"><strong class="highlight">612%</strong></td></tr>
+              <tr><td><strong>Payback</strong></td><td style="text-align:right"><strong class="highlight">1.7 meses</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="roi-big-number">
+      <div class="amount">342.000&euro;</div>
+      <div class="desc">Ahorro proyectado primer a&ntilde;o con SiniestrosAI para SegurCaixa Adeslas</div>
+    </div>
+  </div>
+
+  <!-- ================================================================
+       TAB 4: AJUSTES
+       ================================================================ -->
+  <div id="tab-ajustes" class="tab-panel">
+
+    <div class="grid-2">
+      <!-- Automation Level -->
+      <div class="card">
+        <div class="card-header">&#9881; Nivel de automatizaci&oacute;n</div>
+        <div class="card-body">
+          <div class="toggle-grid" id="toggle-grid">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Approval Limits -->
+      <div class="card">
+        <div class="card-header">&#128176; L&iacute;mites de aprobaci&oacute;n</div>
+        <div class="card-body">
+          <div class="config-section">
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>Auto-aprobar hasta</span>
+                <span class="slider-value" id="val-auto">500&euro;</span>
+              </div>
+              <input type="range" min="0" max="2000" value="500" step="50" oninput="document.getElementById('val-auto').textContent=this.value+'&euro;'">
+            </div>
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>Gestor aprueba hasta</span>
+                <span class="slider-value" id="val-gestor">3.000&euro;</span>
+              </div>
+              <input type="range" min="500" max="10000" value="3000" step="100" oninput="document.getElementById('val-gestor').textContent=Number(this.value).toLocaleString('es-ES')+'&euro;'">
+            </div>
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>Supervisor aprueba hasta</span>
+                <span class="slider-value" id="val-super">10.000&euro;</span>
+              </div>
+              <input type="range" min="3000" max="50000" value="10000" step="500" oninput="document.getElementById('val-super').textContent=Number(this.value).toLocaleString('es-ES')+'&euro;'">
+            </div>
+            <p style="font-size:11px;color:var(--gray-400);margin-top:8px;">Por encima del umbral del supervisor, se requiere aprobaci&oacute;n de Direcci&oacute;n.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fraud Detection -->
+    <div class="card" style="margin-top:20px;">
+      <div class="card-header">&#128270; Detecci&oacute;n de fraude</div>
+      <div class="card-body">
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>Nivel m&iacute;nimo de riesgo para generar alerta</span>
+            <span class="slider-value" id="val-fraude">65</span>
+          </div>
+          <input type="range" min="0" max="100" value="65" oninput="document.getElementById('val-fraude').textContent=this.value; updateFraudColor(this.value)">
+        </div>
+        <p style="font-size:12px;color:var(--gray-500);margin-top:8px;">
+          Siniestros con nivel de riesgo &ge; <strong id="fraud-threshold-display">65</strong> ser&aacute;n marcados para revisi&oacute;n manual.
+          Valor bajo = m&aacute;s alertas (m&aacute;s seguro pero m&aacute;s trabajo). Valor alto = menos alertas (m&aacute;s riesgo).
+        </p>
+      </div>
+    </div>
+
+    <!-- System Status (simplified) -->
+    <div class="card" style="margin-top:20px;">
+      <div class="card-header">&#128994; Estado del sistema</div>
+      <div class="card-body">
+        <div class="mode-indicator auto" id="mode-indicator">
+          <div>
+            <div style="font-size:12px;font-weight:500;opacity:0.8;margin-bottom:4px;">MODO DE OPERACI&Oacute;N</div>
+            <div id="mode-text">&#9679; AUTOM&Aacute;TICO</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span class="status-dot"></span>
+            <span style="font-size:13px;font-weight:400;">Funcionando con normalidad</span>
+          </div>
+        </div>
+        <div class="status-simple-grid">
+          <div class="status-simple-item">
+            <div class="label">Disponibilidad</div>
+            <div class="value">99.97%</div>
+          </div>
+          <div class="status-simple-item">
+            <div class="label">Cola de pendientes</div>
+            <div class="value">3</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Emergency Stop -->
+    <div class="kill-switch-area">
+      <p style="font-size:14px;color:var(--gray-600);margin-bottom:16px;">
+        &#9888; Bot&oacute;n de emergencia: desactiva <strong>toda</strong> la automatizaci&oacute;n inmediatamente. Todos los procesos pasan a ser manuales.
+      </p>
+      <button class="btn btn-danger kill-switch-btn" onclick="showKillSwitchModal()">
+        &#9724; PARADA DE EMERGENCIA
+      </button>
+    </div>
+  </div>
+
+</div><!-- /main-content -->
+
+<!-- ====================================================================
+     KILL SWITCH MODAL
+     ==================================================================== -->
+<div class="modal-overlay" id="killswitch-modal">
+  <div class="modal">
+    <div style="font-size:48px;margin-bottom:12px;">&#9888;</div>
+    <h2>Parada de emergencia</h2>
+    <p>
+      Esta acci&oacute;n desactivar&aacute; <strong>inmediatamente</strong> toda la automatizaci&oacute;n.
+      Todos los procesos pasar&aacute;n a ser manuales. Los siniestros en curso quedar&aacute;n pendientes de gesti&oacute;n humana.
+      <br><br>
+      <strong>&iquest;Est&aacute; seguro de que desea continuar?</strong>
+    </p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="hideKillSwitchModal()">Cancelar</button>
+      <button class="btn btn-danger" onclick="activateKillSwitch()">&#9724; S&iacute;, DESACTIVAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====================================================================
+     JAVASCRIPT
+     ==================================================================== -->
+<script>
+// =========================================================================
+// API BASE
+// =========================================================================
+var API_BASE = (function() {
+    var h = window.location.hostname;
+    if (h.indexOf('app.github.dev') !== -1) return window.location.origin.replace(/-\d+\.app/, '-3001.app');
+    return window.location.port === '3001' ? '' : 'http://localhost:3001';
+})();
+
+// =========================================================================
+// TAB NAVIGATION
+// =========================================================================
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('tab-' + tabId).classList.add('active');
+  if (event) event.target.closest('.tab-btn').classList.add('active');
+
+  // Lazy load fraud alerts when Siniestros tab is opened
+  if (tabId === 'siniestros' && !window._fraudAlertsLoaded) {
+    window._fraudAlertsLoaded = true;
+    loadFraudAlerts();
+  }
+}
+
+// =========================================================================
+// ACTIVITY FEED (Resumen)
+// =========================================================================
+var ACTIVITY_TEMPLATES = [
+  { icon: 'auto', text: 'Siniestro EXP-2024-{n} abierto autom&aacute;ticamente. Cliente contactado por WhatsApp.' },
+  { icon: 'auto', text: 'Perito asignado a EXP-2024-{n}: Carlos Ruiz (Madrid, 4.9 estrellas). ETA: 24h.' },
+  { icon: 'auto', text: 'Valoraci&oacute;n autom&aacute;tica completada para EXP-2024-{n}: {amount}&euro;. Auto-aprobada.' },
+  { icon: 'info', text: 'Llamada atendida: cliente {name} consulta estado siniestro. Duraci&oacute;n: {dur}s.' },
+  { icon: 'auto', text: 'Documentos analizados para EXP-2024-{n}: p&oacute;liza verificada, cobertura confirmada.' },
+  { icon: 'alert', text: 'Aviso de plazo: EXP-2024-{n} se acerca al l&iacute;mite de 48h. Escalando a supervisor.' },
+  { icon: 'fraud', text: 'Alerta de riesgo: EXP-2024-{n} nivel {score}/100. Requiere revisi&oacute;n manual.' },
+  { icon: 'auto', text: 'Pago de {amount}&euro; procesado para EXP-2024-{n}. Transferencia iniciada.' },
+  { icon: 'info', text: 'Peritaci&oacute;n virtual completada para EXP-2024-{n}. 4 fotos analizadas.' },
+  { icon: 'auto', text: 'Siniestro EXP-2024-{n} resuelto autom&aacute;ticamente en {mins} minutos.' },
+  { icon: 'auto', text: 'WhatsApp procesado: {name} env&iacute;a fotos da&ntilde;os. An&aacute;lisis autom&aacute;tico: {amount}&euro; estimados.' },
+  { icon: 'info', text: 'Informe diario generado: 24 siniestros, 18 resueltos, 2 alertas de riesgo.' },
+  { icon: 'auto', text: 'Gr&uacute;a asignada autom&aacute;ticamente para EXP-2024-{n}. ETA: 15 min.' },
+  { icon: 'alert', text: 'Urgencia m&aacute;xima: EXP-2024-{n} - accidente m&uacute;ltiple. 3 veh&iacute;culos implicados.' },
+  { icon: 'auto', text: 'Comunicaci&oacute;n autom&aacute;tica enviada a {name}: actualizaci&oacute;n estado expediente.' },
+];
+
+var NAMES = ['Mar&iacute;a Garc&iacute;a', 'Carlos Fern&aacute;ndez', 'Laura M&eacute;ndez', 'Pedro &Aacute;lvarez', 'Sof&iacute;a Rodr&iacute;guez',
+             'Antonio Navarro', 'Isabel Moreno', 'Francisco Herrera', 'Carmen Vega', 'Javier Romero'];
+
+var activityCount = 0;
+
+function addActivity() {
+  var feed = document.getElementById('activity-feed');
+  if (!feed) return;
+  var template = ACTIVITY_TEMPLATES[Math.floor(Math.random() * ACTIVITY_TEMPLATES.length)];
+  var now = new Date();
+  var timeStr = now.getHours().toString().padStart(2, '0') + ':' +
+                now.getMinutes().toString().padStart(2, '0') + ':' +
+                now.getSeconds().toString().padStart(2, '0');
+
+  var text = template.text
+    .replace('{n}', String(900 + Math.floor(Math.random() * 100)).padStart(4, '0'))
+    .replace('{amount}', (Math.floor(Math.random() * 4500) + 150).toLocaleString('es-ES'))
+    .replace('{name}', NAMES[Math.floor(Math.random() * NAMES.length)])
+    .replace('{dur}', 30 + Math.floor(Math.random() * 150))
+    .replace('{score}', 65 + Math.floor(Math.random() * 30))
+    .replace('{mins}', 1 + Math.floor(Math.random() * 10));
+
+  var item = document.createElement('div');
+  item.className = 'activity-item';
+  item.innerHTML =
+    '<div class="activity-icon ' + template.icon + '">' + (template.icon === 'auto' ? '&#9889;' : template.icon === 'alert' ? '&#9888;' : template.icon === 'fraud' ? '&#128681;' : '&#8505;') + '</div>' +
+    '<div class="activity-text">' + text + '</div>' +
+    '<div class="activity-time">' + timeStr + '</div>';
+  feed.insertBefore(item, feed.firstChild);
+
+  // Keep max 30 items
+  while (feed.children.length > 30) {
+    feed.removeChild(feed.lastChild);
+  }
+  activityCount++;
+}
+
+// Initial activities
+for (var i = 0; i < 8; i++) addActivity();
+setInterval(addActivity, 5000);
+
+// =========================================================================
+// WORKFLOW SIMULATION (Siniestros)
+// =========================================================================
+var PIPELINE_STEPS = [
+  { label: 'Recepci&oacute;n llamada', detail: 'Llamada atendida autom&aacute;ticamente', time: '8s' },
+  { label: 'Identificaci&oacute;n cliente', detail: 'Voz reconocida + p&oacute;liza localizada', time: '3s' },
+  { label: 'Apertura expediente', detail: 'EXP-2024-0901 creado', time: '2s' },
+  { label: 'An&aacute;lisis cobertura', detail: 'P&oacute;liza todo riesgo verificada', time: '4s' },
+  { label: 'Clasificaci&oacute;n', detail: 'Auto - Colisi&oacute;n - Urgencia 7', time: '2s' },
+  { label: 'An&aacute;lisis de riesgo', detail: 'Nivel: 8/100 - Leg&iacute;timo', time: '3s' },
+  { label: 'Solicitud docs', detail: 'WhatsApp enviado: fotos + parte', time: '5s' },
+  { label: 'An&aacute;lisis docs', detail: '4 fotos analizadas autom&aacute;ticamente', time: '6s' },
+  { label: 'Asignaci&oacute;n perito', detail: 'Carlos Ruiz (4.9) - Madrid', time: '2s' },
+  { label: 'Valoraci&oacute;n', detail: 'Estimaci&oacute;n: 1.850&euro;', time: '4s' },
+  { label: 'Aprobaci&oacute;n', detail: 'Auto-aprobado (< 3.000&euro;)', time: '1s', isApproval: true },
+  { label: 'Orden pago', detail: 'Transferencia 1.850&euro; iniciada', time: '3s' },
+  { label: 'Notificaci&oacute;n', detail: 'Cliente informado por SMS + email', time: '2s' },
+  { label: 'Cierre expediente', detail: 'Resuelto. Encuesta enviada.', time: '2s' },
+];
+
+function buildPipeline() {
+  var container = document.getElementById('pipeline');
+  container.innerHTML = '';
+  PIPELINE_STEPS.forEach(function(step, i) {
+    var div = document.createElement('div');
+    div.className = 'pipeline-step';
+    div.innerHTML =
+      '<div class="step-circle" id="step-' + i + '">' + (i + 1) + '</div>' +
+      '<div class="step-label">' + step.label + '</div>' +
+      '<div class="step-time" id="step-time-' + i + '"></div>' +
+      '<div class="step-detail" id="step-detail-' + i + '"></div>';
+    container.appendChild(div);
+  });
+}
+
+buildPipeline();
+
+var simRunning = false;
+var simTimeout = null;
+
+async function startSimulation() {
+  if (simRunning) return;
+  simRunning = true;
+  document.getElementById('btn-simular').disabled = true;
+  document.getElementById('btn-reset').disabled = true;
+  document.getElementById('sim-result').classList.remove('show');
+
+  buildPipeline();
+
+  var timerEl = document.getElementById('sim-timer');
+  var detailArea = document.getElementById('step-detail-area');
+  var elapsed = 0;
+
+  var timerInterval = setInterval(function() {
+    elapsed++;
+    timerEl.textContent = 'Tiempo transcurrido: ' + elapsed + 's';
+  }, 1000);
+
+  for (var i = 0; i < PIPELINE_STEPS.length; i++) {
+    var step = PIPELINE_STEPS[i];
+    var circle = document.getElementById('step-' + i);
+    circle.classList.add('active');
+
+    detailArea.innerHTML =
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">' +
+        '<div style="width:40px;height:40px;background:var(--adeslas-accent-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;">&#9881;</div>' +
+        '<div>' +
+          '<div style="font-weight:600;font-size:14px;">Paso ' + (i + 1) + ': ' + step.label + '</div>' +
+          '<div style="font-size:12px;color:var(--gray-500);">' + step.detail + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="font-size:12px;color:var(--gray-400);">Procesando... Tiempo estimado: ' + step.time + '</div>';
+
+    // Pause at approval step
+    if (step.isApproval) {
+      circle.classList.remove('active');
+      circle.classList.add('waiting');
+      detailArea.innerHTML +=
+        '<div style="margin-top:12px;padding:12px;background:var(--yellow-light);border-radius:8px;border:1px solid #FCD34D;">' +
+          '<strong>&#9888; Punto de aprobaci&oacute;n:</strong> Importe 1.850&euro; est&aacute; dentro del umbral de auto-aprobaci&oacute;n del gestor (3.000&euro;). Se aprueba autom&aacute;ticamente.' +
+        '</div>';
+      await sleep(2000);
+      circle.classList.remove('waiting');
+    } else {
+      await sleep(1200 + Math.random() * 800);
+    }
+
+    circle.classList.remove('active');
+    circle.classList.add('completed');
+    circle.innerHTML = '&#10003;';
+    document.getElementById('step-time-' + i).textContent = step.time;
+    document.getElementById('step-detail-' + i).textContent = step.detail;
+  }
+
+  clearInterval(timerInterval);
+  timerEl.textContent = 'Completado en ' + elapsed + 's (demo) = 2 min reales';
+
+  document.getElementById('sim-result').classList.add('show');
+  detailArea.innerHTML =
+    '<div style="text-align:center;padding:20px;">' +
+      '<div style="font-size:48px;margin-bottom:12px;">&#10003;</div>' +
+      '<div style="font-size:18px;font-weight:700;color:var(--green);margin-bottom:8px;">Siniestro resuelto exitosamente</div>' +
+      '<div style="font-size:14px;color:var(--gray-600);">14 pasos completados autom&aacute;ticamente en 2 minutos.</div>' +
+      '<div style="font-size:14px;color:var(--gray-600);margin-top:4px;">Sin IA este proceso habr&iacute;a tardado <strong>18 d&iacute;as</strong>.</div>' +
+      '<div style="margin-top:16px;display:flex;justify-content:center;gap:24px;">' +
+        '<div><div style="font-size:24px;font-weight:800;color:var(--green);">1.850&euro;</div><div style="font-size:11px;color:var(--gray-500)">Indemnizaci&oacute;n</div></div>' +
+        '<div><div style="font-size:24px;font-weight:800;color:var(--adeslas-blue);">8&euro;</div><div style="font-size:11px;color:var(--gray-500)">Coste gesti&oacute;n</div></div>' +
+        '<div><div style="font-size:24px;font-weight:800;color:var(--adeslas-accent);">9.1/10</div><div style="font-size:11px;color:var(--gray-500)">Satisfacci&oacute;n est.</div></div>' +
+      '</div>' +
+    '</div>';
+
+  simRunning = false;
+  document.getElementById('btn-reset').disabled = false;
+}
+
+function resetSimulation() {
+  buildPipeline();
+  document.getElementById('btn-simular').disabled = false;
+  document.getElementById('btn-reset').disabled = true;
+  document.getElementById('sim-result').classList.remove('show');
+  document.getElementById('sim-timer').textContent = '';
+  document.getElementById('step-detail-area').innerHTML = '<p style="color:var(--gray-400);font-size:13px;">Pulsa "Simular siniestro de Auto" para ver el flujo completo paso a paso.</p>';
+}
+
+function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
+
+// =========================================================================
+// CONFIGURATION (Ajustes)
+// =========================================================================
+var TOGGLE_ACTIONS = [
+  { label: 'Apertura de siniestro', value: 'auto' },
+  { label: 'Asignaci&oacute;n de perito', value: 'auto' },
+  { label: 'Valoraci&oacute;n < 500&euro;', value: 'auto' },
+  { label: 'Valoraci&oacute;n 500-3.000&euro;', value: 'supervised' },
+  { label: 'Valoraci&oacute;n > 3.000&euro;', value: 'manual' },
+  { label: 'Comunicaciones al cliente', value: 'auto' },
+  { label: 'Solicitud de documentaci&oacute;n', value: 'auto' },
+  { label: 'Detecci&oacute;n de fraude', value: 'auto' },
+  { label: 'Cierre de expediente', value: 'supervised' },
+  { label: 'Procesamiento de pagos', value: 'supervised' },
+];
+
+function buildToggles() {
+  var grid = document.getElementById('toggle-grid');
+  grid.innerHTML = '';
+  TOGGLE_ACTIONS.forEach(function(action, i) {
+    var label = document.createElement('div');
+    label.className = 'toggle-label';
+    label.innerHTML = action.label;
+
+    var select = document.createElement('select');
+    select.className = 'toggle-select ' + (action.value === 'auto' ? 'auto' : action.value === 'supervised' ? 'supervised' : 'manual');
+    select.innerHTML =
+      '<option value="auto" ' + (action.value === 'auto' ? 'selected' : '') + '>Autom&aacute;tico</option>' +
+      '<option value="supervised" ' + (action.value === 'supervised' ? 'selected' : '') + '>Supervisado</option>' +
+      '<option value="manual" ' + (action.value === 'manual' ? 'selected' : '') + '>Manual</option>';
+    select.onchange = function() {
+      this.className = 'toggle-select ' + this.value;
+    };
+
+    grid.appendChild(label);
+    grid.appendChild(select);
+  });
+}
+
+buildToggles();
+
+function updateFraudColor(val) {
+  document.getElementById('fraud-threshold-display').textContent = val;
+}
+
+// =========================================================================
+// KILL SWITCH MODAL
+// =========================================================================
+function showKillSwitchModal() {
+  document.getElementById('killswitch-modal').classList.add('show');
+}
+
+function hideKillSwitchModal() {
+  document.getElementById('killswitch-modal').classList.remove('show');
+}
+
+function activateKillSwitch() {
+  hideKillSwitchModal();
+  var indicator = document.getElementById('mode-indicator');
+  indicator.className = 'mode-indicator disabled';
+  document.getElementById('mode-text').innerHTML = '&#9679; DESACTIVADO';
+
+  // Visual feedback on whole page
+  document.querySelector('.header').style.background = 'linear-gradient(135deg, #7F1D1D 0%, #991B1B 100%)';
+  document.querySelector('.status-dot').style.background = '#EF4444';
+  document.querySelector('.status-dot').style.animation = 'none';
+
+  alert('PARADA DE EMERGENCIA ACTIVADA\n\nToda la automatizaci\u00f3n ha sido desactivada inmediatamente.\nTodos los procesos son ahora manuales.\n\nPara reactivar, contacte con el equipo t\u00e9cnico.');
+}
+
+// =========================================================================
+// ROI CHART (Rentabilidad)
+// =========================================================================
+function buildROIChart() {
+  var container = document.getElementById('roi-chart');
+  var months = [
+    { label: 'Oct 25', ia: 18500, manual: 36000 },
+    { label: 'Nov 25', ia: 21200, manual: 37500 },
+    { label: 'Dic 25', ia: 19800, manual: 35000 },
+    { label: 'Ene 26', ia: 24500, manual: 38200 },
+    { label: 'Feb 26', ia: 26800, manual: 39000 },
+    { label: 'Mar 26', ia: 28500, manual: 40500 },
+  ];
+
+  var maxVal = 41000;
+  container.innerHTML = '';
+
+  months.forEach(function(m) {
+    var group = document.createElement('div');
+    group.className = 'chart-bar-group';
+    group.innerHTML =
+      '<div class="chart-bar-pair">' +
+        '<div class="chart-bar ia" style="height: ' + (m.ia / maxVal) * 180 + 'px;" title="Ahorro IA: ' + m.ia.toLocaleString('es-ES') + '&euro;"></div>' +
+        '<div class="chart-bar manual" style="height: ' + (m.manual / maxVal) * 180 + 'px;" title="Coste manual: ' + m.manual.toLocaleString('es-ES') + '&euro;"></div>' +
+      '</div>' +
+      '<div class="chart-label">' + m.label + '</div>';
+    container.appendChild(group);
+  });
+}
+
+buildROIChart();
+
+// =========================================================================
+// PRODUCTS (Siniestros)
+// =========================================================================
+var PRODUCTS = [
+  {
+    name: 'Auto',
+    icon: '&#128663;',
+    coberturas: 'Responsabilidad civil, Da&ntilde;os propios, Robo, Lunas, Asistencia en viaje',
+    prima: '289',
+    franquicia: '150&euro; da&ntilde;os propios',
+    exclusiones: 'Conducci&oacute;n bajo influencia, competici&oacute;n, uso profesional sin declarar',
+  },
+  {
+    name: 'Hogar',
+    icon: '&#127968;',
+    coberturas: 'Continente, Contenido, RC, Agua, Incendio, Robo, Asistencia 24h',
+    prima: '185',
+    franquicia: '100&euro; da&ntilde;os por agua',
+    exclusiones: 'Joyas > 3.000&euro; sin declarar, reformas sin licencia, terremotos',
+  },
+  {
+    name: 'Decesos',
+    icon: '&#9883;',
+    coberturas: 'Servicio funerario completo, Traslado nacional/internacional, Capital fallecimiento',
+    prima: '42',
+    franquicia: 'Sin franquicia',
+    exclusiones: 'Suicidio primer a&ntilde;o, fallecimiento en zonas de conflicto',
+  },
+  {
+    name: 'Vida',
+    icon: '&#128154;',
+    coberturas: 'Fallecimiento, Invalidez permanente, Enfermedades graves, Doble capital accidente',
+    prima: '120',
+    franquicia: 'Sin franquicia',
+    exclusiones: 'Deportes de riesgo sin declarar, preexistencias no comunicadas',
+  },
+  {
+    name: 'Accidentes',
+    icon: '&#129656;',
+    coberturas: 'Invalidez, Fallecimiento por accidente, Gastos m&eacute;dicos, Hospitalizaci&oacute;n',
+    prima: '65',
+    franquicia: 'Sin franquicia',
+    exclusiones: 'Accidentes bajo influencia, deportes a&eacute;reos, accidentes laborales cubiertos por mutua',
+  },
+  {
+    name: 'Comercio',
+    icon: '&#127978;',
+    coberturas: 'Continente, Contenido, Mercanc&iacute;as, P&eacute;rdida beneficios, RC explotaci&oacute;n, Robo',
+    prima: '380',
+    franquicia: '300&euro; general',
+    exclusiones: 'Mercanc&iacute;as perecederas sin refrigeraci&oacute;n, dinero en efectivo > 1.000&euro;',
+  },
+  {
+    name: 'Comunidades',
+    icon: '&#127959;',
+    coberturas: 'Edificio, Zonas comunes, RC comunidad, Da&ntilde;os por agua, Defensa jur&iacute;dica',
+    prima: '520',
+    franquicia: '200&euro; da&ntilde;os por agua',
+    exclusiones: 'Vicios de construcci&oacute;n, falta de mantenimiento demostrable',
+  },
+  {
+    name: 'RC Profesional',
+    icon: '&#128188;',
+    coberturas: 'RC profesional, Defensa jur&iacute;dica, Inhabilitaci&oacute;n profesional, Ciber riesgos',
+    prima: '210',
+    franquicia: '500&euro; por siniestro',
+    exclusiones: 'Dolo o mala fe, multas y sanciones, actividades fuera de &aacute;mbito declarado',
+  },
+];
+
+function buildProducts() {
+  var grid = document.getElementById('products-grid');
+  grid.innerHTML = '';
+  PRODUCTS.forEach(function(p) {
+    var card = document.createElement('div');
+    card.className = 'product-card';
+    card.innerHTML =
+      '<div class="product-card-header">' +
+        '<div class="product-icon">' + p.icon + '</div>' +
+        '<div class="product-name">' + p.name + '</div>' +
+      '</div>' +
+      '<div class="product-card-body">' +
+        '<div class="product-row"><span class="label">Coberturas</span></div>' +
+        '<div style="font-size:12px;color:var(--gray-700);margin-bottom:8px;">' + p.coberturas + '</div>' +
+        '<div class="product-row"><span class="label">Franquicia</span><span class="value">' + p.franquicia + '</span></div>' +
+        '<div class="product-row"><span class="label">Exclusiones</span></div>' +
+        '<div style="font-size:11px;color:var(--gray-500);margin-bottom:8px;">' + p.exclusiones + '</div>' +
+        '<div class="product-prima">' +
+          '<div class="from">Prima desde</div>' +
+          '<div class="price">' + p.prima + '&euro;</div>' +
+          '<div class="period">/a&ntilde;o</div>' +
+        '</div>' +
+      '</div>';
+    grid.appendChild(card);
+  });
+}
+
+buildProducts();
+
+// =========================================================================
+// FRAUD ALERTS (Siniestros tab - simplified from Knowledge Graph insights)
+// =========================================================================
+function loadFraudAlerts() {
+  var container = document.getElementById('fraud-alerts-container');
+  container.innerHTML = '<p style="color:var(--gray-400);font-size:13px;">Cargando alertas...</p>';
+
+  fetch(API_BASE + '/api/knowledge-graph/insights')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var all = (data.insights_almacenados || []).concat(data.insights_dinamicos || []);
+      if (all.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:20px;"><div style="font-size:36px;margin-bottom:8px;">&#9989;</div><div style="font-weight:600;color:var(--green)">Sin alertas de riesgo activas</div><div style="font-size:12px;color:var(--gray-400);margin-top:4px;">El sistema monitoriza continuamente todos los siniestros</div></div>';
+        document.getElementById('fraud-alerts-count').textContent = '0 alertas';
+        return;
+      }
+      document.getElementById('fraud-alerts-count').textContent = all.length + ' alerta' + (all.length !== 1 ? 's' : '');
+
+      var sevColors = { critica: '#E30613', alta: '#EA580C', media: '#D97706', info: '#009FE3' };
+      var sevLabels = { critica: 'Cr&iacute;tica', alta: 'Alta', media: 'Media', info: 'Informativa' };
+
+      container.innerHTML = '';
+      all.forEach(function(ins) {
+        var sc = sevColors[ins.severidad] || '#94A3B8';
+        var sl = sevLabels[ins.severidad] || ins.severidad || 'Info';
+        var card = document.createElement('div');
+        card.className = 'fraud-alert-card';
+        card.style.borderLeftColor = sc;
+        card.style.background = sc + '08';
+        card.innerHTML =
+          '<div class="severity" style="color:' + sc + '">' + sl + '</div>' +
+          '<div class="title">' + ins.titulo + '</div>' +
+          '<div class="desc">' + ins.descripcion + '</div>';
+        container.appendChild(card);
+      });
+    })
+    .catch(function() {
+      container.innerHTML = '<div style="text-align:center;padding:20px;"><div style="font-size:36px;margin-bottom:8px;">&#9989;</div><div style="font-weight:600;color:var(--green)">Sin alertas de riesgo activas</div><div style="font-size:12px;color:var(--gray-400);margin-top:4px;">El sistema monitoriza continuamente todos los siniestros</div></div>';
+      document.getElementById('fraud-alerts-count').textContent = '0 alertas';
+    });
+}
+
+</script>
+</body>
+</html>

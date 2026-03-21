@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SegurCaixa Adeslas - Gestion Inteligente de Siniestros</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;overflow-x:hidden;scroll-snap-type:y mandatory}
+body{font-family:'Inter',sans-serif;background:#000;color:#fff;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+
+/* ===== CANVAS 3D ===== */
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* ===== GLOBAL ===== */
+section{position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;justify-content:center;scroll-snap-align:start;overflow:hidden}
+
+/* ===== NAV ===== */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:24px 48px;display:flex;align-items:center;justify-content:space-between;mix-blend-mode:difference}
+.nav-logo{font-size:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+.nav-links{display:flex;gap:32px}
+.nav-links a{color:#fff;text-decoration:none;font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;opacity:.6;transition:opacity .3s}
+.nav-links a:hover{opacity:1}
+
+/* ===== HERO ===== */
+.hero-content{text-align:center;max-width:900px;padding:0 40px}
+.hero-badge{display:inline-block;padding:6px 20px;border:1px solid rgba(255,255,255,.15);border-radius:30px;font-size:10px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:40px;opacity:0;animation:fadeUp 1s ease .2s forwards}
+.hero-title{font-size:clamp(3rem,8vw,7rem);font-weight:200;line-height:.95;letter-spacing:-3px;opacity:0;animation:fadeUp 1s ease .4s forwards}
+.hero-title em{font-style:normal;font-weight:700;background:linear-gradient(135deg,#0F77AE,#2D4F9E,#259271,#0F77AE);background-size:300% 300%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 5s ease infinite}
+@keyframes shimmer{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.hero-sub{font-size:1.1rem;font-weight:300;color:rgba(255,255,255,.4);margin-top:32px;line-height:1.8;max-width:500px;margin-left:auto;margin-right:auto;opacity:0;animation:fadeUp 1s ease .6s forwards}
+.scroll-hint{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;animation:fadeUp 1s ease 1.2s forwards}
+.scroll-hint span{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3)}
+.scroll-line{width:1px;height:40px;background:linear-gradient(to bottom,rgba(255,255,255,.3),transparent);animation:scrollPulse 2s ease infinite}
+@keyframes scrollPulse{0%,100%{opacity:.3;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.3)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== STATS SECTION ===== */
+.stats-section{background:transparent}
+.stats-container{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;max-width:1100px;width:100%;padding:0 40px}
+.stat-card{text-align:center;padding:60px 20px;position:relative}
+.stat-card::after{content:'';position:absolute;right:0;top:20%;height:60%;width:1px;background:rgba(255,255,255,.08)}
+.stat-card:last-child::after{display:none}
+.stat-number{font-size:clamp(2.5rem,5vw,4.5rem);font-weight:800;letter-spacing:-2px;background:linear-gradient(180deg,#fff 0%,rgba(255,255,255,.3) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-label{font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-top:12px}
+.stat-detail{font-size:12px;color:rgba(255,255,255,.15);margin-top:6px;font-weight:300}
+
+/* ===== HOW IT WORKS ===== */
+.process-section{flex-direction:column;gap:80px;padding:120px 40px}
+.section-header{text-align:center;max-width:600px}
+.section-label{font-size:10px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#0F77AE;margin-bottom:20px}
+.section-title{font-size:clamp(2rem,4vw,3.5rem);font-weight:200;letter-spacing:-1px;line-height:1.1}
+.section-title strong{font-weight:700}
+.process-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;max-width:1100px;width:100%}
+.step{padding:60px 40px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);position:relative;transition:all .5s;cursor:default}
+.step:hover{background:rgba(15,119,174,.05);border-color:rgba(15,119,174,.15)}
+.step-num{font-size:72px;font-weight:900;color:rgba(255,255,255,.03);position:absolute;top:20px;right:30px;line-height:1}
+.step h3{font-size:18px;font-weight:600;margin-bottom:12px;letter-spacing:-.3px}
+.step p{font-size:13px;font-weight:300;color:rgba(255,255,255,.4);line-height:1.8}
+.step-line{width:40px;height:2px;background:linear-gradient(90deg,#0F77AE,transparent);margin-bottom:20px}
+
+/* ===== PORTALS ===== */
+.portals-section{flex-direction:column;gap:80px;padding:120px 40px}
+.portals-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;max-width:1100px;width:100%}
+.portal{position:relative;padding:60px 40px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:2px;transition:all .5s;cursor:pointer;text-decoration:none;color:#fff;overflow:hidden}
+.portal:hover{background:rgba(255,255,255,.05);transform:translateY(-8px);border-color:rgba(15,119,174,.2)}
+.portal:hover .portal-glow{opacity:1}
+.portal-glow{position:absolute;top:0;left:0;right:0;height:2px;opacity:0;transition:opacity .5s}
+.portal.p1 .portal-glow{background:linear-gradient(90deg,#0F77AE,#2D4F9E)}
+.portal.p2 .portal-glow{background:linear-gradient(90deg,#259271,#9EC6B7)}
+.portal.p3 .portal-glow{background:linear-gradient(90deg,#6486C3,#2D4F9E)}
+.portal-icon{font-size:36px;margin-bottom:24px;display:block}
+.portal h3{font-size:20px;font-weight:600;margin-bottom:8px;letter-spacing:-.3px}
+.portal p{font-size:13px;font-weight:300;color:rgba(255,255,255,.35);line-height:1.7;margin-bottom:24px}
+.portal-enter{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#0F77AE;display:flex;align-items:center;gap:8px;transition:gap .3s}
+.portal:hover .portal-enter{gap:14px}
+.portal-arrow{font-size:14px;transition:transform .3s}
+.portal:hover .portal-arrow{transform:translateX(4px)}
+
+/* ===== TECH SECTION ===== */
+.tech-section{flex-direction:column;gap:60px;padding:120px 40px}
+.tech-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:2px;max-width:900px;width:100%}
+.tech-item{padding:48px 40px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.03);transition:all .4s}
+.tech-item:hover{background:rgba(15,119,174,.03)}
+.tech-item h4{font-size:14px;font-weight:600;margin-bottom:8px;letter-spacing:-.2px}
+.tech-item p{font-size:12px;font-weight:300;color:rgba(255,255,255,.3);line-height:1.7}
+
+/* ===== FOOTER ===== */
+.footer{position:relative;z-index:1;padding:48px;text-align:center;border-top:1px solid rgba(255,255,255,.04)}
+.footer p{font-size:11px;color:rgba(255,255,255,.2);letter-spacing:1px}
+
+/* ===== SECTION REVEAL ===== */
+.reveal{opacity:0;transform:translateY(60px);transition:all 1s cubic-bezier(.23,1,.32,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:900px){
+  .stats-container{grid-template-columns:repeat(2,1fr)}
+  .stat-card:nth-child(2)::after{display:none}
+  .process-steps,.portals-grid,.tech-grid{grid-template-columns:1fr}
+  .nav{padding:20px 24px}
+  .nav-links{display:none}
+  .hero-title{letter-spacing:-1px}
+}
+
+/* ===== CURSOR GLOW ===== */
+.cursor-glow{position:fixed;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(15,119,174,.06) 0%,transparent 70%);pointer-events:none;z-index:0;transform:translate(-50%,-50%);transition:opacity .3s}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<div class="cursor-glow" id="cursorGlow"></div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">SegurCaixa Adeslas</div>
+  <div class="nav-links">
+    <a href="#science">Ciencia</a>
+    <a href="#process">Proceso</a>
+    <a href="#portals">Acceder</a>
+    <a href="demo-live.html" style="color:#0F77AE;opacity:1">Demo en directo</a>
+    <a href="#tech">Tecnologia</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-content">
+    <div class="hero-badge">Inteligencia Artificial &middot; 27 Agentes Activos</div>
+    <h1 class="hero-title">Siniestros<br><em>gestionados por IA</em></h1>
+    <p class="hero-sub">Un sistema autonomo que resuelve siniestros de principio a fin. Sin esperas. Sin errores. Sin intervencion humana.</p>
+  </div>
+  <div class="scroll-hint">
+    <span>Descubrir</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats-section" id="science">
+  <div class="stats-container">
+    <div class="stat-card reveal">
+      <div class="stat-number" data-target="847">0</div>
+      <div class="stat-label">Siniestros este mes</div>
+      <div class="stat-detail">+23% vs mes anterior</div>
+    </div>
+    <div class="stat-card reveal">
+      <div class="stat-number" data-target="75" data-suffix="%">0</div>
+      <div class="stat-label">Resolucion automatica</div>
+      <div class="stat-detail">Sin intervencion humana</div>
+    </div>
+    <div class="stat-card reveal">
+      <div class="stat-number" data-target="2" data-suffix=" min">0</div>
+      <div class="stat-label">Tiempo medio</div>
+      <div class="stat-detail">vs 18 dias proceso manual</div>
+    </div>
+    <div class="stat-card reveal">
+      <div class="stat-number" data-target="28500" data-prefix="" data-suffix="&euro;">0</div>
+      <div class="stat-label">Ahorro mensual</div>
+      <div class="stat-detail">Equivale a 4.2 empleados</div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="process-section" id="process">
+  <div class="section-header reveal">
+    <div class="section-label">Como funciona</div>
+    <h2 class="section-title">El siniestro se <strong>gestiona solo</strong></h2>
+  </div>
+  <div class="process-steps">
+    <div class="step reveal">
+      <div class="step-num">01</div>
+      <div class="step-line"></div>
+      <h3>El cliente reporta</h3>
+      <p>Por la app, WhatsApp o llamada telefonica. La IA atiende al instante, recopila los datos y abre el expediente automaticamente.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">02</div>
+      <div class="step-line"></div>
+      <h3>La IA gestiona</h3>
+      <p>Clasifica el siniestro, verifica la poliza, asigna perito, valora los danos y analiza posible fraude. Todo en segundos.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">03</div>
+      <div class="step-line"></div>
+      <h3>Se resuelve solo</h3>
+      <p>Aprueba la indemnizacion, procesa el pago y cierra el expediente. El gestor solo interviene en casos excepcionales.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PORTALS -->
+<section class="portals-section" id="portals">
+  <div class="section-header reveal">
+    <div class="section-label">Acceso al sistema</div>
+    <h2 class="section-title">Elige tu <strong>portal</strong></h2>
+  </div>
+  <div class="portals-grid">
+    <a href="cliente-adeslas.html" class="portal p1 reveal">
+      <div class="portal-glow"></div>
+      <span class="portal-icon">&#128100;</span>
+      <h3>Area Cliente</h3>
+      <p>Reportar siniestros, seguimiento en tiempo real y chat con tu agente IA personal.</p>
+      <span class="portal-enter">Entrar <span class="portal-arrow">&rarr;</span></span>
+    </a>
+    <a href="adeslas-demo.html" class="portal p2 reveal">
+      <div class="portal-glow"></div>
+      <span class="portal-icon">&#128202;</span>
+      <h3>Panel de Control</h3>
+      <p>KPIs en tiempo real, rentabilidad, simulacion del flujo automatico y configuracion.</p>
+      <span class="portal-enter">Entrar <span class="portal-arrow">&rarr;</span></span>
+    </a>
+    <a href="gestor-adeslas.html" class="portal p3 reveal">
+      <div class="portal-glow"></div>
+      <span class="portal-icon">&#128188;</span>
+      <h3>Area Gestor</h3>
+      <p>Gestionar expedientes, supervisar la IA e intervenir cuando sea necesario.</p>
+      <span class="portal-enter">Entrar <span class="portal-arrow">&rarr;</span></span>
+    </a>
+  </div>
+</section>
+
+<!-- TECH -->
+<section class="tech-section" id="tech">
+  <div class="section-header reveal">
+    <div class="section-label">Bajo el capo</div>
+    <h2 class="section-title">Tecnologia que <strong>lo hace posible</strong></h2>
+  </div>
+  <div class="tech-grid">
+    <div class="tech-item reveal">
+      <h4>27 Agentes IA Especializados</h4>
+      <p>Cada agente domina un area: clasificacion, fraude, valoracion, comunicacion, pagos. Trabajan coordinados como un equipo real.</p>
+    </div>
+    <div class="tech-item reveal">
+      <h4>Voz Natural con ElevenLabs</h4>
+      <p>23 voces disponibles en espanol. El cliente habla con una IA que suena humana y entiende el contexto de su siniestro.</p>
+    </div>
+    <div class="tech-item reveal">
+      <h4>Deteccion de Fraude en Tiempo Real</h4>
+      <p>Analiza patrones cruzando datos entre expedientes. Detecta redes organizadas y anomalias con un score de riesgo automatico.</p>
+    </div>
+    <div class="tech-item reveal">
+      <h4>Disponible 24/7/365</h4>
+      <p>No descansa, no se equivoca, no tiene dias malos. Atiende a las 3 de la manana igual que a las 10 de la manana.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<div class="footer">
+  <p>SegurCaixa Adeslas &middot; Gestion Inteligente de Siniestros &middot; Powered by IA</p>
+</div>
+
+<!-- THREE.JS + SCRIPTS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ===== 3D PARTICLE BACKGROUND =====
+(function(){
+  const canvas = document.getElementById('bg-canvas');
+  const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+  camera.position.z = 5;
+
+  // Particles
+  const count = 2000;
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(count*3);
+  const vel = new Float32Array(count*3);
+  for(let i=0;i<count*3;i++){
+    pos[i] = (Math.random()-.5)*20;
+    vel[i] = (Math.random()-.5)*.005;
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+
+  const mat = new THREE.PointsMaterial({
+    size:.02,
+    color:0x0F77AE,
+    transparent:true,
+    opacity:.5,
+    blending:THREE.AdditiveBlending,
+    depthWrite:false
+  });
+  const points = new THREE.Points(geo,mat);
+  scene.add(points);
+
+  // Connecting lines
+  const lineGeo = new THREE.BufferGeometry();
+  const lineMax = 600;
+  const linePos = new Float32Array(lineMax*6);
+  lineGeo.setAttribute('position', new THREE.BufferAttribute(linePos,3));
+  lineGeo.setDrawRange(0,0);
+  const lineMat = new THREE.LineBasicMaterial({color:0x0F77AE, transparent:true, opacity:.06, blending:THREE.AdditiveBlending, depthWrite:false});
+  const lines = new THREE.LineSegments(lineGeo, lineMat);
+  scene.add(lines);
+
+  let mouse = {x:0, y:0};
+  let scrollY = 0;
+
+  function animate(){
+    requestAnimationFrame(animate);
+    const p = points.geometry.attributes.position.array;
+
+    for(let i=0;i<count*3;i++){
+      p[i] += vel[i];
+      if(p[i]>10||p[i]<-10) vel[i]*=-1;
+    }
+    points.geometry.attributes.position.needsUpdate = true;
+
+    // Update connections
+    const lp = lines.geometry.attributes.position.array;
+    let lc = 0;
+    const threshold = 1.2;
+    for(let i=0;i<Math.min(count,200)&&lc<lineMax;i++){
+      for(let j=i+1;j<Math.min(count,200)&&lc<lineMax;j++){
+        const dx=p[i*3]-p[j*3], dy=p[i*3+1]-p[j*3+1], dz=p[i*3+2]-p[j*3+2];
+        const d=dx*dx+dy*dy+dz*dz;
+        if(d<threshold){
+          lp[lc*6]=p[i*3]; lp[lc*6+1]=p[i*3+1]; lp[lc*6+2]=p[i*3+2];
+          lp[lc*6+3]=p[j*3]; lp[lc*6+4]=p[j*3+1]; lp[lc*6+5]=p[j*3+2];
+          lc++;
+        }
+      }
+    }
+    lines.geometry.setDrawRange(0,lc*2);
+    lines.geometry.attributes.position.needsUpdate=true;
+
+    // Camera subtle movement
+    camera.position.x += (mouse.x*.5 - camera.position.x)*.02;
+    camera.position.y += (-mouse.y*.5 - camera.position.y)*.02;
+    camera.rotation.y = scrollY * .0003;
+    points.rotation.y += .0003;
+    points.rotation.x += .0001;
+
+    renderer.render(scene,camera);
+  }
+  animate();
+
+  window.addEventListener('mousemove', e=>{
+    mouse.x = (e.clientX/window.innerWidth)*2-1;
+    mouse.y = (e.clientY/window.innerHeight)*2-1;
+  });
+  window.addEventListener('scroll', ()=>{ scrollY=window.pageYOffset; });
+  window.addEventListener('resize', ()=>{
+    camera.aspect=window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth,window.innerHeight);
+  });
+})();
+
+// ===== CURSOR GLOW =====
+const glow = document.getElementById('cursorGlow');
+document.addEventListener('mousemove', e=>{
+  glow.style.left = e.clientX+'px';
+  glow.style.top = e.clientY+'px';
+});
+
+// ===== SCROLL REVEAL =====
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+    }
+  });
+},{threshold:0.15});
+reveals.forEach(r=>observer.observe(r));
+
+// ===== COUNTER ANIMATION =====
+const counters = document.querySelectorAll('.stat-number[data-target]');
+const counterObs = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting && !e.target.dataset.done){
+      e.target.dataset.done = '1';
+      const target = +e.target.dataset.target;
+      const suffix = e.target.dataset.suffix || '';
+      const prefix = e.target.dataset.prefix || '';
+      const duration = 2000;
+      const start = performance.now();
+      function update(now){
+        const elapsed = now-start;
+        const progress = Math.min(elapsed/duration,1);
+        const eased = 1-Math.pow(1-progress,3);
+        const current = Math.round(target*eased);
+        e.target.textContent = prefix + current.toLocaleString('es-ES') + suffix;
+        if(progress<1) requestAnimationFrame(update);
+      }
+      requestAnimationFrame(update);
+    }
+  });
+},{threshold:.5});
+counters.forEach(c=>counterObs.observe(c));
+</script>
+</body>
+</html>

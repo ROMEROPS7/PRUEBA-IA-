@@ -18,6 +18,11 @@ const agentesRoutes = require('./routes/agentes');
 const adminRoutes = require('./routes/admin');
 const serviciosRoutes = require('./routes/servicios');
 const rgpdRoutes = require('./routes/rgpd');
+const importRoutes = require('./routes/import');
+const wikiRoutes = require('./routes/wiki');
+const aperturaRoutes = require('./routes/apertura');
+const equipoRoutes = require('./routes/equipo');
+const vaultRoutes = require('./routes/vault');
 
 // Servicios (solo los necesarios en server.js)
 const logService = require('./services/logService');
@@ -28,6 +33,10 @@ const slaService = require('./services/slaService');
 const webhookService = require('./services/webhookService');
 const rulesEngine = require('./services/rulesEngine');
 const mainAgent = require('./agents/mainAgent');
+const aperturaService = require('./services/aperturaAutomaticaService');
+const { seedCondicionados } = require('./seeds/condicionadosAdeslas');
+const equipoService = require('./services/equipoService');
+const enrutamientoService = require('./services/enrutamientoService');
 const vigilanteAgent = require('./agents/vigilanteAgent');
 const { securityHeaders, sanitizeMiddleware, rateLimiter, csrfProtection, generateCsrfToken } = require('./middleware/security');
 
@@ -36,6 +45,11 @@ const server = http.createServer(app);
 
 // CORS - allowed origins
 const ALLOWED_ORIGINS = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : ['http://localhost:8080', 'http://localhost:3001', 'http://localhost:5500'];
+// Auto-allow Codespace URLs
+if (process.env.CODESPACE_NAME) {
+  ALLOWED_ORIGINS.push(`https://${process.env.CODESPACE_NAME}-8080.app.github.dev`);
+  ALLOWED_ORIGINS.push(`https://${process.env.CODESPACE_NAME}-3001.app.github.dev`);
+}
 
 // Socket.IO
 const io = new Server(server, {
@@ -95,6 +109,11 @@ app.use('/api/admin', adminRoutes);
 app.use('/api', serviciosRoutes);
 app.use('/api/agentes', agentesRoutes);
 app.use('/api/rgpd', rgpdRoutes);
+app.use('/api/import', importRoutes);
+app.use('/api/wiki', wikiRoutes);
+app.use('/api/apertura', aperturaRoutes);
+app.use('/api', equipoRoutes);
+app.use('/api/vault', vaultRoutes);
 
 // Upload
 app.post('/api/upload', tokenOpcional, upload.array('archivos', 10), (req, res) => {
@@ -204,6 +223,10 @@ async function start() {
 
     await initDatabase();
     await seedDatabase();
+    await seedCondicionados();
+    await aperturaService.seedAperturaLog();
+    await equipoService.seedEquipo();
+    await enrutamientoService.seedEnrutamiento();
 
     // Iniciar servicios background
     healthService.startMonitoring(30000);
@@ -235,6 +258,9 @@ async function start() {
       console.log('    Ag. Negociador ... OK');
       console.log('    Ag. Vendedor ..... OK');
       console.log('    Ag. Vigilante .... OK (cada 30min)');
+      console.log('    Apertura Auto .... OK');
+      console.log('    Equipo Gestión ... OK');
+      console.log('    Enrutamiento ..... OK');
       console.log('============================================');
       console.log('');
       logService.log('INFO', 'server', `Servidor iniciado en puerto ${PORT}`);

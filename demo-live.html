@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SegurCaixa Adeslas - Demo en Directo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#000;color:#fff;min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+
+/* ===== CURSOR GLOW ===== */
+.cursor-glow{position:fixed;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(15,119,174,.05) 0%,transparent 70%);pointer-events:none;z-index:9999;transform:translate(-50%,-50%)}
+
+/* ===== HEADER ===== */
+.demo-header{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.8);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.05)}
+.demo-logo{font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.7)}
+.demo-badge{padding:5px 14px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:1px;background:rgba(15,119,174,.15);color:#0F77AE;border:1px solid rgba(15,119,174,.2)}
+.demo-live{display:flex;align-items:center;gap:8px}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#ef4444;animation:livePulse 1.5s infinite}
+@keyframes livePulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}50%{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
+.live-text{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#ef4444}
+
+/* ===== INTRO ===== */
+.intro{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:40px;position:relative}
+.intro-content{max-width:800px}
+.intro-label{font-size:10px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#0F77AE;margin-bottom:24px}
+.intro h1{font-size:clamp(2.5rem,6vw,5rem);font-weight:200;line-height:1;letter-spacing:-2px;margin-bottom:24px}
+.intro h1 strong{font-weight:800}
+.intro p{font-size:1rem;font-weight:300;color:rgba(255,255,255,.4);line-height:1.8;max-width:500px;margin:0 auto 48px}
+.btn-start{padding:16px 48px;background:linear-gradient(135deg,#0F77AE,#2D4F9E);border:none;border-radius:60px;color:#fff;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;letter-spacing:1px;transition:all .3s;position:relative;overflow:hidden}
+.btn-start:hover{transform:translateY(-2px);box-shadow:0 20px 40px rgba(15,119,174,.3)}
+
+/* ===== TIMELINE ===== */
+.timeline{max-width:1200px;margin:0 auto;padding:80px 40px 120px}
+.timeline-title{text-align:center;margin-bottom:80px}
+.timeline-title h2{font-size:clamp(1.5rem,3vw,2.5rem);font-weight:200;letter-spacing:-1px}
+.timeline-title h2 strong{font-weight:700}
+
+.steps{position:relative}
+.steps::before{content:'';position:absolute;left:24px;top:0;bottom:0;width:1px;background:rgba(255,255,255,.06)}
+
+.demo-step{display:flex;gap:40px;margin-bottom:60px;opacity:0;transform:translateY(40px);transition:all .8s cubic-bezier(.23,1,.32,1)}
+.demo-step.visible{opacity:1;transform:translateY(0)}
+.demo-step.active .step-dot{background:#0F77AE;box-shadow:0 0 20px rgba(15,119,174,.5)}
+.demo-step.completed .step-dot{background:#259271;box-shadow:0 0 20px rgba(37,146,113,.3)}
+
+.step-indicator{flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding-top:4px}
+.step-dot{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.08);transition:all .5s;position:relative;z-index:1}
+.step-num{font-size:10px;font-weight:600;color:rgba(255,255,255,.15);margin-top:8px;letter-spacing:1px}
+
+.step-content{flex:1}
+.step-header{display:flex;align-items:center;gap:16px;margin-bottom:12px}
+.step-role{padding:3px 12px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.step-role.cliente{background:rgba(15,119,174,.15);color:#0F77AE}
+.step-role.ia{background:rgba(45,79,158,.2);color:#6486C3}
+.step-role.gestor{background:rgba(37,146,113,.15);color:#9EC6B7}
+.step-role.sistema{background:rgba(37,146,113,.2);color:#259271}
+.step-time{font-size:11px;color:rgba(255,255,255,.2);font-weight:300}
+
+.step-content h3{font-size:18px;font-weight:600;margin-bottom:8px;letter-spacing:-.3px}
+.step-content p{font-size:13px;font-weight:300;color:rgba(255,255,255,.35);line-height:1.7;margin-bottom:16px}
+
+.step-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:20px;margin-bottom:12px}
+.step-card .label{font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.2);margin-bottom:10px}
+.step-card .value{font-size:14px;font-weight:500;line-height:1.6}
+.step-card .highlight{color:#6486C3}
+.step-card .success{color:#259271}
+.step-card .warning{color:#0F77AE}
+
+.step-link{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;text-decoration:none;font-size:12px;font-weight:500;transition:all .3s;letter-spacing:.5px}
+.step-link:hover{background:rgba(255,255,255,.05);border-color:rgba(15,119,174,.3);gap:12px}
+.step-link .arrow{transition:transform .3s}
+.step-link:hover .arrow{transform:translateX(3px)}
+
+/* ===== RESULT ===== */
+.result{text-align:center;padding:120px 40px;border-top:1px solid rgba(255,255,255,.04)}
+.result-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;max-width:900px;margin:48px auto 0}
+.result-item{padding:40px 20px}
+.result-value{font-size:clamp(2rem,4vw,3.5rem);font-weight:800;letter-spacing:-1px}
+.result-value.blue{color:#0F77AE}
+.result-value.green{color:#259271}
+.result-value.purple{color:#6486C3}
+.result-value.yellow{color:#9EC6B7}
+.result-label{font-size:11px;color:rgba(255,255,255,.25);margin-top:8px;letter-spacing:1px;text-transform:uppercase;font-weight:500}
+
+/* ===== PORTALS CTA ===== */
+.portals-cta{padding:80px 40px 120px;text-align:center}
+.portals-cta h2{font-size:clamp(1.5rem,3vw,2.5rem);font-weight:200;letter-spacing:-1px;margin-bottom:48px}
+.portals-cta h2 strong{font-weight:700}
+.portal-buttons{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.portal-btn{display:flex;align-items:center;gap:12px;padding:20px 32px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;color:#fff;text-decoration:none;transition:all .4s;min-width:220px}
+.portal-btn:hover{background:rgba(255,255,255,.06);transform:translateY(-4px);border-color:rgba(15,119,174,.2)}
+.portal-btn .icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.portal-btn.p1 .icon{background:linear-gradient(135deg,#0F77AE,#2D4F9E)}
+.portal-btn.p2 .icon{background:linear-gradient(135deg,#259271,#9EC6B7)}
+.portal-btn.p3 .icon{background:linear-gradient(135deg,#6486C3,#2D4F9E)}
+.portal-btn .text{text-align:left}
+.portal-btn .text h4{font-size:14px;font-weight:600}
+.portal-btn .text p{font-size:11px;color:rgba(255,255,255,.3);margin-top:2px}
+
+/* ===== FOOTER ===== */
+.demo-footer{padding:32px;text-align:center;border-top:1px solid rgba(255,255,255,.04)}
+.demo-footer p{font-size:10px;color:rgba(255,255,255,.15);letter-spacing:1px}
+
+/* ===== ANIMATION HELPERS ===== */
+.fade-in{opacity:0;transform:translateY(30px);transition:all .8s cubic-bezier(.23,1,.32,1)}
+.fade-in.visible{opacity:1;transform:translateY(0)}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:768px){
+  .demo-header{padding:12px 20px}
+  .timeline{padding:60px 20px}
+  .demo-step{gap:20px}
+  .result-grid{grid-template-columns:repeat(2,1fr)}
+  .portal-buttons{flex-direction:column;align-items:center}
+  .steps::before{left:18px}
+}
+
+/* ===== AUTO-PLAY PROGRESS ===== */
+.progress-bar{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#0F77AE,#2D4F9E);z-index:200;transition:width .3s;width:0}
+</style>
+</head>
+<body>
+
+<div class="cursor-glow" id="cursorGlow"></div>
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- HEADER -->
+<div class="demo-header">
+  <div class="demo-logo">SegurCaixa Adeslas</div>
+  <div class="demo-badge">Demo en directo</div>
+  <div class="demo-live">
+    <div class="live-dot"></div>
+    <div class="live-text">Live</div>
+  </div>
+</div>
+
+<!-- INTRO -->
+<div class="intro" id="intro">
+  <div class="intro-content">
+    <div class="intro-label">Demo interactiva</div>
+    <h1>Un siniestro real,<br><strong>gestionado por IA</strong></h1>
+    <p>Vamos a seguir el caso de Maria Garcia paso a paso. Desde la llamada inicial hasta el pago de la indemnizacion. Todo automatico.</p>
+    <button class="btn-start" id="btnStart" onclick="startDemo()">Comenzar demo &rarr;</button>
+  </div>
+</div>
+
+<!-- TIMELINE -->
+<div class="timeline" id="timeline" style="display:none">
+  <div class="timeline-title fade-in">
+    <h2>Caso <strong>EXP-2026-0847</strong></h2>
+    <p style="font-size:13px;color:rgba(255,255,255,.3);margin-top:8px">Maria Garcia &middot; Golpe en parking &middot; Poliza POL-2024-00456</p>
+  </div>
+
+  <div class="steps">
+
+    <!-- STEP 1 -->
+    <div class="demo-step" data-delay="0">
+      <div class="step-indicator">
+        <div class="step-dot"></div>
+        <div class="step-num">01</div>
+      </div>
+      <div class="step-content">
+        <div class="step-header">
+          <span class="step-role cliente">Cliente</span>
+          <span class="step-time">09:14 - Lunes 17 marzo</span>
+        </div>
+        <h3>Maria llama para reportar un siniestro</h3>
+        <p>Ha encontrado su coche con un golpe en el parking del trabajo. No hay testigos ni grabaciones. Llama al 900 de SegurCaixa Adeslas.</p>
+        <div class="step-card">
+          <div class="label">Transcripcion de la llamada</div>
+          <div class="value" id="transcript">
+            <span style="color:rgba(255,255,255,.2)">Cargando transcripcion...</span>
+          </div>
+        </div>
+        <a href="cliente-adeslas.html" class="step-link" target="_blank">Ver portal del cliente <span class="arrow">&rarr;</span></a>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="demo-step" data-delay="1500">
+      <div class="step-indicator">
+        <div class="step-dot"></div>
+        <div class="step-num">02</div>
+      </div>
+      <div class="step-content">
+        <div class="step-header">
+          <span class="step-role ia">IA &middot; Agente Clasificador</span>
+          <span class="step-time">09:14 - Automatico</span>
+        </div>
+        <h3>Clasificacion y apertura de expediente</h3>
+        <p>La IA analiza la transcripcion, extrae los datos clave y abre el expediente automaticamente.</p>
+        <div class="step-card">
+          <div class="label">Datos extraidos por la IA</div>
+          <div class="value">
+            <span class="highlight">Tipo:</span> Dano propio en parking<br>
+            <span class="highlight">Vehiculo:</span> Seat Leon 2022 &middot; 4523-KMN<br>
+            <span class="highlight">Poliza:</span> POL-2024-00456 &middot; Todo Riesgo<br>
+            <span class="highlight">Cobertura:</span> <span class="success">&#10003; Verificada - Activa</span><br>
+            <span class="highlight">Franquicia:</span> 150&euro;<br>
+            <span class="highlight">Prioridad:</span> Normal
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="demo-step" data-delay="3000">
+      <div class="step-indicator">
+        <div class="step-dot"></div>
+        <div class="step-num">03</div>
+      </div>
+      <div class="step-content">
+        <div class="step-header">
+          <span class="step-role ia">IA &middot; Agente Fraude</span>
+          <span class="step-time">09:14 - Automatico</span>
+        </div>
+        <h3>Analisis de fraude</h3>
+        <p>El agente de fraude cruza datos del cliente, la poliza y el historial para detectar anomalias.</p>
+        <div class="step-card">
+          <div class="label">Resultado del analisis</div>
+          <div class="value">
+            <span class="success">&#10003; Score de fraude: 8/100 - BAJO</span><br><br>
+            Cliente desde 2019 &middot; 1 siniestro previo (2022) &middot; Pagos al dia<br>
+            Sin coincidencias con redes de fraude conocidas<br>
+            Sin reclamaciones similares recientes en la zona
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="demo-step" data-delay="4500">
+      <div class="step-indicator">
+        <div class="step-dot"></div>
+        <div class="step-num">04</div>
+      </div>
+      <div class="step-content">
+        <div class="step-header">
+          <span class="step-role ia">IA &middot; Agente Valoracion</span>
+          <span class="step-time">09:15 - Automatico</span>
+        </div>
+        <h3>Valoracion automatica del dano</h3>
+        <p>Con las fotos enviadas por Maria y la base de datos de siniestros similares, la IA estima el coste de reparacion.</p>
+        <div class="step-card">
+          <div class="label">Valoracion</div>
+          <div class="value">
+            <span class="highlight">Dano estimado:</span> 1.850&euro;<br>
+            <span class="highlight">Franquicia:</span> -150&euro;<br>
+            <span class="highlight">Indemnizacion propuesta:</span> <strong>1.700&euro;</strong><br>
+            <span class="highlight">Confianza IA:</span> 94%<br>
+            <span class="highlight">Umbral auto-aprobacion:</span> &lt;3.000&euro; <span class="success">&#10003;</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="demo-step" data-delay="6000">
+      <div class="step-indicator">
+        <div class="step-dot"></div>
+        <div class="step-num">05</div>
+      </div>
+      <div class="step-content">
+        <div class="step-header">
+          <span class="step-role ia">IA &middot; Agente Perito</span>
+          <span class="step-time">09:15 - Automatico</span>
+        </div>
+        <h3>Asignacion de perito</h3>
+        <p>La IA selecciona al perito mas adecuado por zona, disponibilidad y especialidad.</p>
+        <div class="step-card">
+          <div class="label">Perito asignado</div>
+          <div class="value">
+            <span class="highlight">Nombre:</span> Carlos Ruiz Martinez<br>
+            <span class="highlight">Zona:</span> Madrid Centro (4.2 km del siniestro)<br>
+            <span class="highlight">Especialidad:</span> Vehiculos<br>
+            <span class="highlight">Rating:</span> 4.8/5 (312 pericias)<br>
+            <span class="highlight">Disponibilidad:</span> <span class="success">Martes 18 marzo, 10:00-12:00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 6 -->
+    <div class="demo-step" data-delay="7500">
+      <div class="step-indicator">
+        <div class="step-dot"></div>
+        <div class="step-num">06</div>
+      </div>
+      <div class="step-content">
+        <div class="step-header">
+          <span class="step-role sistema">Sistema &middot; Auto-aprobacion</span>
+          <span class="step-time">09:15 - Automatico</span>
+        </div>
+        <h3>Aprobacion automatica del pago</h3>
+        <p>Como el importe es inferior a 3.000&euro;, el score de fraude es bajo y la confianza de la IA es superior al 90%, el sistema aprueba automaticamente.</p>
+        <div class="step-card">
+          <div class="label">Decision</div>
+          <div class="value">
+            <span class="success" style="font-size:16px;font-weight:700">&#10003; APROBADO AUTOMATICAMENTE</span><br><br>
+            Pago de <strong>1.700&euro;</strong> autorizado<br>
+            Transferencia programada: 48h habiles<br>
+            Referencia: PAG-2026-0847
+          </div>
+        </div>
+        <a href="gestor-adeslas.html" class="step-link" target="_blank">Ver panel del gestor <span class="arrow">&rarr;</span></a>
+      </div>
+    </div>
+
+    <!-- STEP 7 -->
+    <div class="demo-step" data-delay="9000">
+      <div class="step-indicator">
+        <div class="step-dot"></div>
+        <div class="step-num">07</div>
+      </div>
+      <div class="step-content">
+        <div class="step-header">
+          <span class="step-role ia">IA &middot; Agente Comunicacion</span>
+          <span class="step-time">09:16 - Automatico</span>
+        </div>
+        <h3>Notificacion al cliente</h3>
+        <p>Maria recibe confirmacion por todos los canales configurados.</p>
+        <div class="step-card">
+          <div class="label">Mensajes enviados</div>
+          <div class="value">
+            <span class="success">&#10003;</span> SMS: "Su siniestro EXP-2026-0847 ha sido aprobado. Recibira 1.700&euro; en 48h"<br>
+            <span class="success">&#10003;</span> Email: Detalle completo con desglose de valoracion<br>
+            <span class="success">&#10003;</span> App: Push notification + actualizacion del estado en tiempo real<br>
+            <span class="success">&#10003;</span> WhatsApp: Confirmacion con enlace de seguimiento
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- RESULT -->
+<div class="result fade-in" id="result" style="display:none">
+  <div class="intro-label">Resultado</div>
+  <h2 style="font-size:clamp(1.5rem,3vw,2.5rem);font-weight:200;letter-spacing:-1px">Siniestro resuelto en <strong style="color:#259271">2 minutos</strong></h2>
+  <p style="font-size:13px;color:rgba(255,255,255,.3);margin-top:12px;font-weight:300">Sin intervencion humana. Proceso manual equivalente: 18 dias.</p>
+  <div class="result-grid">
+    <div class="result-item">
+      <div class="result-value blue">2 min</div>
+      <div class="result-label">Tiempo total</div>
+    </div>
+    <div class="result-item">
+      <div class="result-value green">1.700&euro;</div>
+      <div class="result-label">Indemnizacion</div>
+    </div>
+    <div class="result-item">
+      <div class="result-value purple">8&euro;</div>
+      <div class="result-label">Coste gestion</div>
+    </div>
+    <div class="result-item">
+      <div class="result-value yellow">9.1/10</div>
+      <div class="result-label">Satisfaccion</div>
+    </div>
+  </div>
+</div>
+
+<!-- PORTALS CTA -->
+<div class="portals-cta fade-in" id="portalsCta" style="display:none">
+  <h2>Explorar los <strong>portales</strong></h2>
+  <div class="portal-buttons">
+    <a href="cliente-adeslas.html" class="portal-btn p1" target="_blank">
+      <div class="icon">&#128100;</div>
+      <div class="text">
+        <h4>Area Cliente</h4>
+        <p>Lo que ve Maria Garcia</p>
+      </div>
+    </a>
+    <a href="adeslas-demo.html" class="portal-btn p2" target="_blank">
+      <div class="icon">&#128202;</div>
+      <div class="text">
+        <h4>Panel de Control</h4>
+        <p>KPIs y rentabilidad</p>
+      </div>
+    </a>
+    <a href="gestor-adeslas.html" class="portal-btn p3" target="_blank">
+      <div class="icon">&#128188;</div>
+      <div class="text">
+        <h4>Area Gestor</h4>
+        <p>Supervision y aprobaciones</p>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="demo-footer" id="demoFooter" style="display:none">
+  <p>SegurCaixa Adeslas &middot; Gestion Inteligente de Siniestros &middot; Powered by 27 Agentes IA</p>
+</div>
+
+<script>
+// ===== CURSOR GLOW =====
+const glow = document.getElementById('cursorGlow');
+document.addEventListener('mousemove', e => {
+  glow.style.left = e.clientX + 'px';
+  glow.style.top = e.clientY + 'px';
+});
+
+// ===== TRANSCRIPT ANIMATION =====
+const transcriptLines = [
+  {who:'ia', text:'Buenos dias, soy Laura, su asistente de SegurCaixa Adeslas. ¿En que puedo ayudarle?'},
+  {who:'cli', text:'Hola, he encontrado mi coche con un golpe en el parking del trabajo y quiero reportarlo.'},
+  {who:'ia', text:'Lamento escuchar eso. Voy a abrir un expediente. ¿Puede confirmarme su DNI y numero de poliza?'},
+  {who:'cli', text:'Si, DNI 12345678A, poliza POL-2024-00456.'},
+  {who:'ia', text:'Perfecto, Maria. Veo su poliza Todo Riesgo para el Seat Leon 2022. ¿Donde se encuentra el vehiculo ahora?'},
+  {who:'cli', text:'En el parking de la oficina, calle Gran Via 42, Madrid.'},
+  {who:'ia', text:'Entendido. Le he enviado un enlace por WhatsApp para que suba fotos del dano. Un perito se pondra en contacto manana. Su expediente es EXP-2026-0847.'},
+  {who:'cli', text:'Genial, muchas gracias. Ha sido muy rapido.'},
+];
+
+function typeTranscript() {
+  const container = document.getElementById('transcript');
+  container.innerHTML = '';
+  let i = 0;
+  function addLine() {
+    if (i >= transcriptLines.length) return;
+    const line = transcriptLines[i];
+    const color = line.who === 'ia' ? '#6486C3' : 'rgba(255,255,255,.6)';
+    const label = line.who === 'ia' ? '&#129504; IA Laura' : '&#128100; Maria';
+    const div = document.createElement('div');
+    div.style.cssText = 'margin-bottom:10px;opacity:0;transform:translateY(8px);transition:all .4s';
+    div.innerHTML = `<span style="font-size:10px;font-weight:700;color:${color};display:block;margin-bottom:2px">${label}</span><span style="color:rgba(255,255,255,.5);font-size:13px">${line.text}</span>`;
+    container.appendChild(div);
+    requestAnimationFrame(() => { div.style.opacity = '1'; div.style.transform = 'translateY(0)'; });
+    i++;
+    setTimeout(addLine, 1800);
+  }
+  addLine();
+}
+
+// ===== START DEMO =====
+function startDemo() {
+  document.getElementById('intro').style.display = 'none';
+  document.getElementById('timeline').style.display = 'block';
+
+  const steps = document.querySelectorAll('.demo-step');
+  const totalSteps = steps.length;
+  const bar = document.getElementById('progressBar');
+
+  // Reveal timeline title
+  setTimeout(() => {
+    document.querySelector('.timeline-title').classList.add('visible');
+  }, 200);
+
+  steps.forEach((step, idx) => {
+    const delay = parseInt(step.dataset.delay) + 800;
+    setTimeout(() => {
+      step.classList.add('visible', 'active');
+
+      // Mark previous as completed
+      if (idx > 0) steps[idx - 1].classList.remove('active');
+      if (idx > 0) steps[idx - 1].classList.add('completed');
+
+      // Progress bar
+      bar.style.width = ((idx + 1) / totalSteps * 100) + '%';
+
+      // Scroll to step
+      step.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      // Trigger transcript on step 1
+      if (idx === 0) setTimeout(typeTranscript, 500);
+
+      // Show results after last step
+      if (idx === totalSteps - 1) {
+        step.classList.add('completed');
+        bar.style.width = '100%';
+        setTimeout(() => {
+          const result = document.getElementById('result');
+          const portals = document.getElementById('portalsCta');
+          const footer = document.getElementById('demoFooter');
+          result.style.display = 'block';
+          portals.style.display = 'block';
+          footer.style.display = 'block';
+          setTimeout(() => {
+            result.classList.add('visible');
+            portals.classList.add('visible');
+          }, 100);
+          result.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 2000);
+      }
+    }, delay);
+  });
+}
+
+// ===== SCROLL REVEAL FOR STATIC ELEMENTS =====
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.15 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

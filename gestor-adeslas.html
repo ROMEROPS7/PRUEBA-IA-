@@ -1,0 +1,2329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Gestor - SegurCaixa Adeslas</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --blue: #00529B;
+  --blue-light: #009FE3;
+  --blue-hover: #003d74;
+  --red: #E30613;
+  --red-light: #fdeaea;
+  --green: #2E7D32;
+  --green-light: #e8f5e9;
+  --yellow: #F9A825;
+  --yellow-light: #fff8e1;
+  --grey-50: #fafafa;
+  --grey-100: #f5f5f5;
+  --grey-200: #eeeeee;
+  --grey-300: #e0e0e0;
+  --grey-400: #bdbdbd;
+  --grey-500: #9e9e9e;
+  --grey-600: #757575;
+  --grey-700: #616161;
+  --grey-800: #424242;
+  --grey-900: #212121;
+  --white: #ffffff;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
+  --shadow: 0 1px 3px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+  --radius: 6px;
+  --sidebar-width: 60px;
+  --header-height: 52px;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--grey-100);
+  color: var(--grey-900);
+  font-size: 13px;
+  line-height: 1.5;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* === HEADER === */
+.header {
+  height: var(--header-height);
+  background: var(--blue);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-brand {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+}
+
+.header-brand span {
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.header-divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(255,255,255,0.25);
+}
+
+.ia-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  background: rgba(255,255,255,0.12);
+  padding: 4px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.ia-status:hover { background: rgba(255,255,255,0.2); }
+
+.ia-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4CAF50;
+}
+
+.ia-dot.inactive { background: var(--grey-400); }
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-time {
+  font-size: 12px;
+  opacity: 0.8;
+  font-variant-numeric: tabular-nums;
+}
+
+.header-notifications {
+  position: relative;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+}
+
+.notif-badge {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  background: var(--red);
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-user {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.user-info {
+  line-height: 1.3;
+}
+
+.user-name { font-weight: 600; font-size: 12px; }
+.user-role { opacity: 0.7; font-size: 11px; }
+
+/* === SIDEBAR === */
+.sidebar {
+  position: fixed;
+  top: var(--header-height);
+  left: 0;
+  bottom: 0;
+  width: var(--sidebar-width);
+  background: var(--white);
+  border-right: 1px solid var(--grey-200);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 8px;
+  z-index: 90;
+}
+
+.sidebar-btn {
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--grey-500);
+  margin-bottom: 4px;
+  position: relative;
+  transition: background 0.12s, color 0.12s;
+}
+
+.sidebar-btn:hover {
+  background: var(--grey-100);
+  color: var(--grey-700);
+}
+
+.sidebar-btn.active {
+  background: #e8f0f8;
+  color: var(--blue);
+}
+
+.sidebar-btn.active::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background: var(--blue);
+  border-radius: 0 2px 2px 0;
+}
+
+.sidebar-tooltip {
+  display: none;
+  position: absolute;
+  left: 52px;
+  background: var(--grey-800);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  z-index: 200;
+}
+
+.sidebar-btn:hover .sidebar-tooltip { display: block; }
+
+/* === MAIN CONTENT === */
+.main {
+  margin-left: var(--sidebar-width);
+  margin-top: var(--header-height);
+  height: calc(100vh - var(--header-height));
+  overflow: hidden;
+}
+
+.tab-content {
+  display: none;
+  height: 100%;
+}
+
+.tab-content.active { display: flex; }
+
+/* === BANDEJA TAB === */
+.bandeja-layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+/* Column 1: pending cases */
+.col-pending {
+  width: 340px;
+  min-width: 340px;
+  background: var(--white);
+  border-right: 1px solid var(--grey-200);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.col-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--grey-200);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.col-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--grey-800);
+}
+
+.col-count {
+  font-size: 11px;
+  color: var(--grey-500);
+  background: var(--grey-100);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.case-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.case-card {
+  background: var(--white);
+  border: 1px solid var(--grey-200);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+
+.case-card:hover {
+  border-color: var(--grey-300);
+  box-shadow: var(--shadow-sm);
+}
+
+.case-card.selected {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 1px var(--blue);
+  background: #f8fbff;
+}
+
+.case-card.resolved {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.case-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.case-priority {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.case-priority.urgent { background: var(--red); }
+.case-priority.normal { background: var(--yellow); }
+.case-priority.info { background: var(--green); }
+
+.case-exp {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--grey-800);
+  margin-left: 6px;
+  flex: 1;
+}
+
+.case-type-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 500;
+  background: var(--grey-100);
+  color: var(--grey-600);
+}
+
+.case-client {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--grey-800);
+  margin-bottom: 2px;
+}
+
+.case-desc {
+  font-size: 11px;
+  color: var(--grey-600);
+  margin-bottom: 8px;
+}
+
+.case-ia-summary {
+  background: #f0f7ff;
+  border-left: 2px solid var(--blue-light);
+  padding: 6px 8px;
+  font-size: 11px;
+  color: var(--grey-700);
+  margin-bottom: 8px;
+  border-radius: 0 3px 3px 0;
+  line-height: 1.4;
+}
+
+.case-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.case-time {
+  font-size: 10px;
+  color: var(--grey-400);
+}
+
+.case-action-link {
+  font-size: 11px;
+  color: var(--blue);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+/* Column 2: detail */
+.col-detail {
+  flex: 1;
+  background: var(--grey-50);
+  overflow-y: auto;
+  height: 100%;
+}
+
+.detail-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--grey-400);
+  font-size: 13px;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-empty-icon { font-size: 32px; opacity: 0.4; }
+
+.detail-content {
+  padding: 20px 24px;
+  display: none;
+}
+
+.detail-content.visible { display: block; }
+
+.detail-header {
+  margin-bottom: 20px;
+}
+
+.detail-exp {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--grey-900);
+  margin-bottom: 2px;
+}
+
+.detail-policy {
+  font-size: 12px;
+  color: var(--grey-500);
+}
+
+.detail-section {
+  margin-bottom: 18px;
+}
+
+.detail-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--grey-700);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.detail-section-body {
+  font-size: 13px;
+  color: var(--grey-700);
+  line-height: 1.6;
+}
+
+.detail-hr {
+  border: none;
+  border-top: 1px solid var(--grey-200);
+  margin: 16px 0;
+}
+
+.ia-steps {
+  list-style: none;
+  padding: 0;
+}
+
+.ia-steps li {
+  padding: 4px 0;
+  font-size: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  line-height: 1.5;
+}
+
+.ia-steps li .step-icon { flex-shrink: 0; }
+
+.ia-step-warning {
+  background: var(--yellow-light);
+  border-left: 2px solid var(--yellow);
+  padding: 6px 10px;
+  border-radius: 0 4px 4px 0;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--grey-700);
+}
+
+.doc-list { list-style: none; padding: 0; }
+.doc-list li {
+  padding: 3px 0;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.val-box {
+  background: var(--white);
+  border: 1px solid var(--grey-200);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+
+.val-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  font-size: 12px;
+}
+
+.val-row.total {
+  border-top: 1px solid var(--grey-200);
+  margin-top: 6px;
+  padding-top: 8px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.history-list { list-style: none; padding: 0; }
+.history-list li {
+  padding: 3px 0;
+  font-size: 12px;
+  color: var(--grey-600);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Column 3: actions */
+.col-actions {
+  width: 280px;
+  min-width: 280px;
+  background: var(--white);
+  border-left: 1px solid var(--grey-200);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.col-actions .col-header {
+  flex-shrink: 0;
+}
+
+.actions-body {
+  padding: 12px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.ia-proposal-box {
+  background: #f0f7ff;
+  border: 1px solid #cce0f5;
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 14px;
+}
+
+.ia-proposal-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--blue);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ia-proposal-text {
+  font-size: 12px;
+  color: var(--grey-700);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.ia-confidence {
+  font-size: 11px;
+  color: var(--grey-500);
+}
+
+.ia-confidence strong {
+  color: var(--blue);
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.12s, border-color 0.12s;
+  white-space: nowrap;
+}
+
+.btn-approve {
+  background: var(--green);
+  color: white;
+  border-color: var(--green);
+}
+.btn-approve:hover { background: #256427; }
+
+.btn-reject {
+  background: var(--white);
+  color: var(--red);
+  border-color: var(--red);
+}
+.btn-reject:hover { background: var(--red-light); }
+
+.btn-primary {
+  background: var(--blue);
+  color: white;
+}
+.btn-primary:hover { background: var(--blue-hover); }
+
+.btn-outline {
+  background: var(--white);
+  color: var(--grey-700);
+  border-color: var(--grey-300);
+}
+.btn-outline:hover { background: var(--grey-50); }
+
+.notes-section {
+  border-top: 1px solid var(--grey-200);
+  padding-top: 12px;
+}
+
+.notes-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--grey-700);
+  margin-bottom: 8px;
+}
+
+.notes-textarea {
+  width: 100%;
+  border: 1px solid var(--grey-300);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 12px;
+  resize: vertical;
+  min-height: 60px;
+  color: var(--grey-800);
+}
+
+.notes-textarea:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+
+.notes-textarea::placeholder { color: var(--grey-400); }
+
+.btn-save-note {
+  margin-top: 6px;
+  width: 100%;
+}
+
+.saved-notes {
+  margin-top: 10px;
+}
+
+.saved-note {
+  background: var(--grey-50);
+  border-radius: 4px;
+  padding: 8px;
+  margin-bottom: 6px;
+  font-size: 11px;
+  color: var(--grey-600);
+}
+
+.saved-note-time {
+  font-size: 10px;
+  color: var(--grey-400);
+  margin-top: 2px;
+}
+
+/* === APROBACIONES TAB === */
+.tab-aprobaciones {
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 20px 28px;
+  background: var(--grey-50);
+}
+
+.approval-section {
+  background: var(--white);
+  border: 1px solid var(--grey-200);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+}
+
+.approval-section-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--grey-200);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.approval-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--grey-800);
+}
+
+.approval-section-count {
+  font-size: 11px;
+  color: var(--white);
+  background: var(--blue);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.approval-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.approval-table th {
+  text-align: left;
+  padding: 10px 18px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--grey-500);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid var(--grey-200);
+  background: var(--grey-50);
+}
+
+.approval-table td {
+  padding: 10px 18px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--grey-100);
+  color: var(--grey-700);
+}
+
+.approval-table tr:last-child td { border-bottom: none; }
+.approval-table tr:hover td { background: #fafcff; }
+
+.approval-amount {
+  font-weight: 600;
+  color: var(--grey-900);
+}
+
+.approval-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 11px;
+  border-radius: 4px;
+}
+
+.ia-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--blue);
+  background: #f0f7ff;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+/* === RESUMEN TAB === */
+.tab-resumen {
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 20px 28px;
+  background: var(--grey-50);
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.kpi-card {
+  background: var(--white);
+  border: 1px solid var(--grey-200);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+}
+
+.kpi-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--blue);
+  line-height: 1.2;
+}
+
+.kpi-value.highlight { color: var(--green); }
+.kpi-value.neutral { color: var(--grey-800); }
+
+.kpi-label {
+  font-size: 11px;
+  color: var(--grey-500);
+  margin-top: 4px;
+}
+
+.kpi-sub {
+  font-size: 10px;
+  color: var(--grey-400);
+  margin-top: 2px;
+}
+
+.resumen-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+}
+
+.chart-box {
+  background: var(--white);
+  border: 1px solid var(--grey-200);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+
+.chart-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--grey-800);
+  margin-bottom: 16px;
+}
+
+.chart-container {
+  height: 200px;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 0 8px;
+}
+
+.chart-day {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.chart-bars {
+  display: flex;
+  gap: 3px;
+  align-items: flex-end;
+  height: 160px;
+  width: 100%;
+}
+
+.chart-bar {
+  flex: 1;
+  border-radius: 3px 3px 0 0;
+  min-height: 4px;
+}
+
+.chart-bar.total { background: var(--blue); opacity: 0.3; }
+.chart-bar.resolved { background: var(--blue); }
+
+.chart-label {
+  font-size: 10px;
+  color: var(--grey-500);
+}
+
+.chart-legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+  justify-content: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--grey-600);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.legend-dot.total { background: var(--blue); opacity: 0.3; }
+.legend-dot.resolved { background: var(--blue); }
+
+.ia-saving-box {
+  background: linear-gradient(135deg, #f0f7ff, #e8f5e9);
+  border: 1px solid #cce0f5;
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+}
+
+.ia-saving-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--green);
+}
+
+.ia-saving-label {
+  font-size: 13px;
+  color: var(--grey-600);
+  margin-top: 4px;
+}
+
+.ia-saving-detail {
+  font-size: 11px;
+  color: var(--grey-400);
+  margin-top: 8px;
+}
+
+.btn-report {
+  margin-top: 14px;
+}
+
+/* === CONFIGURACION TAB === */
+.tab-config {
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 20px 28px;
+  background: var(--grey-50);
+  max-width: 700px;
+}
+
+.config-section {
+  background: var(--white);
+  border: 1px solid var(--grey-200);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 14px;
+}
+
+.config-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--grey-800);
+  margin-bottom: 14px;
+}
+
+.config-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--grey-100);
+}
+
+.config-row:last-child { border-bottom: none; }
+
+.config-label {
+  font-size: 13px;
+  color: var(--grey-700);
+}
+
+.config-label-sub {
+  font-size: 11px;
+  color: var(--grey-400);
+  margin-top: 2px;
+}
+
+.config-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Toggle switch */
+.toggle {
+  position: relative;
+  width: 38px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.toggle input { display: none; }
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--grey-300);
+  border-radius: 20px;
+  transition: background 0.2s;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s;
+  box-shadow: var(--shadow-sm);
+}
+
+.toggle input:checked + .toggle-slider { background: var(--blue); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+/* Mode buttons */
+.mode-group {
+  display: flex;
+  border: 1px solid var(--grey-300);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.mode-btn {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-family: inherit;
+  border: none;
+  background: var(--white);
+  color: var(--grey-600);
+  cursor: pointer;
+  border-right: 1px solid var(--grey-300);
+  transition: background 0.12s, color 0.12s;
+}
+
+.mode-btn:last-child { border-right: none; }
+.mode-btn:hover { background: var(--grey-50); }
+
+.mode-btn.active {
+  background: var(--blue);
+  color: white;
+}
+
+/* Slider input */
+.config-slider-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.config-slider {
+  width: 140px;
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--grey-300);
+  outline: none;
+}
+
+.config-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--blue);
+  cursor: pointer;
+}
+
+.config-slider-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue);
+  min-width: 48px;
+  text-align: right;
+}
+
+/* === TOAST === */
+.toast {
+  position: fixed;
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--grey-800);
+  color: white;
+  padding: 10px 20px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  z-index: 1000;
+  transition: bottom 0.25s ease;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toast.visible { bottom: 24px; }
+.toast.success { background: var(--green); }
+.toast.error { background: var(--red); }
+
+/* === MODAL === */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay.visible { display: flex; }
+
+.modal {
+  background: var(--white);
+  border-radius: 8px;
+  padding: 24px;
+  width: 420px;
+  max-width: 90vw;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+
+.modal-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--grey-900);
+}
+
+.modal-body {
+  font-size: 13px;
+  color: var(--grey-600);
+  margin-bottom: 18px;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.modal-textarea {
+  width: 100%;
+  border: 1px solid var(--grey-300);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 12px;
+  resize: vertical;
+  min-height: 70px;
+  margin-bottom: 12px;
+}
+
+.modal-textarea:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+
+/* === NOTIFICATION DROPDOWN === */
+.notif-dropdown {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  background: var(--white);
+  border: 1px solid var(--grey-200);
+  border-radius: var(--radius);
+  width: 300px;
+  box-shadow: var(--shadow-md);
+  display: none;
+  z-index: 200;
+}
+
+.notif-dropdown.visible { display: block; }
+
+.notif-dropdown-header {
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--grey-700);
+  border-bottom: 1px solid var(--grey-200);
+}
+
+.notif-item {
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--grey-600);
+  border-bottom: 1px solid var(--grey-100);
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.notif-item:last-child { border-bottom: none; }
+
+.notif-item-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--blue);
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.notif-item-text { flex: 1; line-height: 1.4; }
+.notif-item-time { font-size: 10px; color: var(--grey-400); margin-top: 2px; }
+
+/* === RESPONSIVE === */
+@media (max-width: 1200px) {
+  .col-pending { width: 280px; min-width: 280px; }
+  .col-actions { width: 240px; min-width: 240px; }
+  .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 900px) {
+  .bandeja-layout { flex-direction: column; }
+  .col-pending, .col-actions { width: 100%; min-width: auto; height: auto; max-height: 300px; border: none; border-bottom: 1px solid var(--grey-200); }
+  .col-detail { min-height: 400px; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .resumen-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+  .header-user .user-info { display: none; }
+  .kpi-grid { grid-template-columns: 1fr; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--grey-300); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--grey-400); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-left">
+    <div class="header-brand">SegurCaixa <span>Adeslas</span></div>
+    <div class="header-divider"></div>
+    <div class="ia-status" id="iaToggle" title="Cambiar modo IA">
+      <div class="ia-dot" id="iaDot"></div>
+      <span id="iaLabel">IA activa</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="header-time" id="clockDisplay">--:--</div>
+    <div class="header-notifications" id="notifBell">
+      <span>&#128276;</span>
+      <div class="notif-badge" id="notifCount">4</div>
+      <div class="notif-dropdown" id="notifDropdown">
+        <div class="notif-dropdown-header">Notificaciones</div>
+        <div class="notif-item">
+          <div class="notif-item-dot"></div>
+          <div>
+            <div class="notif-item-text">EXP-2026-0015 - Score fraude elevado, pendiente de tu revision</div>
+            <div class="notif-item-time">Hace 15 min</div>
+          </div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-item-dot"></div>
+          <div>
+            <div class="notif-item-text">EXP-2026-0018 - Perito sin respuesta 48h</div>
+            <div class="notif-item-time">Hace 1h</div>
+          </div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-item-dot"></div>
+          <div>
+            <div class="notif-item-text">3 expedientes aprobados automaticamente por IA</div>
+            <div class="notif-item-time">Hace 2h</div>
+          </div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-item-dot"></div>
+          <div>
+            <div class="notif-item-text">Informe semanal disponible</div>
+            <div class="notif-item-time">Hace 3h</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="header-user">
+      <div class="user-avatar">AM</div>
+      <div class="user-info">
+        <div class="user-name">Ana Martinez</div>
+        <div class="user-role">Gestora Senior</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <button class="sidebar-btn active" data-tab="bandeja" title="Bandeja">
+    &#128203;
+    <span class="sidebar-tooltip">Bandeja</span>
+  </button>
+  <button class="sidebar-btn" data-tab="aprobaciones" title="Aprobaciones">
+    &#9989;
+    <span class="sidebar-tooltip">Aprobaciones</span>
+  </button>
+  <button class="sidebar-btn" data-tab="resumen" title="Resumen">
+    &#128202;
+    <span class="sidebar-tooltip">Resumen</span>
+  </button>
+  <button class="sidebar-btn" data-tab="config" title="Configuracion">
+    &#9881;
+    <span class="sidebar-tooltip">Configuracion</span>
+  </button>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- TAB: BANDEJA -->
+  <div class="tab-content active" id="tab-bandeja">
+    <div class="bandeja-layout">
+      <!-- Column 1: Pending -->
+      <div class="col-pending">
+        <div class="col-header">
+          <div class="col-title">Pendiente de revision</div>
+          <div class="col-count" id="pendingCount">6</div>
+        </div>
+        <div class="case-list" id="caseList"></div>
+      </div>
+
+      <!-- Column 2: Detail -->
+      <div class="col-detail" id="colDetail">
+        <div class="detail-empty" id="detailEmpty">
+          <div class="detail-empty-icon">&#128203;</div>
+          <div>Selecciona un expediente para ver el detalle</div>
+        </div>
+        <div class="detail-content" id="detailContent"></div>
+      </div>
+
+      <!-- Column 3: Actions -->
+      <div class="col-actions" id="colActions">
+        <div class="col-header">
+          <div class="col-title">Acciones</div>
+        </div>
+        <div class="actions-body" id="actionsBody">
+          <div class="detail-empty" style="height:auto; padding:40px 0;">
+            <div style="font-size:24px; opacity:0.3;">&#9881;</div>
+            <div style="color:var(--grey-400); font-size:12px;">Selecciona un expediente</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: APROBACIONES -->
+  <div class="tab-content" id="tab-aprobaciones">
+    <div class="tab-aprobaciones">
+      <div style="margin-bottom:16px;">
+        <h2 style="font-size:16px; font-weight:600; color:var(--grey-800);">Aprobaciones pendientes</h2>
+        <p style="font-size:12px; color:var(--grey-500); margin-top:4px;">Expedientes que requieren aprobacion por nivel de autorizacion</p>
+      </div>
+
+      <!-- My approvals -->
+      <div class="approval-section">
+        <div class="approval-section-header">
+          <div class="approval-section-title">Pendientes de MI aprobacion (hasta 3.000 EUR)</div>
+          <div class="approval-section-count">3</div>
+        </div>
+        <table class="approval-table">
+          <thead>
+            <tr><th>Expediente</th><th>Cliente</th><th>Tipo</th><th>Importe</th><th>Propuesta IA</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="approvalsMyTable">
+            <tr>
+              <td style="font-weight:600;">EXP-2026-0021</td>
+              <td>Pedro Sanchez Gil</td>
+              <td>Hogar</td>
+              <td class="approval-amount">1.250 EUR</td>
+              <td><span class="ia-tag">&#129302; Aprobar - Conf. 94%</span></td>
+              <td class="approval-actions">
+                <button class="btn btn-approve btn-sm" onclick="approveTableRow(this, 'EXP-2026-0021')">Aprobar</button>
+                <button class="btn btn-reject btn-sm" onclick="rejectTableRow(this, 'EXP-2026-0021')">Rechazar</button>
+              </td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">EXP-2026-0023</td>
+              <td>Laura Diaz Ruiz</td>
+              <td>Auto</td>
+              <td class="approval-amount">890 EUR</td>
+              <td><span class="ia-tag">&#129302; Aprobar - Conf. 91%</span></td>
+              <td class="approval-actions">
+                <button class="btn btn-approve btn-sm" onclick="approveTableRow(this, 'EXP-2026-0023')">Aprobar</button>
+                <button class="btn btn-reject btn-sm" onclick="rejectTableRow(this, 'EXP-2026-0023')">Rechazar</button>
+              </td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">EXP-2026-0025</td>
+              <td>Carlos Vega Martin</td>
+              <td>Hogar</td>
+              <td class="approval-amount">2.100 EUR</td>
+              <td><span class="ia-tag">&#129302; Aprobar - Conf. 87%</span></td>
+              <td class="approval-actions">
+                <button class="btn btn-approve btn-sm" onclick="approveTableRow(this, 'EXP-2026-0025')">Aprobar</button>
+                <button class="btn btn-reject btn-sm" onclick="rejectTableRow(this, 'EXP-2026-0025')">Rechazar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Supervisor -->
+      <div class="approval-section">
+        <div class="approval-section-header">
+          <div class="approval-section-title">Pendientes de SUPERVISOR (3.000 - 10.000 EUR)</div>
+          <div class="approval-section-count">2</div>
+        </div>
+        <table class="approval-table">
+          <thead>
+            <tr><th>Expediente</th><th>Cliente</th><th>Tipo</th><th>Importe</th><th>Propuesta IA</th><th>Estado</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:600;">EXP-2026-0016</td>
+              <td>Roberto Fernandez</td>
+              <td>Auto</td>
+              <td class="approval-amount">8.500 EUR</td>
+              <td><span class="ia-tag">&#129302; Aprobar - Conf. 82%</span></td>
+              <td><span style="color:var(--yellow); font-size:11px;">&#9201; Enviado a J. Lopez</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">EXP-2026-0019</td>
+              <td>Manuel Torres Ruiz</td>
+              <td>Auto</td>
+              <td class="approval-amount">5.200 EUR</td>
+              <td><span class="ia-tag">&#129302; Revisar - Conf. 68%</span></td>
+              <td><span style="color:var(--yellow); font-size:11px;">&#9201; Enviado a J. Lopez</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Director -->
+      <div class="approval-section">
+        <div class="approval-section-header">
+          <div class="approval-section-title">Pendientes de DIRECTOR (+10.000 EUR)</div>
+          <div class="approval-section-count">1</div>
+        </div>
+        <table class="approval-table">
+          <thead>
+            <tr><th>Expediente</th><th>Cliente</th><th>Tipo</th><th>Importe</th><th>Propuesta IA</th><th>Estado</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:600;">EXP-2026-0012</td>
+              <td>Empresa Logistica Norte SL</td>
+              <td>Flota</td>
+              <td class="approval-amount">23.400 EUR</td>
+              <td><span class="ia-tag">&#129302; Revisar - Conf. 71%</span></td>
+              <td><span style="color:var(--yellow); font-size:11px;">&#9201; Enviado a M. Garcia (Dir.)</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: RESUMEN -->
+  <div class="tab-content" id="tab-resumen">
+    <div class="tab-resumen">
+      <div style="margin-bottom:16px;">
+        <h2 style="font-size:16px; font-weight:600; color:var(--grey-800);">Resumen del dia</h2>
+        <p style="font-size:12px; color:var(--grey-500); margin-top:4px;">19 de marzo de 2026 - Datos actualizados en tiempo real</p>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-value neutral">24</div>
+          <div class="kpi-label">Siniestros hoy</div>
+          <div class="kpi-sub">+3 vs ayer</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value highlight">18</div>
+          <div class="kpi-label">Gestionados por IA</div>
+          <div class="kpi-sub">75% del total</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">6</div>
+          <div class="kpi-label">Escalados a mi</div>
+          <div class="kpi-sub">25% del total</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value highlight">4</div>
+          <div class="kpi-label">Aprobados por mi</div>
+          <div class="kpi-sub">2 pendientes</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value neutral">2.1d</div>
+          <div class="kpi-label">Tiempo medio resolucion</div>
+          <div class="kpi-sub">-0.4d vs semana pasada</div>
+        </div>
+      </div>
+
+      <div class="resumen-grid">
+        <div class="chart-box">
+          <div class="chart-title">Ultimos 7 dias: siniestros recibidos vs resueltos</div>
+          <div class="chart-container" id="weekChart"></div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot total"></div> Recibidos</div>
+            <div class="legend-item"><div class="legend-dot resolved"></div> Resueltos</div>
+          </div>
+        </div>
+        <div>
+          <div class="ia-saving-box">
+            <div class="ia-saving-value">4.2h</div>
+            <div class="ia-saving-label">La IA ha ahorrado hoy</div>
+            <div class="ia-saving-detail">Equivalente a 18 expedientes gestionados sin intervencion humana</div>
+          </div>
+          <div class="chart-box" style="margin-top:12px;">
+            <div class="chart-title">Distribucion por tipo</div>
+            <div style="padding:8px 0;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;"><span>Auto</span><span style="font-weight:600;">14</span></div>
+              <div style="background:var(--grey-200); height:6px; border-radius:3px; margin-bottom:10px;"><div style="background:var(--blue); height:100%; width:58%; border-radius:3px;"></div></div>
+              <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;"><span>Hogar</span><span style="font-weight:600;">7</span></div>
+              <div style="background:var(--grey-200); height:6px; border-radius:3px; margin-bottom:10px;"><div style="background:var(--blue-light); height:100%; width:29%; border-radius:3px;"></div></div>
+              <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;"><span>Salud</span><span style="font-weight:600;">2</span></div>
+              <div style="background:var(--grey-200); height:6px; border-radius:3px; margin-bottom:10px;"><div style="background:var(--blue); opacity:0.4; height:100%; width:8%; border-radius:3px;"></div></div>
+              <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;"><span>Otros</span><span style="font-weight:600;">1</span></div>
+              <div style="background:var(--grey-200); height:6px; border-radius:3px;"><div style="background:var(--grey-400); height:100%; width:4%; border-radius:3px;"></div></div>
+            </div>
+          </div>
+          <button class="btn btn-outline btn-report" style="width:100%; margin-top:12px;" onclick="showToast('Generando informe semanal en PDF...', 'success')">&#128196; Descargar informe semanal</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: CONFIGURACION -->
+  <div class="tab-content" id="tab-config">
+    <div class="tab-config">
+      <div style="margin-bottom:16px;">
+        <h2 style="font-size:16px; font-weight:600; color:var(--grey-800);">Configuracion</h2>
+        <p style="font-size:12px; color:var(--grey-500); margin-top:4px;">Ajustes de la IA y preferencias personales</p>
+      </div>
+
+      <div class="config-section">
+        <div class="config-title">Modo de operacion de la IA</div>
+        <div class="config-row">
+          <div>
+            <div class="config-label">Modo de gestion</div>
+            <div class="config-label-sub">Automatico: la IA gestiona y aprueba sin intervencion. Supervisado: la IA gestiona pero tu apruebas. Manual: la IA solo asiste.</div>
+          </div>
+          <div class="mode-group">
+            <button class="mode-btn" onclick="setMode(this)">Automatico</button>
+            <button class="mode-btn active" onclick="setMode(this)">Supervisado</button>
+            <button class="mode-btn" onclick="setMode(this)">Manual</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <div class="config-title">Umbrales</div>
+        <div class="config-row">
+          <div>
+            <div class="config-label">Umbral de auto-aprobacion</div>
+            <div class="config-label-sub">Expedientes por debajo de este importe se aprueban automaticamente</div>
+          </div>
+          <div class="config-slider-group">
+            <input type="range" class="config-slider" min="0" max="2000" value="500" step="50" oninput="this.nextElementSibling.textContent=this.value+' EUR'">
+            <div class="config-slider-value">500 EUR</div>
+          </div>
+        </div>
+        <div class="config-row">
+          <div>
+            <div class="config-label">Umbral de fraude para escalado</div>
+            <div class="config-label-sub">Score de fraude por encima del cual el caso se escala automaticamente</div>
+          </div>
+          <div class="config-slider-group">
+            <input type="range" class="config-slider" min="0" max="100" value="65" step="5" oninput="this.nextElementSibling.textContent=this.value+'/100'">
+            <div class="config-slider-value">65/100</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <div class="config-title">Notificaciones</div>
+        <div class="config-row">
+          <div class="config-label">Email</div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="config-row">
+          <div class="config-label">SMS</div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="config-row">
+          <div class="config-label">Notificaciones push</div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <div class="config-title">Comportamiento de la IA</div>
+        <div class="config-row">
+          <div>
+            <div class="config-label">La IA debe llamar al cliente antes de cerrar el expediente</div>
+            <div class="config-label-sub">La IA realizara una llamada automatica al cliente para confirmar satisfaccion antes del cierre</div>
+          </div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="config-row">
+          <div>
+            <div class="config-label">Enviar resumen diario por email</div>
+            <div class="config-label-sub">Recibiras un resumen de actividad cada dia a las 18:00</div>
+          </div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="config-row">
+          <div>
+            <div class="config-label">Permitir auto-asignacion de perito por IA</div>
+            <div class="config-label-sub">La IA selecciona y asigna perito automaticamente segun zona y disponibilidad</div>
+          </div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+
+      <div style="padding:12px 0; text-align:right;">
+        <button class="btn btn-primary" onclick="showToast('Configuracion guardada', 'success')">Guardar cambios</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// === DATA ===
+const cases = [
+  {
+    id: 'EXP-2026-0015',
+    priority: 'urgent',
+    client: 'Maria Garcia Lopez',
+    type: 'Auto',
+    typeBadge: 'Todo Riesgo',
+    policy: 'POL-2024-00456',
+    desc: 'Accidente M-30 - Score fraude alto',
+    timeAgo: 'Hace 15 min',
+    iaSummary: 'Score fraude 72/100. Recomiendo revision manual antes de aprobar pago. 2 siniestros similares en 6 meses.',
+    detail: {
+      what: 'Colision frontal en M-30 salida 7. Airbags activados. Vehiculo: Seat Leon 2022. Sin heridos graves. El conductor reporta que el otro vehiculo invadio su carril.',
+      iaSteps: [
+        { icon: '\u2705', text: 'Poliza verificada - Todo Riesgo, vigente, al corriente de pago' },
+        { icon: '\u2705', text: 'Siniestro registrado - EXP-2026-0015' },
+        { icon: '\u2705', text: 'Grua solicitada - Europ Assistance (llego en 14 min)' },
+        { icon: '\u2705', text: 'Perito asignado - Carlos Ruiz (zona sur Madrid)' },
+        { icon: '\u26A0\uFE0F', text: 'Score fraude: 72/100 - REQUIERE REVISION', warning: 'Motivo: 2 siniestros similares en ultimos 6 meses. Patron detectado por modelo predictivo.' }
+      ],
+      docs: [
+        { ok: true, text: 'Parte amistoso recibido' },
+        { ok: true, text: '3 fotos del dano (frontal, lateral, detalle)' },
+        { ok: false, text: 'Atestado policial - NO RECIBIDO' }
+      ],
+      valoracion: 4200,
+      franquicia: 0,
+      indemnizacion: 4200,
+      historial: [
+        '2 siniestros en ultimos 12 meses',
+        'Antiguedad como cliente: 3 anos',
+        'Satisfaccion anterior: 8/10',
+        'Sin impagos registrados'
+      ],
+      iaProposal: 'Revisar con perito antes de aprobar. El score fraude es elevado por 2 siniestros recientes, pero el historial del cliente es limpio y nunca ha tenido reclamaciones.',
+      iaConfidence: 78
+    }
+  },
+  {
+    id: 'EXP-2026-0016',
+    priority: 'normal',
+    client: 'Roberto Fernandez Ruiz',
+    type: 'Auto',
+    typeBadge: 'Terceros Ampliado',
+    policy: 'POL-2023-01289',
+    desc: 'Importe alto (8.500 EUR) - Requiere supervisor',
+    timeAgo: 'Hace 45 min',
+    iaSummary: 'Importe supera 3.000 EUR. Necesita aprobacion de supervisor. Toda la documentacion completa.',
+    detail: {
+      what: 'Colision multiple en rotonda A-6 km 23. Danos significativos en parte trasera y lateral derecho. Volkswagen Golf 2023. El otro conductor reconoce culpa en parte amistoso.',
+      iaSteps: [
+        { icon: '\u2705', text: 'Poliza verificada - Terceros Ampliado, vigente' },
+        { icon: '\u2705', text: 'Siniestro registrado - EXP-2026-0016' },
+        { icon: '\u2705', text: 'Grua solicitada y servicio completado' },
+        { icon: '\u2705', text: 'Perito asignado - Ana Moreno (ya ha visitado)' },
+        { icon: '\u2705', text: 'Perito confirma valoracion: 8.500 EUR' },
+        { icon: '\u26A0\uFE0F', text: 'Importe supera limite gestor (3.000 EUR)', warning: 'Requiere aprobacion de supervisor. Expediente enviado automaticamente a J. Lopez.' }
+      ],
+      docs: [
+        { ok: true, text: 'Parte amistoso recibido y firmado' },
+        { ok: true, text: '5 fotos del dano' },
+        { ok: true, text: 'Atestado policial recibido' },
+        { ok: true, text: 'Informe pericial completado' }
+      ],
+      valoracion: 8500,
+      franquicia: 300,
+      indemnizacion: 8200,
+      historial: [
+        '0 siniestros previos',
+        'Antiguedad como cliente: 7 anos',
+        'Satisfaccion anterior: 9/10',
+        'Cliente fidelizado - descuento 15%'
+      ],
+      iaProposal: 'Documentacion completa y perito confirma. Recomiendo aprobar y escalar a supervisor por importe. Sin indicios de fraude (score 12/100).',
+      iaConfidence: 95
+    }
+  },
+  {
+    id: 'EXP-2026-0017',
+    priority: 'urgent',
+    client: 'Carmen Ortega Vidal',
+    type: 'Hogar',
+    typeBadge: 'Hogar Plus',
+    policy: 'POL-2025-00891',
+    desc: 'Reclamacion - No conforme con valoracion',
+    timeAgo: 'Hace 1h 20min',
+    iaSummary: 'Cliente no acepta valoracion de 2.800 EUR. Reclama 5.200 EUR. Ha expresado intencion de presentar queja formal.',
+    detail: {
+      what: 'Inundacion por rotura de tuberia en cocina. Danos en suelo, muebles bajos y electrodomesticos. La clienta dice que los muebles son de alta gama y la valoracion no los cubre.',
+      iaSteps: [
+        { icon: '\u2705', text: 'Poliza verificada - Hogar Plus, vigente' },
+        { icon: '\u2705', text: 'Siniestro registrado - EXP-2026-0017' },
+        { icon: '\u2705', text: 'Fontanero urgente enviado (reparacion completada)' },
+        { icon: '\u2705', text: 'Perito asignado - Miguel Santos' },
+        { icon: '\u2705', text: 'Valoracion realizada: 2.800 EUR' },
+        { icon: '\u274C', text: 'Cliente rechaza valoracion', warning: 'La clienta indica que los muebles de cocina costaron 4.100 EUR hace 8 meses. Tiene facturas. Diferencia con valoracion: 2.400 EUR.' }
+      ],
+      docs: [
+        { ok: true, text: '6 fotos de los danos' },
+        { ok: true, text: 'Informe fontanero' },
+        { ok: true, text: 'Factura muebles cocina (4.100 EUR)' },
+        { ok: true, text: 'Informe pericial' }
+      ],
+      valoracion: 2800,
+      franquicia: 150,
+      indemnizacion: 2650,
+      historial: [
+        '0 siniestros previos',
+        'Antiguedad como cliente: 1 ano',
+        'Primera reclamacion',
+        'Poliza contratada con prima alta'
+      ],
+      iaProposal: 'La clienta tiene facturas que justifican un importe mayor. Recomiendo revisar valoracion con perito considerando las facturas aportadas. Riesgo de fuga de cliente si no se ajusta.',
+      iaConfidence: 65
+    }
+  },
+  {
+    id: 'EXP-2026-0020',
+    priority: 'normal',
+    client: 'Javier Munoz Pena',
+    type: 'Auto',
+    typeBadge: 'Todo Riesgo',
+    policy: 'POL-2024-02156',
+    desc: 'Documentacion incompleta - Faltan fotos',
+    timeAgo: 'Hace 2h',
+    iaSummary: 'No se han recibido fotos del dano. La IA ha enviado 2 recordatorios por SMS. Sin respuesta del cliente.',
+    detail: {
+      what: 'Golpe en parking subterraneo. Danos en puerta delantera izquierda. Renault Clio 2024. Sin parte amistoso (el otro vehiculo no estaba).',
+      iaSteps: [
+        { icon: '\u2705', text: 'Poliza verificada - Todo Riesgo, vigente' },
+        { icon: '\u2705', text: 'Siniestro registrado - EXP-2026-0020' },
+        { icon: '\u2705', text: 'SMS enviado solicitando fotos (2 veces)' },
+        { icon: '\u274C', text: 'Fotos no recibidas tras 24h', warning: 'El cliente no ha respondido a los 2 SMS enviados. Ultimo intento hace 4h.' }
+      ],
+      docs: [
+        { ok: true, text: 'Declaracion del asegurado' },
+        { ok: false, text: 'Fotos del dano - NO RECIBIDAS' },
+        { ok: false, text: 'Parte amistoso - N/A (sin tercero)' }
+      ],
+      valoracion: null,
+      franquicia: 200,
+      indemnizacion: null,
+      historial: [
+        '1 siniestro previo (hace 2 anos)',
+        'Antiguedad como cliente: 4 anos',
+        'Buen historial de pago'
+      ],
+      iaProposal: 'Recomiendo llamar al cliente directamente. Los SMS no han funcionado. Sin fotos no se puede asignar perito ni valorar.',
+      iaConfidence: 88
+    }
+  },
+  {
+    id: 'EXP-2026-0018',
+    priority: 'urgent',
+    client: 'Sofia Herrera Blanco',
+    type: 'Auto',
+    typeBadge: 'Terceros',
+    policy: 'POL-2025-00334',
+    desc: 'Perito sin respuesta 48h',
+    timeAgo: 'Hace 3h',
+    iaSummary: 'El perito asignado (Luis Gomez) no responde desde hace 48h. La IA ha intentado contactar 3 veces. SLA en riesgo.',
+    detail: {
+      what: 'Alcance trasero en semaforo. Danos leves en paragolpes. Toyota Yaris 2021. El otro conductor tiene seguro con Mapfre.',
+      iaSteps: [
+        { icon: '\u2705', text: 'Poliza verificada - Terceros, vigente' },
+        { icon: '\u2705', text: 'Siniestro registrado - EXP-2026-0018' },
+        { icon: '\u2705', text: 'Reclamacion abierta contra Mapfre' },
+        { icon: '\u2705', text: 'Perito asignado - Luis Gomez' },
+        { icon: '\u274C', text: 'Perito no responde (48h)', warning: 'Se ha intentado contactar 3 veces por telefono y email. Sin respuesta. SLA de 72h - quedan 24h.' }
+      ],
+      docs: [
+        { ok: true, text: 'Parte amistoso firmado por ambas partes' },
+        { ok: true, text: '2 fotos del dano' },
+        { ok: false, text: 'Informe pericial - PENDIENTE' }
+      ],
+      valoracion: 1800,
+      franquicia: 0,
+      indemnizacion: 1800,
+      historial: [
+        '0 siniestros previos',
+        'Antiguedad como cliente: 2 anos',
+        'Cliente satisfecha en atencion anterior'
+      ],
+      iaProposal: 'Urgente: reasignar perito. Luis Gomez no responde y el SLA vence en 24h. Sugiero asignar a Maria Jimenez (disponible en la zona).',
+      iaConfidence: 92
+    }
+  },
+  {
+    id: 'EXP-2026-0019',
+    priority: 'urgent',
+    client: 'Manuel Torres Ruiz',
+    type: 'Auto',
+    typeBadge: 'Todo Riesgo',
+    policy: 'POL-2023-03421',
+    desc: 'Caso complejo - 3 vehiculos implicados',
+    timeAgo: 'Hace 4h',
+    iaSummary: 'Accidente con 3 vehiculos. Responsabilidad compartida. 2 aseguradoras externas implicadas. Requiere coordinacion manual.',
+    detail: {
+      what: 'Colision en cadena en A-2 km 45 por lluvia. 3 vehiculos: nuestro asegurado (BMW Serie 3 2023), un camion (Zurich), y una furgoneta (AXA). Hay un herido leve en la furgoneta.',
+      iaSteps: [
+        { icon: '\u2705', text: 'Poliza verificada - Todo Riesgo, vigente' },
+        { icon: '\u2705', text: 'Siniestro registrado - EXP-2026-0019' },
+        { icon: '\u2705', text: 'Grua solicitada y servicio completado' },
+        { icon: '\u2705', text: 'Perito asignado - Fernando Diaz' },
+        { icon: '\u2705', text: 'Contacto iniciado con Zurich y AXA' },
+        { icon: '\u26A0\uFE0F', text: 'Caso complejo - 3 vehiculos, herido leve', warning: 'Responsabilidad aun no determinada. Atestado policial indica posible responsabilidad compartida 40/30/30. Herido leve en furgoneta puede derivar en lesiones.' }
+      ],
+      docs: [
+        { ok: true, text: 'Declaracion del asegurado' },
+        { ok: true, text: 'Atestado policial' },
+        { ok: true, text: '8 fotos del accidente' },
+        { ok: true, text: 'Informe medico del herido (leve)' },
+        { ok: false, text: 'Valoracion perito - EN CURSO' },
+        { ok: false, text: 'Respuesta de Zurich - PENDIENTE' },
+        { ok: false, text: 'Respuesta de AXA - PENDIENTE' }
+      ],
+      valoracion: 5200,
+      franquicia: 0,
+      indemnizacion: 5200,
+      historial: [
+        '1 siniestro previo (sin culpa)',
+        'Antiguedad como cliente: 5 anos',
+        'Cliente premium - atencion prioritaria'
+      ],
+      iaProposal: 'Caso complejo que requiere coordinacion manual. Recomiendo contactar con Zurich y AXA para acordar reparto de responsabilidad. Vigilar evolucion del herido leve.',
+      iaConfidence: 55
+    }
+  }
+];
+
+let selectedCaseIndex = null;
+let iaActive = true;
+
+// === CLOCK ===
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clockDisplay').textContent =
+    now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+}
+updateClock();
+setInterval(updateClock, 30000);
+
+// === TABS ===
+document.querySelectorAll('.sidebar-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// === IA TOGGLE ===
+document.getElementById('iaToggle').addEventListener('click', () => {
+  iaActive = !iaActive;
+  document.getElementById('iaDot').classList.toggle('inactive', !iaActive);
+  document.getElementById('iaLabel').textContent = iaActive ? 'IA activa' : 'IA inactiva';
+  showToast(iaActive ? 'IA activada. Los expedientes se gestionaran automaticamente.' : 'IA desactivada. Todos los expedientes requeriran gestion manual.', iaActive ? 'success' : '');
+});
+
+// === NOTIFICATIONS ===
+document.getElementById('notifBell').addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.getElementById('notifDropdown').classList.toggle('visible');
+});
+document.addEventListener('click', () => {
+  document.getElementById('notifDropdown').classList.remove('visible');
+});
+
+// === RENDER CASE LIST ===
+function renderCaseList() {
+  const list = document.getElementById('caseList');
+  list.innerHTML = '';
+  let visibleCount = 0;
+
+  cases.forEach((c, i) => {
+    if (c.resolved) {
+      // still render but faded
+    } else {
+      visibleCount++;
+    }
+
+    const card = document.createElement('div');
+    card.className = 'case-card' + (i === selectedCaseIndex ? ' selected' : '') + (c.resolved ? ' resolved' : '');
+    card.innerHTML = `
+      <div class="case-top">
+        <div class="case-priority ${c.priority}"></div>
+        <div class="case-exp">${c.id}</div>
+        <div class="case-type-badge">${c.type}</div>
+      </div>
+      <div class="case-client">${c.client}</div>
+      <div class="case-desc">${c.desc}</div>
+      <div class="case-ia-summary">${c.iaSummary}</div>
+      <div class="case-bottom">
+        <div class="case-time">${c.resolved ? 'Resuelto' : c.timeAgo}</div>
+        <div class="case-action-link">${c.resolved ? '' : 'Ver detalle \u2192'}</div>
+      </div>
+    `;
+    if (!c.resolved) {
+      card.addEventListener('click', () => selectCase(i));
+    }
+    list.appendChild(card);
+  });
+
+  document.getElementById('pendingCount').textContent = visibleCount;
+}
+
+// === SELECT CASE ===
+function selectCase(index) {
+  selectedCaseIndex = index;
+  const c = cases[index];
+  renderCaseList();
+  renderDetail(c);
+  renderActions(c);
+}
+
+// === RENDER DETAIL ===
+function renderDetail(c) {
+  document.getElementById('detailEmpty').style.display = 'none';
+  const el = document.getElementById('detailContent');
+  el.classList.add('visible');
+
+  let iaStepsHtml = c.detail.iaSteps.map(s => {
+    let html = `<li><span class="step-icon">${s.icon}</span><span>${s.text}</span></li>`;
+    if (s.warning) {
+      html += `<li><div class="ia-step-warning">${s.warning}</div></li>`;
+    }
+    return html;
+  }).join('');
+
+  let docsHtml = c.detail.docs.map(d =>
+    `<li>${d.ok ? '\u2705' : '\u274C'} ${d.text}</li>`
+  ).join('');
+
+  let valHtml = '';
+  if (c.detail.valoracion !== null) {
+    valHtml = `
+      <div class="val-box">
+        <div class="val-row"><span>Valoracion IA</span><span>${c.detail.valoracion.toLocaleString('es-ES')} EUR</span></div>
+        <div class="val-row"><span>Franquicia</span><span>-${c.detail.franquicia.toLocaleString('es-ES')} EUR</span></div>
+        <div class="val-row total"><span>Indemnizacion propuesta</span><span>${c.detail.indemnizacion.toLocaleString('es-ES')} EUR</span></div>
+      </div>
+    `;
+  } else {
+    valHtml = `<div class="val-box"><div style="text-align:center; color:var(--grey-400); padding:8px; font-size:12px;">Pendiente de valoracion</div></div>`;
+  }
+
+  let histHtml = c.detail.historial.map(h =>
+    `<li>\u2022 ${h}</li>`
+  ).join('');
+
+  el.innerHTML = `
+    <div class="detail-header">
+      <div class="detail-exp">${c.id} - ${c.client}</div>
+      <div class="detail-policy">${c.typeBadge} (${c.policy})</div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">&#128203; Que ha pasado</div>
+      <div class="detail-section-body">${c.detail.what}</div>
+    </div>
+
+    <hr class="detail-hr">
+
+    <div class="detail-section">
+      <div class="detail-section-title">&#129302; Que ha hecho la IA</div>
+      <ul class="ia-steps">${iaStepsHtml}</ul>
+    </div>
+
+    <hr class="detail-hr">
+
+    <div class="detail-section">
+      <div class="detail-section-title">&#128196; Documentacion</div>
+      <ul class="doc-list">${docsHtml}</ul>
+    </div>
+
+    <hr class="detail-hr">
+
+    <div class="detail-section">
+      <div class="detail-section-title">&#128176; Valoracion</div>
+      ${valHtml}
+    </div>
+
+    <hr class="detail-hr">
+
+    <div class="detail-section">
+      <div class="detail-section-title">&#128202; Historial del cliente</div>
+      <ul class="history-list">${histHtml}</ul>
+    </div>
+  `;
+}
+
+// === RENDER ACTIONS ===
+function renderActions(c) {
+  const el = document.getElementById('actionsBody');
+  el.innerHTML = `
+    <div class="ia-proposal-box">
+      <div class="ia-proposal-title">&#129302; Propuesta de la IA</div>
+      <div class="ia-proposal-text">${c.detail.iaProposal}</div>
+      <div class="ia-confidence">Confianza IA: <strong>${c.detail.iaConfidence}%</strong></div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-approve" onclick="approveCase()">&#9989; Aprobar propuesta IA</button>
+      <button class="btn btn-reject" onclick="rejectCase()">&#10060; Rechazar</button>
+      <button class="btn btn-primary" onclick="showToast('Abriendo telefono del cliente...', '')">&#128222; Llamar al cliente</button>
+      <button class="btn btn-outline" onclick="requestDocs()">&#128221; Pedir mas documentacion</button>
+      <button class="btn btn-outline" onclick="escalateCase()">&#11014;\uFE0F Escalar a supervisor</button>
+      <button class="btn btn-outline" onclick="showToast('Abriendo chat interno...', '')">&#128172; Contactar perito</button>
+    </div>
+
+    <div class="notes-section">
+      <div class="notes-title">Notas del expediente</div>
+      <textarea class="notes-textarea" id="noteInput" placeholder="Escribir nota..."></textarea>
+      <button class="btn btn-outline btn-save-note" onclick="saveNote()">Guardar nota</button>
+      <div class="saved-notes" id="savedNotes"></div>
+    </div>
+  `;
+}
+
+// === ACTIONS ===
+function approveCase() {
+  if (selectedCaseIndex === null) return;
+  const c = cases[selectedCaseIndex];
+  showModal(
+    'Confirmar aprobacion',
+    `Vas a aprobar el expediente <strong>${c.id}</strong> de <strong>${c.client}</strong>.<br><br>` +
+    (c.detail.indemnizacion ? `Indemnizacion: <strong>${c.detail.indemnizacion.toLocaleString('es-ES')} EUR</strong><br><br>` : '') +
+    'La IA procesara el pago automaticamente.',
+    [
+      { text: 'Cancelar', class: 'btn btn-outline', action: closeModal },
+      { text: 'Confirmar aprobacion', class: 'btn btn-approve', action: () => {
+        c.resolved = true;
+        closeModal();
+        selectedCaseIndex = null;
+        document.getElementById('detailContent').classList.remove('visible');
+        document.getElementById('detailContent').innerHTML = '';
+        document.getElementById('detailEmpty').style.display = '';
+        document.getElementById('actionsBody').innerHTML = '<div class="detail-empty" style="height:auto; padding:40px 0;"><div style="font-size:24px; opacity:0.3;">&#9881;</div><div style="color:var(--grey-400); font-size:12px;">Selecciona un expediente</div></div>';
+        renderCaseList();
+        showToast('Expediente ' + c.id + ' aprobado. La IA procesa el pago.', 'success');
+      }}
+    ]
+  );
+}
+
+function rejectCase() {
+  if (selectedCaseIndex === null) return;
+  const c = cases[selectedCaseIndex];
+  showModalWithInput(
+    'Rechazar expediente',
+    `Indica el motivo del rechazo para ${c.id}:`,
+    'Motivo del rechazo...',
+    [
+      { text: 'Cancelar', class: 'btn btn-outline', action: closeModal },
+      { text: 'Confirmar rechazo', class: 'btn btn-reject', action: (reason) => {
+        if (!reason.trim()) {
+          showToast('Debes indicar un motivo', 'error');
+          return;
+        }
+        c.resolved = true;
+        closeModal();
+        selectedCaseIndex = null;
+        document.getElementById('detailContent').classList.remove('visible');
+        document.getElementById('detailContent').innerHTML = '';
+        document.getElementById('detailEmpty').style.display = '';
+        document.getElementById('actionsBody').innerHTML = '<div class="detail-empty" style="height:auto; padding:40px 0;"><div style="font-size:24px; opacity:0.3;">&#9881;</div><div style="color:var(--grey-400); font-size:12px;">Selecciona un expediente</div></div>';
+        renderCaseList();
+        showToast('Expediente ' + c.id + ' rechazado.', 'error');
+      }}
+    ]
+  );
+}
+
+function requestDocs() {
+  if (selectedCaseIndex === null) return;
+  const c = cases[selectedCaseIndex];
+  showModalWithInput(
+    'Pedir documentacion',
+    `Indica que documentacion necesitas para ${c.id}:`,
+    'Ej: Necesitamos fotos del dano y atestado policial...',
+    [
+      { text: 'Cancelar', class: 'btn btn-outline', action: closeModal },
+      { text: 'Enviar solicitud', class: 'btn btn-primary', action: (text) => {
+        if (!text.trim()) {
+          showToast('Indica la documentacion necesaria', 'error');
+          return;
+        }
+        closeModal();
+        showToast('Solicitud de documentacion enviada al cliente por SMS y email.', 'success');
+      }}
+    ]
+  );
+}
+
+function escalateCase() {
+  if (selectedCaseIndex === null) return;
+  const c = cases[selectedCaseIndex];
+  showModal(
+    'Escalar a supervisor',
+    `Vas a escalar el expediente <strong>${c.id}</strong> a tu supervisor (J. Lopez).<br><br>El supervisor recibira una notificacion inmediata.`,
+    [
+      { text: 'Cancelar', class: 'btn btn-outline', action: closeModal },
+      { text: 'Escalar', class: 'btn btn-primary', action: () => {
+        closeModal();
+        showToast('Expediente ' + c.id + ' escalado a J. Lopez (supervisor).', 'success');
+      }}
+    ]
+  );
+}
+
+function saveNote() {
+  const input = document.getElementById('noteInput');
+  if (!input || !input.value.trim()) return;
+  const notesEl = document.getElementById('savedNotes');
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  const noteHtml = `<div class="saved-note"><div>${input.value.trim()}</div><div class="saved-note-time">Ana Martinez - ${timeStr}</div></div>`;
+  notesEl.insertAdjacentHTML('afterbegin', noteHtml);
+  input.value = '';
+  showToast('Nota guardada', 'success');
+}
+
+// === APPROVAL TABLE ACTIONS ===
+function approveTableRow(btn, expId) {
+  const row = btn.closest('tr');
+  showModal(
+    'Confirmar aprobacion',
+    `Vas a aprobar el expediente <strong>${expId}</strong>. La IA procesara el pago automaticamente.`,
+    [
+      { text: 'Cancelar', class: 'btn btn-outline', action: closeModal },
+      { text: 'Aprobar', class: 'btn btn-approve', action: () => {
+        row.style.opacity = '0.3';
+        row.style.pointerEvents = 'none';
+        row.querySelector('.approval-actions').innerHTML = '<span style="color:var(--green); font-size:11px;">\u2705 Aprobado</span>';
+        closeModal();
+        showToast('Expediente ' + expId + ' aprobado.', 'success');
+      }}
+    ]
+  );
+}
+
+function rejectTableRow(btn, expId) {
+  const row = btn.closest('tr');
+  showModalWithInput(
+    'Rechazar expediente',
+    `Motivo del rechazo para ${expId}:`,
+    'Motivo...',
+    [
+      { text: 'Cancelar', class: 'btn btn-outline', action: closeModal },
+      { text: 'Rechazar', class: 'btn btn-reject', action: (reason) => {
+        if (!reason.trim()) { showToast('Indica un motivo', 'error'); return; }
+        row.style.opacity = '0.3';
+        row.style.pointerEvents = 'none';
+        row.querySelector('.approval-actions').innerHTML = '<span style="color:var(--red); font-size:11px;">\u274C Rechazado</span>';
+        closeModal();
+        showToast('Expediente ' + expId + ' rechazado.', 'error');
+      }}
+    ]
+  );
+}
+
+// === MODAL ===
+function showModal(title, body, actions) {
+  const overlay = document.getElementById('modalOverlay');
+  const content = document.getElementById('modalContent');
+  let actionsHtml = actions.map((a, i) =>
+    `<button class="${a.class}" id="modalBtn${i}">${a.text}</button>`
+  ).join('');
+  content.innerHTML = `
+    <div class="modal-title">${title}</div>
+    <div class="modal-body">${body}</div>
+    <div class="modal-actions">${actionsHtml}</div>
+  `;
+  actions.forEach((a, i) => {
+    document.getElementById('modalBtn' + i).addEventListener('click', a.action);
+  });
+  overlay.classList.add('visible');
+}
+
+function showModalWithInput(title, body, placeholder, actions) {
+  const overlay = document.getElementById('modalOverlay');
+  const content = document.getElementById('modalContent');
+  let actionsHtml = actions.map((a, i) =>
+    `<button class="${a.class}" id="modalBtn${i}">${a.text}</button>`
+  ).join('');
+  content.innerHTML = `
+    <div class="modal-title">${title}</div>
+    <div class="modal-body">${body}</div>
+    <textarea class="modal-textarea" id="modalTextarea" placeholder="${placeholder}"></textarea>
+    <div class="modal-actions">${actionsHtml}</div>
+  `;
+  actions.forEach((a, i) => {
+    document.getElementById('modalBtn' + i).addEventListener('click', () => {
+      const textarea = document.getElementById('modalTextarea');
+      a.action(textarea ? textarea.value : '');
+    });
+  });
+  overlay.classList.add('visible');
+  setTimeout(() => {
+    const ta = document.getElementById('modalTextarea');
+    if (ta) ta.focus();
+  }, 100);
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('visible');
+}
+
+document.getElementById('modalOverlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+// === TOAST ===
+function showToast(msg, type) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast' + (type ? ' ' + type : '');
+  toast.classList.add('visible');
+  setTimeout(() => toast.classList.remove('visible'), 3000);
+}
+
+// === CHART ===
+function renderChart() {
+  const container = document.getElementById('weekChart');
+  const data = [
+    { day: 'Lun', total: 22, resolved: 19 },
+    { day: 'Mar', total: 19, resolved: 17 },
+    { day: 'Mie', total: 25, resolved: 22 },
+    { day: 'Jue', total: 21, resolved: 20 },
+    { day: 'Vie', total: 28, resolved: 24 },
+    { day: 'Sab', total: 8, resolved: 7 },
+    { day: 'Hoy', total: 24, resolved: 18 }
+  ];
+  const maxVal = Math.max(...data.map(d => d.total));
+  container.innerHTML = data.map(d => {
+    const totalH = (d.total / maxVal * 140);
+    const resolvedH = (d.resolved / maxVal * 140);
+    return `
+      <div class="chart-day">
+        <div class="chart-bars">
+          <div class="chart-bar total" style="height:${totalH}px;" title="Recibidos: ${d.total}"></div>
+          <div class="chart-bar resolved" style="height:${resolvedH}px;" title="Resueltos: ${d.resolved}"></div>
+        </div>
+        <div class="chart-label">${d.day}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// === MODE TOGGLE ===
+function setMode(btn) {
+  btn.parentElement.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  showToast('Modo cambiado a: ' + btn.textContent, 'success');
+}
+
+// === INIT ===
+renderCaseList();
+renderChart();
+</script>
+</body>
+</html>

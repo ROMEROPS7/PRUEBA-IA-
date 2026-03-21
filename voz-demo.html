@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiniestrosAI - Demo Voz IA Real</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;padding:2rem}
+        .header{text-align:center;margin-bottom:2rem}
+        h1{font-size:2rem;background:linear-gradient(135deg,#8b5cf6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .subtitle{color:#94a3b8;font-size:.9rem;margin-top:.5rem}
+        .demos-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:1200px;margin:0 auto}
+        .card{background:#1e293b;border-radius:16px;padding:1.5rem;border:1px solid #334155}
+        .card-title{display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid #334155}
+        .card-title .avatar{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:#fff;flex-shrink:0}
+        .card-title h3{font-size:1rem}.card-title p{font-size:.72rem;color:#94a3b8;margin-top:2px}
+        .avatar-recep{background:linear-gradient(135deg,#8b5cf6,#06b6d4)}
+        .avatar-nego{background:linear-gradient(135deg,#f59e0b,#dc2626)}
+        .btn{padding:.6rem 1.2rem;border:none;border-radius:10px;font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;font-size:.82rem;display:inline-flex;align-items:center;gap:.5rem;transition:.2s}
+        .btn:hover{transform:translateY(-1px)}.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+        .btn-recep{background:linear-gradient(135deg,#8b5cf6,#06b6d4);color:#fff}
+        .btn-nego{background:linear-gradient(135deg,#f59e0b,#dc2626);color:#fff}
+        .btn-outline{background:transparent;border:1px solid #475569;color:#94a3b8}
+        .btn-stop{background:#dc2626;color:#fff}
+        .transcript{max-height:400px;overflow-y:auto;margin:1rem 0;padding:.5rem}
+        .msg{padding:.65rem .85rem;border-radius:10px;margin-bottom:.5rem;font-size:.82rem;max-width:90%;animation:fadeIn .3s ease;line-height:1.5}
+        .msg-ia{background:rgba(139,92,246,.15);border-left:3px solid #8b5cf6;color:#c4b5fd}
+        .msg-nego-ia{background:rgba(245,158,11,.12);border-left:3px solid #f59e0b;color:#fcd34d}
+        .msg-client{background:rgba(6,182,212,.1);border-left:3px solid #06b6d4;color:#67e8f9;margin-left:auto}
+        .msg-prov{background:rgba(16,185,129,.1);border-left:3px solid #10b981;color:#6ee7b7;margin-left:auto}
+        .msg-system{background:rgba(100,116,139,.15);text-align:center;font-size:.72rem;color:#94a3b8;max-width:100%;border-left:none;border-radius:6px}
+        .speaker{font-size:.65rem;font-weight:700;display:block;margin-bottom:2px;opacity:.7}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+        .wave{display:flex;align-items:center;justify-content:center;gap:3px;height:35px;margin:.75rem 0}
+        .wave span{width:3px;background:#8b5cf6;border-radius:2px;animation:wave .8s ease-in-out infinite}
+        .wave.nego span{background:#f59e0b}
+        .wave span:nth-child(2){animation-delay:.1s}.wave span:nth-child(3){animation-delay:.15s}
+        .wave span:nth-child(4){animation-delay:.2s}.wave span:nth-child(5){animation-delay:.25s}
+        .wave span:nth-child(6){animation-delay:.3s}.wave span:nth-child(7){animation-delay:.35s}
+        @keyframes wave{0%,100%{height:6px}50%{height:30px}}
+        .status{font-size:.78rem;color:#94a3b8;min-height:1.5rem;margin:.5rem 0}
+        .status.loading{color:#f59e0b}.status.success{color:#16a34a}.status.error{color:#dc2626}
+        .call-bar{display:flex;align-items:center;gap:1rem;margin-bottom:.75rem}
+        .call-timer{font-family:'Courier New',monospace;font-size:1.1rem;color:#e2e8f0;font-weight:700}
+        .call-badge{padding:3px 10px;border-radius:20px;font-size:.65rem;font-weight:700;animation:pulse 2s infinite}
+        .call-badge.live{background:rgba(239,68,68,.2);color:#ef4444}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+        .result-card{background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.3);border-radius:10px;padding:1rem;margin-top:1rem;text-align:center}
+        .result-card h4{color:#16a34a;margin-bottom:.5rem}.result-card .big{font-size:1.8rem;font-weight:900;color:#16a34a}
+        .tts-section{margin-top:1.5rem;max-width:1200px;margin-left:auto;margin-right:auto}
+        .tts-section textarea{width:100%;padding:.75rem;border-radius:10px;border:1px solid #334155;background:#0f172a;color:#e2e8f0;font-family:'Inter',sans-serif;font-size:.85rem;resize:vertical;min-height:80px;margin:.75rem 0}
+        .tts-section textarea:focus{outline:none;border-color:#8b5cf6}
+        .voice-pills{display:flex;gap:.5rem;flex-wrap:wrap;margin:.5rem 0}
+        .voice-pill{padding:.35rem .75rem;border-radius:20px;font-size:.72rem;border:1px solid #475569;color:#94a3b8;cursor:pointer;transition:.2s}
+        .voice-pill:hover{border-color:#8b5cf6;color:#8b5cf6}
+        .voice-pill.active{background:rgba(139,92,246,.2);border-color:#8b5cf6;color:#c4b5fd}
+        .audio-box{margin-top:.75rem}.audio-box audio{width:100%;border-radius:8px}
+        .back-link{display:block;text-align:center;margin-top:2rem;color:#94a3b8;text-decoration:none;font-size:.82rem}
+        .back-link:hover{color:#8b5cf6}
+        @media(max-width:768px){.demos-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1><i class="fas fa-microphone-alt"></i> Demo Voz IA Real</h1>
+    <p class="subtitle">2 Agentes IA con voz real - Powered by ElevenLabs</p>
+</div>
+
+<div class="demos-grid">
+    <!-- AGENTE RECEPCIONISTA -->
+    <div class="card">
+        <div class="card-title">
+            <div class="avatar avatar-recep"><i class="fas fa-headset"></i></div>
+            <div><h3>Agente Recepcionista</h3><p>Atiende siniestros con voz Lily - Natural y cercana</p></div>
+        </div>
+        <div id="recepControls">
+            <button class="btn btn-recep" id="btnRecep" onclick="startCall('recep')"><i class="fas fa-phone-alt"></i> Iniciar llamada de siniestro</button>
+        </div>
+        <div id="recepCall" style="display:none">
+            <div class="call-bar">
+                <span class="call-badge live"><i class="fas fa-circle"></i> EN VIVO</span>
+                <span class="call-timer" id="recepTimer">00:00</span>
+                <button class="btn btn-stop" onclick="stopCall('recep')" style="margin-left:auto"><i class="fas fa-phone-slash"></i></button>
+            </div>
+            <div class="transcript" id="recepTranscript"></div>
+            <div class="wave" id="recepWave" style="display:none"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            <div class="status" id="recepStatus"></div>
+        </div>
+    </div>
+
+    <!-- AGENTE NEGOCIADOR -->
+    <div class="card">
+        <div class="card-title">
+            <div class="avatar avatar-nego"><i class="fas fa-handshake"></i></div>
+            <div><h3>Agente Negociador</h3><p>Negocia precios con voz Chris - Convincente y cercano</p></div>
+        </div>
+        <div id="negoControls">
+            <button class="btn btn-nego" id="btnNego" onclick="startCall('nego')"><i class="fas fa-phone-alt"></i> Iniciar negociacion con taller</button>
+        </div>
+        <div id="negoCall" style="display:none">
+            <div class="call-bar">
+                <span class="call-badge live"><i class="fas fa-circle"></i> EN VIVO</span>
+                <span class="call-timer" id="negoTimer">00:00</span>
+                <button class="btn btn-stop" onclick="stopCall('nego')" style="margin-left:auto"><i class="fas fa-phone-slash"></i></button>
+            </div>
+            <div class="transcript" id="negoTranscript"></div>
+            <div class="wave nego" id="negoWave" style="display:none"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            <div class="status" id="negoStatus"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TEXTO LIBRE -->
+<div class="tts-section card">
+    <div class="card-title">
+        <div class="avatar" style="background:linear-gradient(135deg,#16a34a,#3b82f6)"><i class="fas fa-keyboard"></i></div>
+        <div><h3>Texto libre</h3><p>Escribe cualquier texto y elige la voz</p></div>
+    </div>
+    <div class="voice-pills" id="voicePills">
+        <span class="voice-pill active" data-id="pFZP5JQG7iQjIQuC4Bku">Lily (Recepcionista)</span>
+        <span class="voice-pill" data-id="iP95p4xoKVk53GoZ742B">Chris (Negociador)</span>
+        <span class="voice-pill" data-id="XrExE9yKIg1WjnnlVkGX">Matilda (Profesional)</span>
+        <span class="voice-pill" data-id="Xb7hH8MSUJpSbSDYk0k2">Alice (Educadora)</span>
+        <span class="voice-pill" data-id="hpp4J3VqNfWAUOO0d1Us">Bella (Calida)</span>
+        <span class="voice-pill" data-id="cjVigY5qzO86Huf0OWal">Eric (Suave)</span>
+    </div>
+    <textarea id="ttsTexto" placeholder="Escribe aqui...">Buenos dias, soy el asistente de inteligencia artificial de SegurosAI. Estoy aqui para ayudarle con cualquier consulta sobre su poliza o siniestro.</textarea>
+    <div style="display:flex;gap:.75rem;align-items:center">
+        <button class="btn btn-recep" id="btnTTS" onclick="playTTS()"><i class="fas fa-volume-up"></i> Escuchar</button>
+        <span class="status" id="ttsStatus"></span>
+    </div>
+    <div class="audio-box" id="ttsAudioBox" style="display:none"><audio id="ttsAudio" controls></audio></div>
+</div>
+
+<a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Volver a SiniestrosAI</a>
+
+<script>
+// Auto-detect API URL for Codespaces
+const API = (() => {
+    if (window.location.hostname.includes('app.github.dev')) {
+        return window.location.origin.replace('-8080.', '-3001.');
+    }
+    return window.location.port === '3001' ? '' : 'http://localhost:3001';
+})();
+const VOICE_RECEP = 'pFZP5JQG7iQjIQuC4Bku'; // Lily - suena más natural en español
+const VOICE_NEGO = 'iP95p4xoKVk53GoZ742B';  // Chris - convincente para negociar
+
+// ============================================================
+// SCRIPTS DE LLAMADA
+// ============================================================
+const SCRIPT_RECEP = [
+    {type:'system', text:'Llamada entrante de Maria Garcia (+34 612 345 678)...'},
+    {type:'ia', text:'Buenos dias, soy el asistente de SegurosAI. He identificado su numero automaticamente. Senora Garcia, en que puedo ayudarle?'},
+    {type:'client', text:'Hola, acabo de tener un accidente en la A-6, estoy muy nerviosa.'},
+    {type:'ia', text:'Tranquila, senora Garcia. Lo primero, se encuentra usted bien? Hay heridos?'},
+    {type:'client', text:'Estoy bien, solo un golpe en el coche. El otro conductor tambien esta bien.'},
+    {type:'ia', text:'Me alegro mucho. Ya he localizado su poliza automaticamente. Tiene cobertura a todo riesgo con asistencia en carretera. Voy a abrir el parte ahora mismo.'},
+    {type:'system', text:'Expediente EXP-2024-0901 creado. Grua solicitada.'},
+    {type:'ia', text:'Perfecto, ya esta todo registrado. He solicitado una grua que llegara en 12 minutos a su ubicacion en la A-6. Ademas, he asignado un perito que le contactara manana entre las 9 y las 12. Le envio un SMS con todos los datos.'},
+    {type:'client', text:'Madre mia, que rapido. Muchisimas gracias.'},
+    {type:'ia', text:'De nada, senora Garcia. Recuerde que puede seguir el estado de su siniestro en la aplicacion movil. Que se mejore. Hasta luego.'},
+    {type:'system', text:'Llamada finalizada. Duracion: 1:38. Gestionado 100% por IA. Satisfaccion estimada: 9.5/10.'},
+];
+
+const SCRIPT_NEGO = [
+    {type:'system', text:'Iniciando negociacion con Talleres AutoPro Madrid para reparacion EXP-2024-0891...'},
+    {type:'ia', text:'Buenos dias, hablo con Talleres AutoPro? Soy el agente de negociacion de SegurosAI. Le llamo por una reparacion de un Seat Leon con danos frontales.'},
+    {type:'prov', text:'Si, digame. Que danos tiene el vehiculo exactamente?'},
+    {type:'ia', text:'Paragolpes delantero, faro izquierdo y abolladura en el capo. Tenemos las fotos del peritaje. Segun nuestro analisis, el coste de mercado para esta reparacion es de 1.850 euros.'},
+    {type:'prov', text:'Hmm, esos precios son ajustados. Nosotros lo hariamos por 2.200 euros. El faro original es caro.'},
+    {type:'ia', text:'Entiendo. Pero tenemos un volumen importante de casos en Madrid. Este mes ya llevamos 23 reparaciones y podemos garantizarle un flujo constante. Podriamos cerrar en 1.750 euros?'},
+    {type:'prov', text:'Es muy bajo. Puedo bajar a 2.000 pero no menos. El material tiene un coste.'},
+    {type:'ia', text:'Le propongo algo. Si cerramos a 1.850, que es el precio justo de mercado, le incluimos en nuestro panel de talleres preferentes. Eso significa prioridad en la asignacion de casos. El mes pasado nuestros talleres preferentes recibieron un 40 por ciento mas de trabajo.'},
+    {type:'prov', text:'Panel preferente, eh? Eso es interesante. Vale, acepto 1.850 euros. Cuando traen el coche?'},
+    {type:'ia', text:'Perfecto, trato cerrado. Le envio la orden de reparacion por email ahora mismo. El vehiculo llegara manana a primera hora con la grua. Gracias por su confianza.'},
+    {type:'system', text:'Negociacion completada. Precio inicial: 2.200 EUR. Precio final: 1.850 EUR. Ahorro: 350 EUR (15.9%). Tiempo: 2:15.'},
+];
+
+// ============================================================
+// MOTOR DE LLAMADA
+// ============================================================
+const calls = {
+    recep: {active:false, step:0, timer:null, seconds:0, script:SCRIPT_RECEP, voice:VOICE_RECEP},
+    nego: {active:false, step:0, timer:null, seconds:0, script:SCRIPT_NEGO, voice:VOICE_NEGO},
+};
+
+function startCall(id) {
+    const c = calls[id];
+    c.active = true; c.step = 0; c.seconds = 0;
+    document.getElementById(id+'Controls').style.display = 'none';
+    document.getElementById(id+'Call').style.display = 'block';
+    document.getElementById(id+'Transcript').innerHTML = '';
+    c.timer = setInterval(() => {
+        c.seconds++;
+        document.getElementById(id+'Timer').textContent =
+            String(Math.floor(c.seconds/60)).padStart(2,'0') + ':' + String(c.seconds%60).padStart(2,'0');
+    }, 1000);
+    advanceCall(id);
+}
+
+function stopCall(id) {
+    const c = calls[id];
+    c.active = false;
+    clearInterval(c.timer);
+    document.getElementById(id+'Call').style.display = 'none';
+    document.getElementById(id+'Controls').style.display = 'block';
+    document.getElementById(id+'Wave').style.display = 'none';
+}
+
+async function advanceCall(id) {
+    const c = calls[id];
+    if (!c.active || c.step >= c.script.length) {
+        clearInterval(c.timer);
+        document.getElementById(id+'Wave').style.display = 'none';
+        document.getElementById(id+'Status').className = 'status success';
+        document.getElementById(id+'Status').textContent = 'Llamada completada';
+        // Show result
+        if (id === 'nego') {
+            const tr = document.getElementById(id+'Transcript');
+            tr.innerHTML += '<div class="result-card"><h4><i class="fas fa-check-circle"></i> Negociacion exitosa</h4><div class="big">-350 EUR</div><p>Ahorro del 15.9% sobre precio inicial</p></div>';
+        }
+        return;
+    }
+
+    const line = c.script[c.step];
+    const tr = document.getElementById(id+'Transcript');
+
+    // Add message
+    const msg = document.createElement('div');
+    const iaClass = id === 'nego' ? 'msg-nego-ia' : 'msg-ia';
+    const provClass = id === 'nego' ? 'msg-prov' : 'msg-client';
+    msg.className = 'msg ' + (line.type === 'ia' ? iaClass : line.type === 'system' ? 'msg-system' : provClass);
+    if (line.type === 'system') {
+        msg.textContent = line.text;
+    } else {
+        const labels = {ia:'Agente IA', client:'Cliente', prov:'Proveedor'};
+        msg.innerHTML = '<span class="speaker">' + (labels[line.type]||line.type) + '</span>' + line.text;
+    }
+    tr.appendChild(msg);
+    tr.scrollTop = tr.scrollHeight;
+
+    // Generate real voice for IA lines
+    if (line.type === 'ia') {
+        const wave = document.getElementById(id+'Wave');
+        const status = document.getElementById(id+'Status');
+        wave.style.display = 'flex';
+        status.className = 'status loading';
+        status.textContent = id === 'nego' ? 'Negociador hablando...' : 'Agente hablando...';
+
+        try {
+            const resp = await fetch(API + '/api/voz/generar', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ texto: line.text, voiceId: c.voice })
+            });
+
+            if (resp.ok) {
+                const blob = await resp.blob();
+                const audio = new Audio(URL.createObjectURL(blob));
+                status.textContent = 'Reproduciendo voz real...';
+                audio.onended = () => {
+                    wave.style.display = 'none';
+                    status.textContent = '';
+                    c.step++;
+                    setTimeout(() => advanceCall(id), 600);
+                };
+                audio.onerror = () => { wave.style.display='none'; c.step++; setTimeout(()=>advanceCall(id),1000); };
+                audio.play();
+                return;
+            }
+        } catch(e) {}
+        wave.style.display = 'none';
+        status.textContent = '';
+    }
+
+    c.step++;
+    const delay = line.type === 'system' ? 1500 : 2200;
+    setTimeout(() => advanceCall(id), delay);
+}
+
+// ============================================================
+// TEXTO LIBRE
+// ============================================================
+let selectedVoice = VOICE_RECEP;
+
+document.querySelectorAll('.voice-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+        document.querySelectorAll('.voice-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        selectedVoice = pill.dataset.id;
+    });
+});
+
+async function playTTS() {
+    const texto = document.getElementById('ttsTexto').value.trim();
+    if (!texto) return;
+    const btn = document.getElementById('btnTTS');
+    const status = document.getElementById('ttsStatus');
+    const box = document.getElementById('ttsAudioBox');
+    const audio = document.getElementById('ttsAudio');
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
+    status.className = 'status loading';
+    status.textContent = 'Conectando con ElevenLabs...';
+    box.style.display = 'none';
+
+    try {
+        const resp = await fetch(API + '/api/voz/generar', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ texto, voiceId: selectedVoice })
+        });
+        if (!resp.ok) throw new Error((await resp.json()).error || 'Error');
+        const blob = await resp.blob();
+        audio.src = URL.createObjectURL(blob);
+        box.style.display = 'block';
+        audio.play();
+        status.className = 'status success';
+        status.textContent = 'Audio generado (' + (blob.size/1024).toFixed(0) + ' KB)';
+    } catch(e) {
+        status.className = 'status error';
+        status.textContent = 'Error: ' + e.message;
+    }
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-volume-up"></i> Escuchar';
+}
+</script>
+</body>
+</html>

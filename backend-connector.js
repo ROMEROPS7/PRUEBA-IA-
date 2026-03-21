@@ -2,8 +2,9 @@
 // BACKEND CONNECTOR - Conecta el frontend con el backend
 // ============================================================
 
-const API_URL = window.location.port === '3001'
-  ? window.location.origin
+const API_URL = window.location.hostname.includes('app.github.dev')
+  ? window.location.origin.replace('-8080.', '-3001.')
+  : window.location.port === '3001' ? window.location.origin
   : 'http://localhost:3001';
 
 let socket = null;

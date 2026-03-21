@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selector de Voz IA - SegurCaixa Adeslas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',sans-serif;background:#f8fafc;color:#1e293b;min-height:100vh}
+        .header{background:#00529B;color:#fff;padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between}
+        .header h1{font-size:1.2rem;display:flex;align-items:center;gap:.75rem}
+        .header h1 i{color:#009FE3}
+        .header-sub{font-size:.75rem;color:rgba(255,255,255,.7)}
+        .container{max-width:1100px;margin:0 auto;padding:2rem}
+        .intro{text-align:center;margin-bottom:2rem}
+        .intro h2{font-size:1.5rem;color:#00529B;margin-bottom:.5rem}
+        .intro p{color:#64748b;font-size:.9rem;max-width:600px;margin:0 auto}
+        .test-phrase{background:#fff;border-radius:12px;padding:1.25rem;margin-bottom:2rem;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+        .test-phrase label{font-size:.82rem;font-weight:600;color:#475569;display:block;margin-bottom:.5rem}
+        .test-phrase select{width:100%;padding:.6rem;border-radius:8px;border:1px solid #e2e8f0;font-size:.85rem;font-family:Inter}
+        .test-phrase .custom-text{margin-top:.75rem;display:none}
+        .test-phrase textarea{width:100%;padding:.6rem;border-radius:8px;border:1px solid #e2e8f0;font-size:.85rem;font-family:Inter;resize:vertical;min-height:60px}
+        .voices-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.25rem}
+        .voice-card{background:#fff;border-radius:14px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.08);border:2px solid transparent;transition:.2s;position:relative}
+        .voice-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.1);transform:translateY(-2px)}
+        .voice-card.selected{border-color:#00529B;box-shadow:0 0 0 3px rgba(0,82,155,.15)}
+        .voice-card.playing{border-color:#009FE3}
+        .voice-header{display:flex;align-items:center;gap:1rem;margin-bottom:1rem}
+        .voice-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#fff;font-weight:700;flex-shrink:0}
+        .voice-avatar.female{background:linear-gradient(135deg,#ec4899,#8b5cf6)}
+        .voice-avatar.male{background:linear-gradient(135deg,#3b82f6,#06b6d4)}
+        .voice-avatar.neutral{background:linear-gradient(135deg,#6b7280,#475569)}
+        .voice-info h3{font-size:.95rem;margin-bottom:2px}
+        .voice-info p{font-size:.72rem;color:#94a3b8}
+        .voice-tags{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem}
+        .voice-tag{padding:2px 8px;border-radius:10px;font-size:.65rem;font-weight:600;background:#f1f5f9;color:#64748b}
+        .voice-tag.rec{background:#dcfce7;color:#16a34a}
+        .voice-tag.premium{background:#fef3c7;color:#d97706}
+        .voice-tag.spanish{background:#dbeafe;color:#1e40af}
+        .premium-badge{position:absolute;top:12px;right:12px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;padding:2px 10px;border-radius:10px;font-size:.6rem;font-weight:700}
+        .voice-actions{display:flex;gap:.5rem}
+        .btn{padding:.55rem 1rem;border:none;border-radius:8px;font-family:Inter;font-weight:600;cursor:pointer;font-size:.8rem;display:inline-flex;align-items:center;gap:.4rem;transition:.15s}
+        .btn:disabled{opacity:.5;cursor:not-allowed}
+        .btn-play{background:#009FE3;color:#fff}
+        .btn-play:hover{background:#0082c8}
+        .btn-select{background:#fff;border:1px solid #e2e8f0;color:#475569}
+        .btn-select:hover{border-color:#00529B;color:#00529B}
+        .btn-select.active{background:#00529B;color:#fff;border-color:#00529B}
+        .btn-selected{background:#16a34a;color:#fff;border:none}
+        .wave-mini{display:none;align-items:center;gap:2px;height:20px;margin-left:.5rem}
+        .wave-mini.active{display:inline-flex}
+        .wave-mini span{width:2px;background:#009FE3;border-radius:1px;animation:waveMini .6s ease-in-out infinite}
+        .wave-mini span:nth-child(2){animation-delay:.1s}
+        .wave-mini span:nth-child(3){animation-delay:.2s}
+        .wave-mini span:nth-child(4){animation-delay:.3s}
+        @keyframes waveMini{0%,100%{height:4px}50%{height:18px}}
+        .selected-banner{display:none;background:linear-gradient(135deg,#00529B,#009FE3);color:#fff;padding:1.25rem 2rem;border-radius:12px;margin-top:2rem;text-align:center}
+        .selected-banner.show{display:block}
+        .selected-banner h3{margin-bottom:.25rem}
+        .selected-banner p{font-size:.85rem;opacity:.85}
+        .section-title{font-size:1.1rem;font-weight:700;color:#1e293b;margin:2rem 0 1rem;display:flex;align-items:center;gap:.5rem}
+        .section-title i{color:#00529B}
+        .category-label{font-size:.7rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem;padding-left:.25rem}
+        .back-link{display:block;text-align:center;margin-top:2rem;color:#94a3b8;text-decoration:none;font-size:.82rem}
+        .back-link:hover{color:#00529B}
+        .loading-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:100;align-items:center;justify-content:center}
+        .loading-overlay.show{display:flex}
+        .loading-box{background:#fff;border-radius:12px;padding:2rem;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+        .loading-box .spinner{width:40px;height:40px;border:4px solid #e2e8f0;border-top-color:#00529B;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 1rem}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @media(max-width:768px){.voices-grid{grid-template-columns:1fr}.container{padding:1rem}}
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div>
+        <h1><i class="fas fa-microphone-alt"></i> Selector de Voz IA</h1>
+        <div class="header-sub">SegurCaixa Adeslas - Configuracion del asistente virtual</div>
+    </div>
+    <a href="adeslas-demo.html" style="color:#fff;text-decoration:none;font-size:.82rem"><i class="fas fa-arrow-left"></i> Volver</a>
+</div>
+
+<div class="container">
+    <div class="intro">
+        <h2>Elige la voz de tu asistente IA</h2>
+        <p>Escucha cada voz hablando frases reales de atencion al cliente y selecciona la que mejor represente a SegurCaixa Adeslas</p>
+    </div>
+
+    <div class="test-phrase">
+        <label>Frase de prueba:</label>
+        <select id="phraseSelect" onchange="onPhraseChange()">
+            <option value="Buenos dias, SegurCaixa Adeslas, soy su asistente virtual. En que puedo ayudarle?">Saludo de bienvenida</option>
+            <option value="He verificado su poliza y tiene cobertura completa. No se preocupe, vamos a gestionarlo todo automaticamente.">Verificacion de poliza</option>
+            <option value="Ya he registrado su siniestro. Le he asignado un perito que le contactara en las proximas 2 horas. La grua esta en camino.">Confirmacion de siniestro</option>
+            <option value="Entiendo su preocupacion. Le aseguro que estamos trabajando para resolver su caso lo antes posible. Le mantendremos informado en todo momento.">Empática - cliente preocupado</option>
+            <option value="Le propongo llegar a un acuerdo de mil ochocientos cincuenta euros. Es un precio justo basado en los precios de mercado actuales.">Negociacion de precio</option>
+            <option value="custom">Escribir texto personalizado...</option>
+        </select>
+        <div class="custom-text" id="customText">
+            <textarea id="customPhrase" placeholder="Escribe el texto que quieres escuchar..."></textarea>
+        </div>
+    </div>
+
+    <div class="section-title"><i class="fas fa-star"></i> Voces recomendadas para atencion al cliente</div>
+    <div class="voices-grid" id="recommendedGrid"></div>
+
+    <div class="section-title"><i class="fas fa-users"></i> Todas las voces disponibles</div>
+    <div class="voices-grid" id="allVoicesGrid"></div>
+
+    <div class="selected-banner" id="selectedBanner">
+        <h3><i class="fas fa-check-circle"></i> Voz seleccionada: <span id="selectedVoiceName"></span></h3>
+        <p>Esta voz se aplicara a todos los agentes IA de SegurCaixa Adeslas</p>
+    </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-box">
+        <div class="spinner"></div>
+        <p>Generando audio...</p>
+    </div>
+</div>
+
+<a href="segurcaixa.html" class="back-link"><i class="fas fa-arrow-left"></i> Volver al inicio</a>
+
+<script>
+const API = (() => {
+    const h = window.location.hostname;
+    if (h.includes('app.github.dev')) {
+        // Replace any port pattern (-XXXX.) with -3001.
+        return window.location.origin.replace(/-\d+\.app/, '-3001.app');
+    }
+    return window.location.port === '3001' ? '' : 'http://localhost:3001';
+})();
+
+let selectedVoiceId = null;
+let currentAudio = null;
+let playingCardId = null;
+
+// ALL 23 voices from ElevenLabs
+const VOICES = [
+    // PREMIUM - Voces en español (requieren plan de pago)
+    {id:'uQw4jpKzMLrZuo0RLPS9', name:'Laura Pro', desc:'Mujer joven con voz dulce, perfecta para atencion al cliente y ventas. Acento peninsular espanol.', gender:'female', tags:['Atencion al cliente','Espanol peninsular','Joven'], recommended:true, recLabel:'VOZ EN ESPANOL - Ideal para atencion al cliente', premium:true},
+    {id:'2VUqK4PEdMj16L6xTN4J', name:'Cristina', desc:'Mujer 35 anos, tono calido y natural con acento andaluz suave. Clara y profesional.', gender:'female', tags:['Espanol andaluz','Natural','Calida'], recommended:true, recLabel:'VOZ EN ESPANOL - Calida y cercana', premium:true},
+    // Recomendadas multilingue
+    {id:'pFZP5JQG7iQjIQuC4Bku', name:'Lily', desc:'Voz femenina britanica suave y elegante. Muy buena en espanol con modelo multilingue.', gender:'female', tags:['Suave','Elegante','Actriz','Britanica'], recommended:true, recLabel:'Mejor voz gratuita para espanol'},
+    {id:'XrExE9yKIg1WjnnlVkGX', name:'Matilda', desc:'Profesional y cercana. Tono medio-alto, diccion clara. Ideal para informacion.', gender:'female', tags:['Profesional','Cercana','Educada'], recommended:true, recLabel:'Ideal para informacion y seguimiento'},
+    {id:'iP95p4xoKVk53GoZ742B', name:'Chris', desc:'Cercano y natural. Tono de confianza, perfecto para conversaciones reales.', gender:'male', tags:['Cercano','Confianza','Natural'], recommended:true, recLabel:'Perfecto para negociacion'},
+    {id:'cjVigY5qzO86Huf0OWal', name:'Eric', desc:'Tenor suave y convincente, hombre de 40 anos. Ideal para agentes IA.', gender:'male', tags:['Suave','Convincente','Maduro'], recommended:true, recLabel:'Ideal para resolucion de conflictos'},
+    // Todas las voces femeninas
+    {id:'EXAVITQu4vr4xnSDxMaL', name:'Sarah', desc:'Mujer joven, tono confiado y calido. Profesional y tranquilizadora.', gender:'female', tags:['Madura','Tranquilizadora','Americana']},
+    {id:'FGY2WhTYpPnrIDTdsKH5', name:'Laura', desc:'Mujer joven entusiasta con actitud animada. Ideal para contenido dinamico.', gender:'female', tags:['Entusiasta','Energica','Americana']},
+    {id:'Xb7hH8MSUJpSbSDYk0k2', name:'Alice', desc:'Clara y cercana, acento britanico. Perfecta para e-learning y formacion.', gender:'female', tags:['Clara','Educativa','Britanica']},
+    {id:'cgSgspJ2msm6clMCkdW9', name:'Jessica', desc:'Joven y alegre, voz calida americana. Para contenido trendy y cercano.', gender:'female', tags:['Alegre','Calida','Joven']},
+    {id:'hpp4J3VqNfWAUOO0d1Us', name:'Bella', desc:'Profesional y brillante, diccion clara. Tono medio-alto muy inteligible.', gender:'female', tags:['Profesional','Brillante','Narrativa']},
+    // Todas las voces masculinas
+    {id:'CwhRBWXzGAHq8TQ4Fs17', name:'Roger', desc:'Relajado y casual. Perfecto para conversaciones informales.', gender:'male', tags:['Relajado','Casual','Americano']},
+    {id:'IKne3meq5aSn9XLyUdCD', name:'Charlie', desc:'Joven australiano con voz profunda, segura y energica.', gender:'male', tags:['Profundo','Seguro','Australiano']},
+    {id:'JBFqnCBsd6RMkjVDRZzb', name:'George', desc:'Calido y cautivador. Excelente narrador, acento britanico.', gender:'male', tags:['Calido','Narrador','Britanico']},
+    {id:'onwK4e9ZLuTAKqWW03F9', name:'Daniel', desc:'Presentador profesional. Voz firme y autoritaria, acento britanico.', gender:'male', tags:['Presentador','Firme','Britanico']},
+    {id:'nPczCjzI2devNBz1zQrb', name:'Brian', desc:'Profundo y reconfortante. Ideal para narraciones y anuncios.', gender:'male', tags:['Profundo','Reconfortante','Americano']},
+    {id:'bIHbv24MWmeRgasZH58o', name:'Will', desc:'Joven, optimista y relajado. Tono conversacional natural.', gender:'male', tags:['Optimista','Relajado','Joven']},
+    {id:'TX3LPaxmHKxFdv7VOQHJ', name:'Liam', desc:'Energico y dinamico. Perfecto para contenido de redes sociales.', gender:'male', tags:['Energico','Dinamico','Joven']},
+    {id:'pNInz6obpgDQGcFmaJgB', name:'Adam', desc:'Dominante y firme. Tono tenor brillante, muy directo y seguro.', gender:'male', tags:['Dominante','Firme','Directo']},
+    {id:'pqHfZKP75CvOlQylNhV4', name:'Bill', desc:'Sabio y equilibrado. Hombre mayor, amigable y reconfortante.', gender:'male', tags:['Sabio','Equilibrado','Mayor']},
+    {id:'N2lVS1w4EtoT3dr4eOWO', name:'Callum', desc:'Voz ronca con un toque misterioso y profundo.', gender:'male', tags:['Ronco','Misterioso','Profundo']},
+    {id:'SOYHLrjzK2X1ezoPC6cr', name:'Harry', desc:'Guerrero animado, energico. Para personajes y animacion.', gender:'male', tags:['Animado','Guerrero','Joven']},
+    // Voz neutra
+    {id:'SAz9YHcvj6GT2YYXdXww', name:'River', desc:'Neutral e informativo. Tono relajado sin genero marcado.', gender:'neutral', tags:['Neutral','Informativo','Relajado']},
+];
+
+function getPhrase() {
+    const sel = document.getElementById('phraseSelect');
+    if (sel.value === 'custom') return document.getElementById('customPhrase').value.trim() || 'Buenos dias, esto es una prueba de voz.';
+    return sel.value;
+}
+
+function onPhraseChange() {
+    document.getElementById('customText').style.display =
+        document.getElementById('phraseSelect').value === 'custom' ? 'block' : 'none';
+}
+
+function renderVoices() {
+    try {
+        const recommended = VOICES.filter(v => v.recommended);
+        const others = VOICES.filter(v => !v.recommended);
+
+        document.getElementById('recommendedGrid').innerHTML = recommended.map(v => renderVoiceCard(v, true)).join('');
+        document.getElementById('allVoicesGrid').innerHTML = others.map(v => renderVoiceCard(v, false)).join('');
+    } catch(e) {
+        console.error('Error renderizando voces:', e);
+        document.getElementById('recommendedGrid').innerHTML = '<p style="color:red">Error: '+e.message+'</p>';
+    }
+}
+
+function renderVoiceCard(v, isRec) {
+    const isSelected = selectedVoiceId === v.id;
+    const isSpanish = v.tags.some(function(t) { return t.toLowerCase().includes('espanol') || t.toLowerCase().includes('andaluz') || t.toLowerCase().includes('peninsular'); });
+    var html = '<div class="voice-card ' + (isSelected?'selected':'') + '" id="card-' + v.id + '">';
+    if (v.premium) html += '<div class="premium-badge"><i class="fas fa-crown"></i> PREMIUM</div>';
+    html += '<div class="voice-header">';
+    html += '<div class="voice-avatar ' + v.gender + '">' + v.name[0] + '</div>';
+    html += '<div class="voice-info"><h3>' + v.name + '</h3><p>' + v.desc + '</p></div>';
+    html += '<div class="wave-mini" id="wave-' + v.id + '"><span></span><span></span><span></span><span></span></div>';
+    html += '</div>';
+    html += '<div class="voice-tags">';
+    if (isSpanish) html += '<span class="voice-tag spanish"><i class="fas fa-flag"></i> Espanol nativo</span>';
+    if (v.premium) html += '<span class="voice-tag premium"><i class="fas fa-crown"></i> Plan Pro</span>';
+    v.tags.forEach(function(t) { html += '<span class="voice-tag">' + t + '</span>'; });
+    if (isRec && v.recLabel) html += '<span class="voice-tag rec"><i class="fas fa-star"></i> ' + v.recLabel + '</span>';
+    html += '</div>';
+    html += '<div class="voice-actions">';
+    html += '<button class="btn btn-play" onclick="playVoice(\'' + v.id + '\',\'' + v.name + '\')" id="btn-play-' + v.id + '"><i class="fas fa-play"></i> Escuchar</button>';
+    html += '<button class="btn ' + (isSelected?'btn-selected':'btn-select') + '" onclick="selectVoice(\'' + v.id + '\',\'' + v.name + '\')" id="btn-sel-' + v.id + '"><i class="fas ' + (isSelected?'fa-check':'fa-hand-pointer') + '"></i> ' + (isSelected?'Seleccionada':'Seleccionar') + '</button>';
+    html += '</div></div>';
+    return html;
+}
+
+async function playVoice(voiceId, name) {
+    // Stop current audio
+    if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+    if (playingCardId) {
+        document.getElementById('wave-'+playingCardId)?.classList.remove('active');
+        const oldBtn = document.getElementById('btn-play-'+playingCardId);
+        if (oldBtn) oldBtn.innerHTML = '<i class="fas fa-play"></i> Escuchar';
+    }
+
+    if (playingCardId === voiceId) { playingCardId = null; return; } // Toggle off
+
+    const texto = getPhrase();
+    if (!texto) return;
+
+    const btn = document.getElementById('btn-play-'+voiceId);
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
+    btn.disabled = true;
+    document.getElementById('loadingOverlay').classList.add('show');
+
+    try {
+        const resp = await fetch(API + '/api/voz/generar', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ texto, voiceId })
+        });
+
+        document.getElementById('loadingOverlay').classList.remove('show');
+
+        if (!resp.ok) {
+            const err = await resp.json();
+            btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+            btn.disabled = false;
+            setTimeout(() => { btn.innerHTML = '<i class="fas fa-play"></i> Escuchar'; }, 2000);
+            alert('Error: ' + (err.error || 'No se pudo generar el audio'));
+            return;
+        }
+
+        const blob = await resp.blob();
+        currentAudio = new Audio(URL.createObjectURL(blob));
+        playingCardId = voiceId;
+
+        document.getElementById('wave-'+voiceId)?.classList.add('active');
+        document.getElementById('card-'+voiceId)?.classList.add('playing');
+        btn.innerHTML = '<i class="fas fa-stop"></i> Parar';
+        btn.disabled = false;
+
+        currentAudio.onended = () => {
+            document.getElementById('wave-'+voiceId)?.classList.remove('active');
+            document.getElementById('card-'+voiceId)?.classList.remove('playing');
+            btn.innerHTML = '<i class="fas fa-play"></i> Escuchar';
+            playingCardId = null;
+        };
+
+        currentAudio.play();
+    } catch(e) {
+        document.getElementById('loadingOverlay').classList.remove('show');
+        btn.innerHTML = '<i class="fas fa-play"></i> Escuchar';
+        btn.disabled = false;
+        alert('Error de conexion. Verifica que el backend esta corriendo.');
+    }
+}
+
+function selectVoice(voiceId, name) {
+    selectedVoiceId = voiceId;
+    renderVoices();
+
+    const banner = document.getElementById('selectedBanner');
+    document.getElementById('selectedVoiceName').textContent = name;
+    banner.classList.add('show');
+    banner.scrollIntoView({ behavior: 'smooth' });
+}
+
+renderVoices();
+</script>
+</body>
+</html>

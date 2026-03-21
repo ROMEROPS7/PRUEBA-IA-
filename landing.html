@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiniestrosAI - Gestion Autonoma de Siniestros con IA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--blue:#0066FF;--purple:#7C3AED;--cyan:#06B6D4;--dark:#050810;--white:#fff;--gray:#94A3B8;--green:#10B981}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--dark);color:var(--white);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 40px;display:flex;align-items:center;justify-content:space-between;transition:background .3s}
+.nav.scrolled{background:rgba(5,8,16,.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.05)}
+.nav-logo{font-size:20px;font-weight:800;display:flex;align-items:center;gap:10px}
+.nav-logo span{background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.pulse-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 8px var(--green)}50%{box-shadow:0 0 20px var(--green),0 0 40px rgba(16,185,129,.3)}}
+.nav-links{display:flex;gap:28px;font-size:13px;font-weight:500;color:var(--gray)}
+.nav-links a:hover{color:var(--white)}
+.nav-cta{padding:10px 22px;background:linear-gradient(135deg,var(--blue),var(--purple));border-radius:10px;font-size:12px;font-weight:600;transition:all .2s}
+.nav-cta:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,102,255,.3)}
+
+/* HERO */
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;overflow:hidden}
+#hero-canvas{position:absolute;inset:0;z-index:0}
+.hero-overlay{position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,transparent 0%,rgba(5,8,16,.4) 60%,rgba(5,8,16,.85) 100%);z-index:1}
+.hero-content{position:relative;z-index:2;padding:0 60px;max-width:650px}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:20px;background:rgba(0,102,255,.1);border:1px solid rgba(0,102,255,.2);font-size:11px;font-weight:600;color:var(--cyan);margin-bottom:24px;animation:fadeUp .8s ease .2s both}
+.hero h1{font-size:3.8rem;font-weight:900;line-height:1.05;letter-spacing:-2px;margin-bottom:20px;animation:fadeUp .8s ease .4s both}
+.hero h1 .glow{background:linear-gradient(135deg,var(--blue),var(--cyan),var(--purple),var(--blue));background-size:300% 300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:fadeUp .8s ease .4s both,shimmer 4s ease infinite}
+@keyframes shimmer{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.hero p{font-size:1.05rem;color:var(--gray);line-height:1.7;margin-bottom:36px;max-width:480px;animation:fadeUp .8s ease .6s both}
+.hero-buttons{display:flex;gap:14px;animation:fadeUp .8s ease .8s both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.btn-glow{padding:16px 32px;background:linear-gradient(135deg,var(--blue),var(--purple));border-radius:14px;font-size:15px;font-weight:700;position:relative;overflow:hidden;transition:all .3s}
+.btn-glow::before{content:'';position:absolute;inset:-2px;border-radius:16px;background:linear-gradient(135deg,var(--blue),var(--cyan),var(--purple));z-index:-1;opacity:0;transition:opacity .3s;filter:blur(12px)}
+.btn-glow:hover{transform:translateY(-3px)}
+.btn-glow:hover::before{opacity:1}
+.btn-ghost{padding:16px 32px;border:1px solid rgba(255,255,255,.12);border-radius:14px;font-size:15px;font-weight:600;transition:all .3s;backdrop-filter:blur(4px)}
+.btn-ghost:hover{background:rgba(255,255,255,.06);transform:translateY(-3px)}
+
+/* HERO STATS FLOATING */
+.hero-stats{position:absolute;right:60px;top:50%;transform:translateY(-50%);z-index:2;display:flex;flex-direction:column;gap:16px;animation:fadeUp 1s ease 1s both}
+.hero-stat{background:rgba(255,255,255,.04);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px 24px;min-width:180px;transition:all .3s}
+.hero-stat:hover{background:rgba(255,255,255,.08);transform:translateX(-8px);border-color:rgba(0,102,255,.3)}
+.hero-stat .val{font-size:2rem;font-weight:800;letter-spacing:-1px}
+.hero-stat:nth-child(1) .val{color:var(--cyan)}
+.hero-stat:nth-child(2) .val{color:var(--green)}
+.hero-stat:nth-child(3) .val{color:var(--purple)}
+.hero-stat:nth-child(4) .val{color:#F59E0B}
+.hero-stat .lbl{font-size:.72rem;color:var(--gray);margin-top:2px}
+
+/* SECTION COMMON */
+section{padding:100px 60px}
+.section-label{text-align:center;font-size:.7rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:12px}
+.section-title{text-align:center;font-size:2.5rem;font-weight:900;letter-spacing:-1.5px;margin-bottom:16px}
+.section-sub{text-align:center;color:var(--gray);font-size:1rem;max-width:500px;margin:0 auto 60px}
+
+/* 3D SCENE SECTION */
+.scene-section{position:relative;overflow:hidden}
+#scene-canvas{position:absolute;inset:0;z-index:0;opacity:.4}
+
+/* FEATURES ORBIT */
+.orbit-wrap{position:relative;width:600px;height:600px;margin:0 auto}
+.orbit-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:140px;height:140px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;box-shadow:0 0 60px rgba(0,102,255,.3),0 0 120px rgba(0,102,255,.1);z-index:2}
+.orbit-center .big{font-size:2rem;font-weight:900}
+.orbit-center .sm{font-size:.65rem;color:rgba(255,255,255,.7)}
+.orbit-ring{position:absolute;top:50%;left:50%;border:1px solid rgba(255,255,255,.06);border-radius:50%;animation:spin 40s linear infinite}
+.ring1{width:320px;height:320px;margin:-160px 0 0 -160px}
+.ring2{width:460px;height:460px;margin:-230px 0 0 -230px;animation-duration:60s;animation-direction:reverse}
+.ring3{width:580px;height:580px;margin:-290px 0 0 -290px;animation-duration:80s}
+@keyframes spin{to{transform:rotate(360deg)}}
+.orbit-node{position:absolute;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;transition:all .3s;z-index:3}
+.orbit-node:hover{transform:scale(1.3);box-shadow:0 0 30px rgba(0,102,255,.4)}
+.orbit-node .tooltip{position:absolute;top:-40px;white-space:nowrap;padding:6px 14px;border-radius:8px;background:rgba(0,0,0,.85);font-size:11px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none}
+.orbit-node:hover .tooltip{opacity:1}
+.n1{background:linear-gradient(135deg,#0066FF,#06B6D4);top:-28px;left:50%;margin-left:-28px}
+.n2{background:linear-gradient(135deg,#7C3AED,#0066FF);top:50%;right:-28px;margin-top:-28px}
+.n3{background:linear-gradient(135deg,#06B6D4,#10B981);bottom:-28px;left:50%;margin-left:-28px}
+.n4{background:linear-gradient(135deg,#F59E0B,#EF4444);top:50%;left:-28px;margin-top:-28px}
+.n5{background:linear-gradient(135deg,#10B981,#06B6D4);top:12%;right:12%}
+.n6{background:linear-gradient(135deg,#EF4444,#7C3AED);bottom:12%;right:12%}
+.n7{background:linear-gradient(135deg,#06B6D4,#0066FF);bottom:12%;left:12%}
+.n8{background:linear-gradient(135deg,#7C3AED,#F59E0B);top:12%;left:12%}
+
+/* METRICS GLASS */
+.metrics-glass{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;max-width:1000px;margin:0 auto}
+.metric-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:32px;text-align:center;position:relative;overflow:hidden;transition:all .4s}
+.metric-card:hover{background:rgba(255,255,255,.06);transform:translateY(-8px);border-color:rgba(0,102,255,.2)}
+.metric-card::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:40%;height:1px;background:linear-gradient(90deg,transparent,var(--blue),transparent)}
+.metric-card .num{font-size:3rem;font-weight:900;letter-spacing:-2px;margin-bottom:4px}
+.metric-card:nth-child(1) .num{background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.metric-card:nth-child(2) .num{background:linear-gradient(135deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.metric-card:nth-child(3) .num{background:linear-gradient(135deg,var(--purple),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.metric-card:nth-child(4) .num{background:linear-gradient(135deg,#F59E0B,#EF4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.metric-card .label{font-size:.8rem;color:var(--gray)}
+
+/* TIMELINE 3D */
+.timeline{max-width:700px;margin:0 auto;position:relative}
+.timeline::before{content:'';position:absolute;left:28px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--blue),var(--purple),var(--cyan),var(--green))}
+.tl-item{display:flex;gap:28px;margin-bottom:48px;opacity:0;transform:translateX(-30px);transition:all .6s}
+.tl-item.visible{opacity:1;transform:translateX(0)}
+.tl-dot{width:58px;height:58px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px;position:relative;z-index:1}
+.tl-item:nth-child(1) .tl-dot{background:linear-gradient(135deg,var(--blue),var(--cyan));box-shadow:0 0 24px rgba(0,102,255,.4)}
+.tl-item:nth-child(2) .tl-dot{background:linear-gradient(135deg,var(--purple),var(--blue));box-shadow:0 0 24px rgba(124,58,237,.4)}
+.tl-item:nth-child(3) .tl-dot{background:linear-gradient(135deg,var(--cyan),var(--green));box-shadow:0 0 24px rgba(6,182,212,.4)}
+.tl-item:nth-child(4) .tl-dot{background:linear-gradient(135deg,var(--green),var(--cyan));box-shadow:0 0 24px rgba(16,185,129,.4)}
+.tl-body h4{font-size:1.1rem;font-weight:700;margin-bottom:6px}
+.tl-body p{font-size:.85rem;color:var(--gray);line-height:1.6}
+.tl-time{display:inline-block;margin-top:10px;padding:4px 14px;border-radius:20px;font-size:.7rem;font-weight:700;background:rgba(6,182,212,.1);color:var(--cyan);border:1px solid rgba(6,182,212,.2)}
+
+/* COMPARISON */
+.compare-wrap{display:grid;grid-template-columns:1fr 60px 1fr;max-width:800px;margin:0 auto;gap:0}
+.compare-col{padding:36px 28px;border-radius:20px}
+.compare-col.old{background:rgba(239,68,68,.04);border:1px solid rgba(239,68,68,.1)}
+.compare-col.new{background:rgba(16,185,129,.04);border:1px solid rgba(16,185,129,.1)}
+.compare-vs{display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;color:var(--gray)}
+.compare-col h3{font-size:.95rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.compare-col.old h3{color:#EF4444}
+.compare-col.new h3{color:var(--green)}
+.compare-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.82rem}
+.compare-row span:last-child{font-weight:600}
+.compare-col.old .compare-row span:last-child{color:#FCA5A5}
+.compare-col.new .compare-row span:last-child{color:#6EE7B7}
+
+/* CTA */
+.cta{text-align:center;padding:120px 60px;position:relative;overflow:hidden}
+.cta::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 80%,rgba(0,102,255,.12),transparent 60%)}
+.cta h2{font-size:3rem;font-weight:900;letter-spacing:-1.5px;margin-bottom:16px;position:relative}
+.cta p{color:var(--gray);font-size:1.05rem;margin-bottom:40px;position:relative}
+
+/* FOOTER */
+.footer{border-top:1px solid rgba(255,255,255,.05);padding:28px 60px;display:flex;justify-content:space-between;font-size:.72rem;color:var(--gray)}
+
+/* SCROLL FADE */
+.reveal{opacity:0;transform:translateY(40px);transition:all .7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+@media(max-width:1024px){
+  .hero-stats{display:none}
+  .hero-content{max-width:100%;padding:0 24px}
+  .hero h1{font-size:2.6rem}
+  .orbit-wrap{width:340px;height:340px}
+  .orbit-center{width:90px;height:90px}
+  .orbit-center .big{font-size:1.2rem}
+  .ring1{width:200px;height:200px;margin:-100px 0 0 -100px}
+  .ring2{width:280px;height:280px;margin:-140px 0 0 -140px}
+  .ring3{width:340px;height:340px;margin:-170px 0 0 -170px}
+  .orbit-node{width:36px;height:36px;font-size:14px}
+  .metrics-glass{grid-template-columns:repeat(2,1fr)}
+  .compare-wrap{grid-template-columns:1fr;gap:12px}
+  .compare-vs{padding:6px}
+  section{padding:60px 24px}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="nav-logo"><span class="pulse-dot"></span>&nbsp;<span>Siniestros</span>AI</div>
+  <div class="nav-links">
+    <a href="#agentes">Agentes IA</a>
+    <a href="#como">Proceso</a>
+    <a href="#resultados">Resultados</a>
+    <a href="#vs">Comparativa</a>
+  </div>
+  <a href="segurcaixa.html" class="nav-cta">Ver demo &#8594;</a>
+</nav>
+
+<!-- ==================== HERO + THREE.JS ==================== -->
+<section class="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-badge"><span class="pulse-dot"></span> 27 agentes IA activos ahora mismo</div>
+    <h1>Siniestros que se<br>resuelven <span class="glow">solos</span></h1>
+    <p>Inteligencia artificial que abre, clasifica, valora y resuelve siniestros de forma autonoma. Sin esperas. Sin errores. Sin limite de capacidad.</p>
+    <div class="hero-buttons">
+      <a href="segurcaixa.html" class="btn-glow">Probar la demo &#8594;</a>
+      <a href="#como" class="btn-ghost">&#9654; Ver el proceso</a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="val">2 min</div><div class="lbl">Tiempo de resolucion</div></div>
+    <div class="hero-stat"><div class="val">75%</div><div class="lbl">Automatizacion total</div></div>
+    <div class="hero-stat"><div class="val">342K&#8364;</div><div class="lbl">Ahorro anual</div></div>
+    <div class="hero-stat"><div class="val">9.1/10</div><div class="lbl">Satisfaccion cliente</div></div>
+  </div>
+</section>
+
+<!-- ==================== AGENTS ORBIT ==================== -->
+<section id="agentes" style="padding-bottom:40px">
+  <div class="section-label reveal">ECOSISTEMA DE AGENTES</div>
+  <div class="section-title reveal">27 agentes trabajando en equipo</div>
+  <div class="section-sub reveal">Cada agente es experto en una tarea. Se comunican entre ellos, comparten hallazgos y aprenden de cada siniestro.</div>
+  <div class="orbit-wrap reveal">
+    <div class="orbit-ring ring1"></div>
+    <div class="orbit-ring ring2"></div>
+    <div class="orbit-ring ring3"></div>
+    <div class="orbit-center"><div class="big">&#129504;</div><div class="sm">Coordinador<br>Central</div></div>
+    <div class="orbit-node n1" style="animation:orbitA 20s linear infinite">&#128222;<span class="tooltip">Recepcionista</span></div>
+    <div class="orbit-node n2" style="animation:orbitB 25s linear infinite">&#128269;<span class="tooltip">Anti-Fraude</span></div>
+    <div class="orbit-node n3" style="animation:orbitA 30s linear infinite reverse">&#128176;<span class="tooltip">Valorador</span></div>
+    <div class="orbit-node n4" style="animation:orbitB 22s linear infinite reverse">&#9878;<span class="tooltip">Legal</span></div>
+    <div class="orbit-node n5">&#128200;<span class="tooltip">Perito Virtual</span></div>
+    <div class="orbit-node n6">&#128172;<span class="tooltip">Comunicaciones</span></div>
+    <div class="orbit-node n7">&#128274;<span class="tooltip">Compliance</span></div>
+    <div class="orbit-node n8">&#128640;<span class="tooltip">Negociador</span></div>
+  </div>
+</section>
+
+<style>
+@keyframes orbitA{0%{transform:rotate(0deg) translateX(160px) rotate(0deg)}100%{transform:rotate(360deg) translateX(160px) rotate(-360deg)}}
+@keyframes orbitB{0%{transform:rotate(0deg) translateX(230px) rotate(0deg)}100%{transform:rotate(360deg) translateX(230px) rotate(-360deg)}}
+</style>
+
+<!-- ==================== METRICS ==================== -->
+<section id="resultados">
+  <div class="section-label reveal">RESULTADOS REALES</div>
+  <div class="section-title reveal">Numeros que hablan solos</div>
+  <div class="section-sub reveal">Datos de una aseguradora con 800+ siniestros mensuales</div>
+  <div class="metrics-glass reveal">
+    <div class="metric-card">
+      <div class="num" data-count="847">0</div>
+      <div class="label">Siniestros / mes</div>
+    </div>
+    <div class="metric-card">
+      <div class="num" data-count="75" data-suffix="%">0</div>
+      <div class="label">Resueltos por IA</div>
+    </div>
+    <div class="metric-card">
+      <div class="num" data-count="27">0</div>
+      <div class="label">Agentes especializados</div>
+    </div>
+    <div class="metric-card">
+      <div class="num" data-count="82" data-suffix="%">0</div>
+      <div class="label">Reduccion de costes</div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== HOW IT WORKS ==================== -->
+<section id="como">
+  <div class="section-label reveal">DE 18 DIAS A 2 MINUTOS</div>
+  <div class="section-title reveal">Asi funciona</div>
+  <div class="section-sub reveal">El siniestro se gestiona de principio a fin sin intervencion humana</div>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot">&#128222;</div>
+      <div class="tl-body">
+        <h4>El cliente reporta el siniestro</h4>
+        <p>Por la app, WhatsApp, llamada o email. La IA atiende al instante, identifica al cliente, verifica su poliza y abre el expediente.</p>
+        <span class="tl-time">&#9889; 1.2 segundos</span>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot">&#129504;</div>
+      <div class="tl-body">
+        <h4>Los agentes analizan y gestionan</h4>
+        <p>Clasifican el siniestro, analizan fraude, asignan perito por zona, solicitan documentacion y valoran los danos con vision artificial.</p>
+        <span class="tl-time">&#9889; 45 segundos</span>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot">&#9989;</div>
+      <div class="tl-body">
+        <h4>Resolucion y pago automatico</h4>
+        <p>Aprueba la indemnizacion, negocia con talleres, procesa el pago y cierra el expediente. El cliente recibe notificacion en cada paso.</p>
+        <span class="tl-time">&#9889; 30 segundos</span>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot">&#128200;</div>
+      <div class="tl-body">
+        <h4>Aprende y mejora continuamente</h4>
+        <p>Cada siniestro alimenta el sistema. Los agentes comparten hallazgos, detectan patrones ocultos y optimizan el proceso automaticamente.</p>
+        <span class="tl-time">&#8734; Mejora continua</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== COMPARISON ==================== -->
+<section id="vs">
+  <div class="section-label reveal">LA DIFERENCIA</div>
+  <div class="section-title reveal">Antes vs Despues</div>
+  <div class="section-sub reveal"></div>
+  <div class="compare-wrap reveal">
+    <div class="compare-col old">
+      <h3>&#10060; Gestion manual</h3>
+      <div class="compare-row"><span>Tiempo medio</span><span>18 dias</span></div>
+      <div class="compare-row"><span>Coste por siniestro</span><span>45&#8364;</span></div>
+      <div class="compare-row"><span>Fraudes detectados</span><span>12%</span></div>
+      <div class="compare-row"><span>Disponibilidad</span><span>Lun-Vie 9-18h</span></div>
+      <div class="compare-row"><span>Errores</span><span>8%</span></div>
+      <div class="compare-row"><span>Satisfaccion</span><span>6.2 / 10</span></div>
+    </div>
+    <div class="compare-vs">VS</div>
+    <div class="compare-col new">
+      <h3>&#9989; Con SiniestrosAI</h3>
+      <div class="compare-row"><span>Tiempo medio</span><span>2 minutos</span></div>
+      <div class="compare-row"><span>Coste por siniestro</span><span>8&#8364;</span></div>
+      <div class="compare-row"><span>Fraudes detectados</span><span>94%</span></div>
+      <div class="compare-row"><span>Disponibilidad</span><span>24/7/365</span></div>
+      <div class="compare-row"><span>Errores</span><span>0%</span></div>
+      <div class="compare-row"><span>Satisfaccion</span><span>9.1 / 10</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== CTA ==================== -->
+<section class="cta">
+  <div class="section-label reveal">EMPIEZA HOY</div>
+  <h2 class="reveal">Automatiza tus siniestros</h2>
+  <p class="reveal">Implementacion en 4 semanas. ROI positivo desde el primer mes. Sin permanencia.</p>
+  <a href="segurcaixa.html" class="btn-glow reveal" style="display:inline-flex;font-size:17px;padding:18px 44px;">Ver demo en vivo &#8594;</a>
+</section>
+
+<footer class="footer">
+  <div>SiniestrosAI &middot; Gestion autonoma de siniestros</div>
+  <div>contacto@siniestrosai.com</div>
+</footer>
+
+<script>
+// =====================================================
+// THREE.JS - HERO 3D PARTICLE NETWORK
+// =====================================================
+(function() {
+  var canvas = document.getElementById('hero-canvas');
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.z = 30;
+
+  // Particles
+  var particleCount = 300;
+  var positions = new Float32Array(particleCount * 3);
+  var velocities = [];
+  var colors = new Float32Array(particleCount * 3);
+  var sizes = new Float32Array(particleCount);
+
+  var palette = [
+    new THREE.Color(0x0066FF),
+    new THREE.Color(0x7C3AED),
+    new THREE.Color(0x06B6D4),
+    new THREE.Color(0x10B981)
+  ];
+
+  for (var i = 0; i < particleCount; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 60;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 40;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 30;
+    velocities.push({
+      x: (Math.random() - 0.5) * 0.02,
+      y: (Math.random() - 0.5) * 0.02,
+      z: (Math.random() - 0.5) * 0.01
+    });
+    var c = palette[Math.floor(Math.random() * palette.length)];
+    colors[i * 3] = c.r;
+    colors[i * 3 + 1] = c.g;
+    colors[i * 3 + 2] = c.b;
+    sizes[i] = Math.random() * 3 + 1;
+  }
+
+  var geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+  var mat = new THREE.PointsMaterial({
+    size: 0.15,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.8,
+    blending: THREE.AdditiveBlending,
+    sizeAttenuation: true
+  });
+
+  var particles = new THREE.Points(geo, mat);
+  scene.add(particles);
+
+  // Connection lines
+  var lineGeo = new THREE.BufferGeometry();
+  var linePositions = new Float32Array(particleCount * particleCount * 6);
+  lineGeo.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
+  var lineMat = new THREE.LineBasicMaterial({
+    color: 0x0066FF,
+    transparent: true,
+    opacity: 0.06,
+    blending: THREE.AdditiveBlending
+  });
+  var lines = new THREE.LineSegments(lineGeo, lineMat);
+  scene.add(lines);
+
+  // Floating icosahedrons
+  var icoGeo = new THREE.IcosahedronGeometry(1.5, 1);
+  var icoMat = new THREE.MeshBasicMaterial({ color: 0x0066FF, wireframe: true, transparent: true, opacity: 0.15 });
+  var ico1 = new THREE.Mesh(icoGeo, icoMat);
+  ico1.position.set(12, 5, -5);
+  scene.add(ico1);
+
+  var ico2 = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 1), new THREE.MeshBasicMaterial({ color: 0x7C3AED, wireframe: true, transparent: true, opacity: 0.12 }));
+  ico2.position.set(-10, -4, -3);
+  scene.add(ico2);
+
+  var ico3 = new THREE.Mesh(new THREE.OctahedronGeometry(0.8, 0), new THREE.MeshBasicMaterial({ color: 0x06B6D4, wireframe: true, transparent: true, opacity: 0.1 }));
+  ico3.position.set(5, -8, -8);
+  scene.add(ico3);
+
+  // Torus
+  var torusGeo = new THREE.TorusGeometry(4, 0.02, 16, 100);
+  var torusMat = new THREE.MeshBasicMaterial({ color: 0x0066FF, transparent: true, opacity: 0.08 });
+  var torus = new THREE.Mesh(torusGeo, torusMat);
+  torus.position.set(8, 0, -10);
+  torus.rotation.x = 0.5;
+  scene.add(torus);
+
+  var torus2 = new THREE.Mesh(new THREE.TorusGeometry(3, 0.015, 16, 80), new THREE.MeshBasicMaterial({ color: 0x7C3AED, transparent: true, opacity: 0.06 }));
+  torus2.position.set(-8, 3, -12);
+  torus2.rotation.y = 0.8;
+  scene.add(torus2);
+
+  var mouse = { x: 0, y: 0 };
+  document.addEventListener('mousemove', function(e) {
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  });
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    var pos = particles.geometry.attributes.position.array;
+    for (var i = 0; i < particleCount; i++) {
+      pos[i * 3] += velocities[i].x;
+      pos[i * 3 + 1] += velocities[i].y;
+      pos[i * 3 + 2] += velocities[i].z;
+      if (Math.abs(pos[i * 3]) > 30) velocities[i].x *= -1;
+      if (Math.abs(pos[i * 3 + 1]) > 20) velocities[i].y *= -1;
+      if (Math.abs(pos[i * 3 + 2]) > 15) velocities[i].z *= -1;
+    }
+    particles.geometry.attributes.position.needsUpdate = true;
+
+    // Update connections
+    var lp = lines.geometry.attributes.position.array;
+    var li = 0;
+    var maxDist = 6;
+    for (var a = 0; a < Math.min(particleCount, 80); a++) {
+      for (var b = a + 1; b < Math.min(particleCount, 80); b++) {
+        var dx = pos[a*3] - pos[b*3];
+        var dy = pos[a*3+1] - pos[b*3+1];
+        var dz = pos[a*3+2] - pos[b*3+2];
+        var dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+        if (dist < maxDist && li < linePositions.length - 6) {
+          lp[li++] = pos[a*3]; lp[li++] = pos[a*3+1]; lp[li++] = pos[a*3+2];
+          lp[li++] = pos[b*3]; lp[li++] = pos[b*3+1]; lp[li++] = pos[b*3+2];
+        }
+      }
+    }
+    for (var r = li; r < li + 600 && r < lp.length; r++) lp[r] = 0;
+    lines.geometry.attributes.position.needsUpdate = true;
+    lines.geometry.setDrawRange(0, li / 3);
+
+    // Rotate shapes
+    ico1.rotation.x += 0.003; ico1.rotation.y += 0.005;
+    ico2.rotation.x -= 0.004; ico2.rotation.z += 0.003;
+    ico3.rotation.y += 0.006; ico3.rotation.z -= 0.002;
+    torus.rotation.z += 0.002; torus.rotation.x += 0.001;
+    torus2.rotation.z -= 0.003; torus2.rotation.y += 0.001;
+
+    // Camera follow mouse
+    camera.position.x += (mouse.x * 3 - camera.position.x) * 0.02;
+    camera.position.y += (mouse.y * 2 - camera.position.y) * 0.02;
+    camera.lookAt(0, 0, 0);
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  window.addEventListener('resize', function() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+})();
+
+// =====================================================
+// SCROLL ANIMATIONS
+// =====================================================
+var revealObserver = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.15 });
+document.querySelectorAll('.reveal, .tl-item').forEach(function(el) { revealObserver.observe(el); });
+
+// Nav scroll
+window.addEventListener('scroll', function() {
+  document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 50);
+});
+
+// Counter animation
+var countObserver = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    if (!entry.isIntersecting) return;
+    entry.target.querySelectorAll('.num[data-count]').forEach(function(el) {
+      var target = parseInt(el.dataset.count);
+      var suffix = el.dataset.suffix || '';
+      var dur = 2000, start = null;
+      function step(ts) {
+        if (!start) start = ts;
+        var p = Math.min((ts - start) / dur, 1);
+        var eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.floor(eased * target) + suffix;
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    });
+    countObserver.unobserve(entry.target);
+  });
+}, { threshold: 0.3 });
+document.querySelectorAll('.metrics-glass').forEach(function(el) { countObserver.observe(el); });
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+  a.addEventListener('click', function(e) {
+    e.preventDefault();
+    var t = document.querySelector(this.getAttribute('href'));
+    if (t) t.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+</script>
+</body>
+</html>

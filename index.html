@@ -86,8 +86,17 @@
         <li class="nav-separator"></li>
         <li class="nav-item" data-page="integraciones"><i class="fas fa-plug"></i><span>Integraciones</span></li>
         <li class="nav-item" data-page="reportes"><i class="fas fa-file-pdf"></i><span>Reportes</span></li>
+        <li class="nav-item" data-page="wiki"><i class="fas fa-book"></i><span>Base Conocimiento</span></li>
+        <li class="nav-item" data-page="importar"><i class="fas fa-file-upload"></i><span>Importar Datos</span></li>
         <li class="nav-item" data-page="whitelabel"><i class="fas fa-palette"></i><span>White Label</span></li>
         <li class="nav-item" data-page="metricas"><i class="fas fa-chart-bar"></i><span>Metricas</span></li>
+        <li class="nav-separator"></li>
+        <li class="nav-label nav-collapse-toggle" onclick="this.classList.toggle('collapsed');var s=this.nextElementSibling;while(s&&!s.classList.contains('nav-separator')&&!s.classList.contains('nav-label')){s.classList.toggle('nav-collapsed');s=s.nextElementSibling;}" role="button" aria-expanded="true">SISTEMA AUTONOMO <i class="fas fa-chevron-down nav-chevron"></i></li>
+        <li class="nav-item" data-page="coordinacion"><i class="fas fa-project-diagram"></i><span>Multi-Agente</span><span class="nav-badge-live">LIVE</span></li>
+        <li class="nav-item" data-page="errores"><i class="fas fa-bug"></i><span>Correccion Errores</span></li>
+        <li class="nav-item" data-page="evolucion"><i class="fas fa-dna"></i><span>Auto-Evolucion</span></li>
+        <li class="nav-item" data-page="healing"><i class="fas fa-heartbeat"></i><span>Self-Healing</span></li>
+        <li class="nav-item" data-page="analytics-deep"><i class="fas fa-atom"></i><span>Deep Analytics</span></li>
         <li class="nav-separator"></li>
         <li class="nav-label nav-collapse-toggle" onclick="this.classList.toggle('collapsed');var s=this.nextElementSibling;while(s&&!s.classList.contains('nav-separator')&&!s.classList.contains('nav-label')){s.classList.toggle('nav-collapsed');s=s.nextElementSibling;}" role="button" aria-expanded="true">DEPARTAMENTOS <i class="fas fa-chevron-down nav-chevron"></i></li>
         <li class="nav-item nav-portal" onclick="window.open('empresa-control.html','_blank')"><i class="fas fa-tv"></i><span>Sala de Control</span><i class="fas fa-external-link-alt nav-ext"></i></li>
@@ -936,6 +945,216 @@
         <div class="mod-grid">
             <div class="card"><div class="card-header"><h3><i class="fas fa-chart-radar"></i> Posicionamiento</h3></div><div id="compAnalisis" class="mod-result"></div></div>
             <div class="card"><div class="card-header"><h3><i class="fas fa-lightbulb"></i> Recomendaciones IA</h3></div><div id="compRecomendaciones" class="mod-list"></div></div>
+        </div>
+    </section>
+
+    <!-- ============ PAGE: COORDINACION MULTI-AGENTE ============ -->
+    <section class="page" id="page-coordinacion">
+        <div class="page-header"><h1><i class="fas fa-project-diagram ai-color"></i> Coordinacion Multi-Agente</h1><span class="ai-live-badge"><span class="live-dot"></span> 27 AGENTES ACTIVOS</span></div>
+        <div class="agent-impact-banner" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">
+            <div class="agent-impact-icon"><i class="fas fa-brain"></i></div>
+            <div class="agent-impact-info"><span class="agent-impact-label">Agentes IA coordinandose en tiempo real</span><span class="agent-impact-value" id="coordAgentes">27</span><span class="agent-impact-sub">agentes autonomos activos</span></div>
+            <div class="agent-impact-stats"><div class="agent-impact-stat"><span id="coordConversaciones">5</span><span>Conversaciones</span></div><div class="agent-impact-stat"><span id="coordConflictos">0</span><span>Conflictos</span></div><div class="agent-impact-stat"><span id="coordConsensos">98%</span><span>Consenso</span></div></div>
+        </div>
+        <div class="mod-grid">
+            <div class="card"><div class="card-header"><h3><i class="fas fa-comments"></i> Conversaciones entre Agentes</h3><span class="ai-live-badge"><span class="live-dot"></span> LIVE</span></div><div id="coordConvList" class="mod-list"></div></div>
+            <div class="card"><div class="card-header"><h3><i class="fas fa-users"></i> Estado de Todos los Agentes</h3></div><div id="coordAgentsList" class="mod-list"></div></div>
+        </div>
+    </section>
+
+    <!-- ============ PAGE: CORRECCION ERRORES ============ -->
+    <section class="page" id="page-errores">
+        <div class="page-header"><h1><i class="fas fa-bug ai-color"></i> Correccion Automatica de Errores</h1></div>
+        <div class="agent-impact-banner" style="background:linear-gradient(135deg,#dc2626,#f59e0b)">
+            <div class="agent-impact-icon"><i class="fas fa-shield-alt"></i></div>
+            <div class="agent-impact-info"><span class="agent-impact-label">Errores detectados y corregidos automaticamente</span><span class="agent-impact-value" id="errTotal">0</span><span class="agent-impact-sub">errores corregidos hoy</span></div>
+            <div class="agent-impact-stats"><div class="agent-impact-stat"><span id="errTasa">0%</span><span>Auto-correccion</span></div><div class="agent-impact-stat"><span id="errPrevenidos">0</span><span>Prevenidos</span></div><div class="agent-impact-stat"><span id="errPrecision">0%</span><span>Precision</span></div></div>
+        </div>
+        <div class="mod-grid">
+            <div class="card"><div class="card-header"><h3><i class="fas fa-exclamation-triangle"></i> Errores Recientes</h3></div><div id="errRecientes" class="mod-list"></div></div>
+            <div class="card"><div class="card-header"><h3><i class="fas fa-chart-bar"></i> Precision por Agente</h3></div><div id="errPrecisionAgentes" class="mod-list"></div></div>
+        </div>
+    </section>
+
+    <!-- ============ PAGE: AUTO-EVOLUCION ============ -->
+    <section class="page" id="page-evolucion">
+        <div class="page-header"><h1><i class="fas fa-dna ai-color"></i> Sistema Auto-Evolutivo</h1></div>
+        <div class="agent-impact-banner" style="background:linear-gradient(135deg,#16a34a,#06b6d4)">
+            <div class="agent-impact-icon"><i class="fas fa-rocket"></i></div>
+            <div class="agent-impact-info"><span class="agent-impact-label">El sistema se mejora a si mismo continuamente</span><span class="agent-impact-value" id="evoVersion">v5.0</span><span class="agent-impact-sub">version actual</span></div>
+            <div class="agent-impact-stats"><div class="agent-impact-stat"><span id="evoMejoras">23</span><span>Mejoras aplicadas</span></div><div class="agent-impact-stat"><span id="evoPendientes">6</span><span>Pendientes</span></div></div>
+        </div>
+        <div class="mod-grid">
+            <div class="card"><div class="card-header"><h3><i class="fas fa-history"></i> Historial de Evolucion</h3></div><div id="evoHistorial" class="mod-list"></div></div>
+            <div class="card"><div class="card-header"><h3><i class="fas fa-map-signs"></i> Roadmap Automatico</h3></div><div id="evoRoadmap" class="mod-list"></div></div>
+        </div>
+    </section>
+
+    <!-- ============ PAGE: SELF-HEALING ============ -->
+    <section class="page" id="page-healing">
+        <div class="page-header"><h1><i class="fas fa-heartbeat ai-color"></i> Sistema Self-Healing</h1></div>
+        <div class="agent-impact-banner" style="background:linear-gradient(135deg,#06b6d4,#16a34a)">
+            <div class="agent-impact-icon"><i class="fas fa-heart"></i></div>
+            <div class="agent-impact-info"><span class="agent-impact-label">El sistema se repara a si mismo</span><span class="agent-impact-value" id="healUptime">99.97%</span><span class="agent-impact-sub">uptime conseguido</span></div>
+            <div class="agent-impact-stats"><div class="agent-impact-stat"><span id="healIncidentes">12</span><span>Auto-curados</span></div><div class="agent-impact-stat"><span id="healPreventivas">8</span><span>Preventivas</span></div></div>
+        </div>
+        <div class="mod-grid">
+            <div class="card"><div class="card-header"><h3><i class="fas fa-stethoscope"></i> Diagnostico del Sistema</h3><button class="btn btn-sm btn-ai" id="btnDiagnosticar"><i class="fas fa-sync"></i> Diagnosticar</button></div><div id="healDiagnostico" class="mod-result"></div></div>
+            <div class="card"><div class="card-header"><h3><i class="fas fa-history"></i> Incidentes Auto-Curados</h3></div><div id="healIncidentesList" class="mod-list"></div></div>
+        </div>
+    </section>
+
+    <!-- ============ PAGE: DEEP ANALYTICS ============ -->
+    <section class="page" id="page-analytics-deep">
+        <div class="page-header"><h1><i class="fas fa-atom ai-color"></i> Deep Analytics IA</h1></div>
+        <div class="agent-impact-banner" style="background:linear-gradient(135deg,#f59e0b,#8b5cf6)">
+            <div class="agent-impact-icon"><i class="fas fa-lightbulb"></i></div>
+            <div class="agent-impact-info"><span class="agent-impact-label">Insights que ningun humano encontraria</span><span class="agent-impact-value" id="anaInsights">10</span><span class="agent-impact-sub">insights generados hoy</span></div>
+            <div class="agent-impact-stats"><div class="agent-impact-stat"><span id="anaCorrelaciones">8</span><span>Correlaciones</span></div><div class="agent-impact-stat"><span id="anaOportunidades">6</span><span>Oportunidades</span></div></div>
+        </div>
+        <div class="mod-grid">
+            <div class="card" style="grid-column:1/-1"><div class="card-header"><h3><i class="fas fa-lightbulb"></i> Insights del Dia</h3></div><div id="anaInsightsList" class="mod-list"></div></div>
+            <div class="card"><div class="card-header"><h3><i class="fas fa-link"></i> Correlaciones Ocultas</h3></div><div id="anaCorrelacionesList" class="mod-list"></div></div>
+            <div class="card"><div class="card-header"><h3><i class="fas fa-gem"></i> Oportunidades Detectadas</h3></div><div id="anaOportunidadesList" class="mod-list"></div></div>
+        </div>
+    </section>
+
+    <!-- ============ PAGE: IMPORTAR DATOS ============ -->
+    <section class="page" id="page-importar">
+        <div class="page-header"><h1><i class="fas fa-file-upload ai-color"></i> Importar Datos de Aseguradora</h1></div>
+
+        <div class="import-steps">
+            <div class="import-step active" id="importStep1"><span class="import-step-num">1</span><span>Subir archivo</span></div>
+            <div class="import-step" id="importStep2"><span class="import-step-num">2</span><span>Mapear columnas</span></div>
+            <div class="import-step" id="importStep3"><span class="import-step-num">3</span><span>Validar</span></div>
+            <div class="import-step" id="importStep4"><span class="import-step-num">4</span><span>Importar</span></div>
+        </div>
+
+        <!-- Step 1: Upload -->
+        <div class="import-panel" id="importPanel1">
+            <div class="card">
+                <div class="card-header"><h3><i class="fas fa-cloud-upload-alt"></i> Subir Archivo</h3></div>
+                <div class="import-type-selector">
+                    <label><input type="radio" name="importTipo" value="clientes" checked> <i class="fas fa-users"></i> Clientes</label>
+                    <label><input type="radio" name="importTipo" value="polizas"> <i class="fas fa-file-contract"></i> Polizas</label>
+                    <label><input type="radio" name="importTipo" value="siniestros"> <i class="fas fa-car-crash"></i> Siniestros</label>
+                </div>
+                <div class="import-dropzone" id="importDropzone">
+                    <i class="fas fa-file-excel" style="font-size:3rem;color:#16a34a"></i>
+                    <h3>Arrastra tu archivo aqui</h3>
+                    <p>Excel (.xlsx, .xls) o CSV (.csv) - Maximo 50MB</p>
+                    <button class="btn btn-primary" onclick="document.getElementById('importFileInput').click()"><i class="fas fa-folder-open"></i> Seleccionar archivo</button>
+                    <input type="file" id="importFileInput" accept=".xlsx,.xls,.csv" hidden>
+                </div>
+                <div class="import-templates">
+                    <span>Descargar plantilla:</span>
+                    <a href="/api/import/plantilla/clientes" class="btn btn-sm btn-outline"><i class="fas fa-download"></i> Clientes</a>
+                    <a href="/api/import/plantilla/polizas" class="btn btn-sm btn-outline"><i class="fas fa-download"></i> Polizas</a>
+                    <a href="/api/import/plantilla/siniestros" class="btn btn-sm btn-outline"><i class="fas fa-download"></i> Siniestros</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Mapping -->
+        <div class="import-panel" id="importPanel2" style="display:none">
+            <div class="card">
+                <div class="card-header"><h3><i class="fas fa-columns"></i> Mapeo de Columnas</h3><span id="importMappingConf"></span></div>
+                <p>Verificamos como se corresponden tus columnas con nuestro sistema:</p>
+                <div class="import-mapping-grid" id="importMappingGrid"></div>
+                <div class="import-actions"><button class="btn btn-outline" onclick="showImportStep(1)">Atras</button><button class="btn btn-primary" onclick="importValidate()"><i class="fas fa-check"></i> Validar datos</button></div>
+            </div>
+        </div>
+
+        <!-- Step 3: Validation -->
+        <div class="import-panel" id="importPanel3" style="display:none">
+            <div class="card">
+                <div class="card-header"><h3><i class="fas fa-clipboard-check"></i> Validacion de Datos</h3></div>
+                <div id="importValidationResult"></div>
+                <div class="import-actions"><button class="btn btn-outline" onclick="showImportStep(2)">Atras</button><button class="btn btn-ai" id="btnImportExecute"><i class="fas fa-database"></i> Importar a base de datos</button></div>
+            </div>
+        </div>
+
+        <!-- Step 4: Result -->
+        <div class="import-panel" id="importPanel4" style="display:none">
+            <div class="card">
+                <div class="card-header"><h3><i class="fas fa-check-circle"></i> Resultado de la Importacion</h3></div>
+                <div id="importResult"></div>
+                <div class="import-actions"><button class="btn btn-primary" onclick="showImportStep(1)"><i class="fas fa-redo"></i> Nueva importacion</button></div>
+            </div>
+        </div>
+
+        <!-- History -->
+        <div class="card" style="margin-top:1.5rem"><div class="card-header"><h3><i class="fas fa-history"></i> Historial de Importaciones</h3></div><div id="importHistory" class="mod-list"></div></div>
+    </section>
+
+    <!-- ============ PAGE: WIKI ============ -->
+    <section class="page" id="page-wiki">
+        <div class="page-header"><h1><i class="fas fa-book ai-color"></i> Base de Conocimiento</h1><button class="btn btn-primary" id="btnNuevaNota"><i class="fas fa-plus"></i> Nueva Nota</button></div>
+
+        <div class="wiki-layout">
+            <!-- Sidebar with categories and search -->
+            <div class="wiki-sidebar">
+                <div class="wiki-search"><i class="fas fa-search"></i><input type="text" id="wikiSearch" placeholder="Buscar en la wiki..." aria-label="Buscar en wiki"></div>
+                <div class="wiki-categories">
+                    <div class="wiki-cat active" data-cat="" onclick="filterWikiCat(this)"><i class="fas fa-globe"></i> Todas</div>
+                    <div class="wiki-cat" data-cat="procedimientos" onclick="filterWikiCat(this)"><i class="fas fa-clipboard-list"></i> Procedimientos</div>
+                    <div class="wiki-cat" data-cat="normativa" onclick="filterWikiCat(this)"><i class="fas fa-gavel"></i> Normativa</div>
+                    <div class="wiki-cat" data-cat="formacion" onclick="filterWikiCat(this)"><i class="fas fa-graduation-cap"></i> Formacion</div>
+                    <div class="wiki-cat" data-cat="casos_resueltos" onclick="filterWikiCat(this)"><i class="fas fa-check-double"></i> Casos Resueltos</div>
+                    <div class="wiki-cat" data-cat="faq" onclick="filterWikiCat(this)"><i class="fas fa-question-circle"></i> FAQ</div>
+                    <div class="wiki-cat" data-cat="productos" onclick="filterWikiCat(this)"><i class="fas fa-box"></i> Productos</div>
+                    <div class="wiki-cat" data-cat="proveedores" onclick="filterWikiCat(this)"><i class="fas fa-truck"></i> Proveedores</div>
+                    <div class="wiki-cat" data-cat="tecnologia" onclick="filterWikiCat(this)"><i class="fas fa-code"></i> Tecnologia</div>
+                </div>
+                <div class="wiki-stats" id="wikiStats"></div>
+            </div>
+
+            <!-- Main content -->
+            <div class="wiki-main">
+                <!-- Note list (default view) -->
+                <div id="wikiNoteList" class="wiki-note-list"></div>
+
+                <!-- Note viewer -->
+                <div id="wikiNoteViewer" class="wiki-note-viewer" style="display:none">
+                    <div class="wiki-note-header">
+                        <button class="btn btn-sm btn-outline" onclick="showWikiList()"><i class="fas fa-arrow-left"></i> Volver</button>
+                        <div class="wiki-note-meta" id="wikiNoteMeta"></div>
+                        <div class="wiki-note-actions">
+                            <button class="btn btn-sm btn-outline" id="btnEditarNota"><i class="fas fa-edit"></i> Editar</button>
+                        </div>
+                    </div>
+                    <h2 id="wikiNoteTitle"></h2>
+                    <div id="wikiNoteContent" class="wiki-note-content"></div>
+                    <div class="wiki-note-links">
+                        <h4><i class="fas fa-link"></i> Notas enlazadas</h4>
+                        <div id="wikiNoteLinks"></div>
+                    </div>
+                </div>
+
+                <!-- Note editor -->
+                <div id="wikiNoteEditor" class="wiki-note-editor" style="display:none">
+                    <div class="wiki-editor-header">
+                        <button class="btn btn-sm btn-outline" onclick="showWikiList()"><i class="fas fa-times"></i> Cancelar</button>
+                        <button class="btn btn-sm btn-primary" id="btnGuardarNota"><i class="fas fa-save"></i> Guardar</button>
+                    </div>
+                    <input type="text" id="wikiEditTitle" placeholder="Titulo de la nota" class="wiki-edit-title">
+                    <div class="wiki-edit-row">
+                        <select id="wikiEditCategoria"><option value="procedimientos">Procedimientos</option><option value="normativa">Normativa</option><option value="formacion">Formacion</option><option value="casos_resueltos">Casos Resueltos</option><option value="faq">FAQ</option><option value="productos">Productos</option><option value="proveedores">Proveedores</option><option value="tecnologia">Tecnologia</option></select>
+                        <input type="text" id="wikiEditTags" placeholder="Tags separados por coma">
+                    </div>
+                    <textarea id="wikiEditContenido" rows="20" placeholder="Escribe en Markdown. Usa [[titulo nota]] para enlazar a otras notas..." class="wiki-edit-content"></textarea>
+                    <p class="wiki-edit-hint"><i class="fas fa-info-circle"></i> Usa <code>[[nombre de nota]]</code> para crear enlaces entre notas. Markdown soportado.</p>
+                </div>
+
+                <!-- Graph view -->
+                <div id="wikiGraphView" class="wiki-graph-view" style="display:none">
+                    <canvas id="wikiGraphCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="wiki-graph-toggle">
+            <button class="btn btn-outline" id="btnWikiGraph"><i class="fas fa-project-diagram"></i> Ver Grafo de Conexiones</button>
         </div>
     </section>
 

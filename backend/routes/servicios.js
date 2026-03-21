@@ -970,4 +970,195 @@ router.get('/innovacion/ideas', tokenOpcional, (req, res) => { try { res.json(in
 router.get('/innovacion/benchmark', tokenOpcional, (req, res) => { try { res.json(innovacionAgent.getBenchmark()); } catch(e) { handleError(req,res,e); } });
 router.get('/innovacion/estadisticas', tokenOpcional, (req, res) => { try { res.json(innovacionAgent.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
 
+// ============================================================
+// SISTEMA AUTONOMO: EVOLUCION, COORDINACION, CORRECCION
+// ============================================================
+const autoEvolution = require('../agents/autoEvolutionAgent');
+const multiAgent = require('../agents/multiAgentCoordinator');
+const errorCorrection = require('../agents/errorCorrectionAgent');
+const selfHealing = require('../agents/selfHealingAgent');
+const analyticsDeep = require('../agents/analyticsAgent');
+
+// Auto-evolucion
+router.get('/evolucion/rendimiento', tokenOpcional, (req, res) => { try { res.json(autoEvolution.analizarRendimiento()); } catch(e) { handleError(req,res,e); } });
+router.get('/evolucion/proximas', tokenOpcional, (req, res) => { try { res.json(autoEvolution.getProximasActualizaciones()); } catch(e) { handleError(req,res,e); } });
+router.get('/evolucion/historial', tokenOpcional, (req, res) => { try { res.json(autoEvolution.getHistorialEvolucion()); } catch(e) { handleError(req,res,e); } });
+router.get('/evolucion/version', tokenOpcional, (req, res) => { try { res.json(autoEvolution.getVersionActual()); } catch(e) { handleError(req,res,e); } });
+router.get('/evolucion/roadmap', tokenOpcional, (req, res) => { try { res.json(autoEvolution.getRoadmapAutomatico()); } catch(e) { handleError(req,res,e); } });
+router.get('/evolucion/metricas', tokenOpcional, (req, res) => { try { res.json(autoEvolution.getMetricasEvolucion()); } catch(e) { handleError(req,res,e); } });
+
+// Multi-agente coordinacion
+router.get('/coordinacion/conversaciones', tokenOpcional, (req, res) => { try { res.json(multiAgent.getConversacionesActivas()); } catch(e) { handleError(req,res,e); } });
+router.get('/coordinacion/conflictos', tokenOpcional, (req, res) => { try { res.json(multiAgent.getConflictos()); } catch(e) { handleError(req,res,e); } });
+router.get('/coordinacion/agentes', tokenOpcional, (req, res) => { try { res.json(multiAgent.getEstadoAgentes()); } catch(e) { handleError(req,res,e); } });
+router.get('/coordinacion/red', tokenOpcional, (req, res) => { try { res.json(multiAgent.getRedComunicacion()); } catch(e) { handleError(req,res,e); } });
+router.get('/coordinacion/estadisticas', tokenOpcional, (req, res) => { try { res.json(multiAgent.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+router.post('/coordinacion/conversacion', verificarToken, (req, res) => { try { res.json(multiAgent.iniciarConversacion(req.body.agentes, req.body.asunto)); } catch(e) { handleError(req,res,e); } });
+
+// Correccion de errores
+router.get('/errores/recientes', tokenOpcional, (req, res) => { try { res.json(errorCorrection.getErroresRecientes()); } catch(e) { handleError(req,res,e); } });
+router.get('/errores/verificaciones', tokenOpcional, (req, res) => { try { res.json(errorCorrection.getVerificaciones()); } catch(e) { handleError(req,res,e); } });
+router.get('/errores/patrones', tokenOpcional, (req, res) => { try { res.json(errorCorrection.getPatronesError()); } catch(e) { handleError(req,res,e); } });
+router.get('/errores/precision-agentes', tokenOpcional, (req, res) => { try { res.json(errorCorrection.getPrecisionPorAgente()); } catch(e) { handleError(req,res,e); } });
+router.get('/errores/aprendizajes', tokenOpcional, (req, res) => { try { res.json(errorCorrection.getAprendizajes()); } catch(e) { handleError(req,res,e); } });
+router.get('/errores/estadisticas', tokenOpcional, (req, res) => { try { res.json(errorCorrection.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+router.post('/errores/verificar', verificarToken, (req, res) => { try { res.json(errorCorrection.verificarDecision(req.body.agenteId, req.body.decision, req.body.contexto)); } catch(e) { handleError(req,res,e); } });
+
+// Self-healing
+router.get('/healing/diagnostico', tokenOpcional, (req, res) => { try { res.json(selfHealing.diagnosticar()); } catch(e) { handleError(req,res,e); } });
+router.get('/healing/incidentes', tokenOpcional, (req, res) => { try { res.json(selfHealing.getIncidentes()); } catch(e) { handleError(req,res,e); } });
+router.get('/healing/preventivas', tokenOpcional, (req, res) => { try { res.json(selfHealing.getAccionesPreventivas()); } catch(e) { handleError(req,res,e); } });
+router.get('/healing/historial-salud', tokenOpcional, (req, res) => { try { res.json(selfHealing.getHistorialSalud()); } catch(e) { handleError(req,res,e); } });
+router.get('/healing/estadisticas', tokenOpcional, (req, res) => { try { res.json(selfHealing.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+
+// Analytics profundo
+router.get('/analytics/insights', tokenOpcional, (req, res) => { try { res.json(analyticsDeep.getInsightsDiarios()); } catch(e) { handleError(req,res,e); } });
+router.get('/analytics/correlaciones', tokenOpcional, (req, res) => { try { res.json(analyticsDeep.getCorrelaciones()); } catch(e) { handleError(req,res,e); } });
+router.get('/analytics/anomalias', tokenOpcional, (req, res) => { try { res.json(analyticsDeep.getAnomalias()); } catch(e) { handleError(req,res,e); } });
+router.get('/analytics/predicciones', tokenOpcional, (req, res) => { try { res.json(analyticsDeep.getPrediccionesAvanzadas()); } catch(e) { handleError(req,res,e); } });
+router.get('/analytics/oportunidades', tokenOpcional, (req, res) => { try { res.json(analyticsDeep.getOportunidades()); } catch(e) { handleError(req,res,e); } });
+router.get('/analytics/dashboard', tokenOpcional, (req, res) => { try { res.json(analyticsDeep.getDashboardInteligente()); } catch(e) { handleError(req,res,e); } });
+router.get('/analytics/estadisticas', tokenOpcional, (req, res) => { try { res.json(analyticsDeep.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+
+// ============================================================
+// MEMORIA, MENTOR, CANVAS, DAILY NOTES, KNOWLEDGE GRAPH
+// ============================================================
+const memoriaAgent = require('../agents/memoriaAgent');
+const mentorAgent = require('../agents/mentorAgent');
+const canvasService = require('../services/canvasService');
+const dailyNotes = require('../services/dailyNotesService');
+const knowledgeGraph = require('../services/knowledgeGraphService');
+
+// Memoria
+router.get('/memoria/cliente/:clienteId', tokenOpcional, async (req, res) => { try { res.json(await memoriaAgent.getMemoriaCliente(req.params.clienteId)); } catch(e) { handleError(req,res,e); } });
+router.get('/memoria/briefing/:clienteId', tokenOpcional, async (req, res) => { try { res.json(await memoriaAgent.getBriefingLlamada(req.params.clienteId)); } catch(e) { handleError(req,res,e); } });
+router.get('/memoria/contexto/:clienteId', tokenOpcional, async (req, res) => { try { res.json(await memoriaAgent.getContexto(req.params.clienteId)); } catch(e) { handleError(req,res,e); } });
+router.get('/memoria/patrones/:clienteId', tokenOpcional, async (req, res) => { try { res.json(await memoriaAgent.getPatronesCliente(req.params.clienteId)); } catch(e) { handleError(req,res,e); } });
+router.post('/memoria/recordar', verificarToken, async (req, res) => { try { res.json(await memoriaAgent.recordar(req.body.clienteId, req.body.tipo, req.body.contenido, req.body.meta)); } catch(e) { handleError(req,res,e); } });
+router.get('/memoria/buscar', tokenOpcional, async (req, res) => { try { res.json(await memoriaAgent.buscarMemorias(req.query.q)); } catch(e) { handleError(req,res,e); } });
+router.get('/memoria/estadisticas', tokenOpcional, async (req, res) => { try { res.json(await memoriaAgent.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+
+// Mentor
+router.get('/mentor/consejos/:empleadoId', tokenOpcional, async (req, res) => { try { res.json(await mentorAgent.getConsejosTiempoReal(req.params.empleadoId)); } catch(e) { handleError(req,res,e); } });
+router.get('/mentor/practicas', tokenOpcional, async (req, res) => { try { res.json(await mentorAgent.getMejoresPracticas()); } catch(e) { handleError(req,res,e); } });
+router.get('/mentor/rendimiento/:empleadoId', tokenOpcional, async (req, res) => { try { res.json(await mentorAgent.getRendimientoComparativo(req.params.empleadoId)); } catch(e) { handleError(req,res,e); } });
+router.get('/mentor/oportunidades/:empleadoId', tokenOpcional, async (req, res) => { try { res.json(await mentorAgent.detectarOportunidadMejora(req.params.empleadoId)); } catch(e) { handleError(req,res,e); } });
+router.post('/mentor/observar', verificarToken, async (req, res) => { try { res.json(await mentorAgent.observarActividad(req.body.empleadoId, req.body.accion, req.body.tiempoMs, req.body.resultado)); } catch(e) { handleError(req,res,e); } });
+router.get('/mentor/estadisticas', tokenOpcional, async (req, res) => { try { res.json(await mentorAgent.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+
+// Canvas investigacion
+router.get('/canvas/boards', tokenOpcional, async (req, res) => { try { res.json(await canvasService.listarBoards()); } catch(e) { handleError(req,res,e); } });
+router.get('/canvas/boards/:id', tokenOpcional, async (req, res) => { try { res.json(await canvasService.getBoard(req.params.id)); } catch(e) { handleError(req,res,e); } });
+router.post('/canvas/boards', verificarToken, async (req, res) => { try { res.json(await canvasService.crearBoard(req.body.titulo, req.body.descripcion, req.body.autor)); } catch(e) { handleError(req,res,e); } });
+router.post('/canvas/nodos', verificarToken, async (req, res) => { try { res.json(await canvasService.agregarNodo(req.body.boardId, req.body.tipo, req.body.referenciaId, req.body.titulo, req.body.datos, req.body.x, req.body.y)); } catch(e) { handleError(req,res,e); } });
+router.post('/canvas/conexiones', verificarToken, async (req, res) => { try { res.json(await canvasService.conectarNodos(req.body.boardId, req.body.origenId, req.body.destinoId, req.body.tipo, req.body.etiqueta)); } catch(e) { handleError(req,res,e); } });
+router.get('/canvas/patrones/:boardId', tokenOpcional, async (req, res) => { try { res.json(await canvasService.detectarPatrones(req.params.boardId)); } catch(e) { handleError(req,res,e); } });
+router.post('/canvas/auto-generar/:siniestroId', verificarToken, async (req, res) => { try { res.json(await canvasService.autoGenerarCanvas(req.params.siniestroId)); } catch(e) { handleError(req,res,e); } });
+router.get('/canvas/estadisticas', tokenOpcional, async (req, res) => { try { res.json(await canvasService.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+
+// Daily Notes
+router.get('/daily-notes/:empleadoId', tokenOpcional, async (req, res) => { try { res.json(await dailyNotes.getNotasRecientes(req.params.empleadoId, parseInt(req.query.dias) || 7)); } catch(e) { handleError(req,res,e); } });
+router.post('/daily-notes/generar', verificarToken, async (req, res) => { try { res.json(await dailyNotes.generarNotaDiaria(req.body.empleadoId, req.body.nombre)); } catch(e) { handleError(req,res,e); } });
+router.get('/daily-notes/estadisticas', tokenOpcional, async (req, res) => { try { res.json(await dailyNotes.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+
+// Knowledge Graph
+router.get('/knowledge-graph/completo', tokenOpcional, async (req, res) => { try { res.json(await knowledgeGraph.getGrafoCompleto()); } catch(e) { handleError(req,res,e); } });
+router.get('/knowledge-graph/relaciones/:tipo/:id', tokenOpcional, async (req, res) => { try { res.json(await knowledgeGraph.buscarRelaciones(req.params.tipo, req.params.id)); } catch(e) { handleError(req,res,e); } });
+router.get('/knowledge-graph/fraude', tokenOpcional, async (req, res) => { try { res.json(await knowledgeGraph.detectarRedFraude()); } catch(e) { handleError(req,res,e); } });
+router.get('/knowledge-graph/insights', tokenOpcional, async (req, res) => { try { res.json(await knowledgeGraph.getInsights()); } catch(e) { handleError(req,res,e); } });
+router.post('/knowledge-graph/construir', tokenOpcional, async (req, res) => { try { res.json(await knowledgeGraph.construirGrafo()); } catch(e) { handleError(req,res,e); } });
+router.get('/knowledge-graph/estadisticas', tokenOpcional, async (req, res) => { try { res.json(await knowledgeGraph.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+
+// ============================================================
+// ADESLAS: WORKFLOW, APROBACIONES, KILL SWITCH
+// ============================================================
+const adeslasConfig = require('../tenants/adeslas');
+const workflowEngine = require('../services/workflowEngine');
+const aprobacionesService = require('../services/aprobacionesService');
+const killSwitchService = require('../services/killSwitchService');
+
+// Config Adeslas
+router.get('/adeslas/config', tokenOpcional, (req, res) => { try { res.json(adeslasConfig.getConfig()); } catch(e) { handleError(req,res,e); } });
+router.get('/adeslas/productos', tokenOpcional, (req, res) => { try { res.json(adeslasConfig.getProductos()); } catch(e) { handleError(req,res,e); } });
+router.get('/adeslas/plazos', tokenOpcional, (req, res) => { try { res.json(adeslasConfig.getPlazos()); } catch(e) { handleError(req,res,e); } });
+router.get('/adeslas/automatizacion', tokenOpcional, (req, res) => { try { res.json(adeslasConfig.getAutomatizacion()); } catch(e) { handleError(req,res,e); } });
+router.put('/adeslas/config', verificarToken, async (req, res) => { try { res.json(await adeslasConfig.actualizarConfig('segurcaixa-adeslas', req.body.clave, req.body.valor)); } catch(e) { handleError(req,res,e); } });
+
+// Workflow
+router.post('/workflow/iniciar/:siniestroId', verificarToken, async (req, res) => { try { res.json(await workflowEngine.iniciarWorkflow(req.params.siniestroId, 'segurcaixa-adeslas')); } catch(e) { handleError(req,res,e); } });
+router.post('/workflow/avanzar/:instanciaId', verificarToken, async (req, res) => { try { res.json(await workflowEngine.avanzarPaso(req.params.instanciaId, req.body)); } catch(e) { handleError(req,res,e); } });
+router.get('/workflow/estado/:instanciaId', tokenOpcional, async (req, res) => { try { res.json(await workflowEngine.getEstadoWorkflow(req.params.instanciaId)); } catch(e) { handleError(req,res,e); } });
+router.get('/workflow/metricas', tokenOpcional, async (req, res) => { try { res.json(await workflowEngine.getMetricasAutomatizacion()); } catch(e) { handleError(req,res,e); } });
+router.get('/workflow/pendientes-humano', tokenOpcional, async (req, res) => { try { res.json(await workflowEngine.getPasosPendientesHumano()); } catch(e) { handleError(req,res,e); } });
+
+// Aprobaciones
+router.post('/aprobaciones/solicitar', verificarToken, async (req, res) => { try { res.json(await aprobacionesService.solicitarAprobacion(req.body.siniestroId, req.body.importe, req.body.motivo)); } catch(e) { handleError(req,res,e); } });
+router.post('/aprobaciones/aprobar/:id', verificarToken, async (req, res) => { try { res.json(await aprobacionesService.aprobar(req.params.id, req.usuario?.id || 'admin', req.body.notas)); } catch(e) { handleError(req,res,e); } });
+router.get('/aprobaciones/pendientes', tokenOpcional, async (req, res) => { try { res.json(await aprobacionesService.getAprobacionesPendientes(req.query.nivel)); } catch(e) { handleError(req,res,e); } });
+router.get('/aprobaciones/estadisticas', tokenOpcional, async (req, res) => { try { res.json(await aprobacionesService.getEstadisticas()); } catch(e) { handleError(req,res,e); } });
+
+// Kill Switch
+router.get('/sistema/modo', tokenOpcional, async (req, res) => { try { res.json(await killSwitchService.getModo('segurcaixa-adeslas')); } catch(e) { handleError(req,res,e); } });
+router.post('/sistema/modo', verificarToken, async (req, res) => { try { res.json(await killSwitchService.setModo('segurcaixa-adeslas', req.body.modo, req.body.motivo, req.usuario?.id || 'admin')); } catch(e) { handleError(req,res,e); } });
+router.post('/sistema/kill-switch', verificarToken, async (req, res) => { try { res.json(await killSwitchService.killSwitch('segurcaixa-adeslas', req.usuario?.id || 'admin')); } catch(e) { handleError(req,res,e); } });
+router.post('/sistema/reactivar', verificarToken, async (req, res) => { try { res.json(await killSwitchService.reactivar('segurcaixa-adeslas', req.body.modo || 'automatico', req.usuario?.id || 'admin')); } catch(e) { handleError(req,res,e); } });
+router.get('/sistema/historial', tokenOpcional, async (req, res) => { try { res.json(await killSwitchService.getHistorial('segurcaixa-adeslas')); } catch(e) { handleError(req,res,e); } });
+router.get('/sistema/estado-ia', tokenOpcional, async (req, res) => { try { res.json(await killSwitchService.getEstadoIA('segurcaixa-adeslas')); } catch(e) { handleError(req,res,e); } });
+
+// ============================================================
+// ELEVENLABS VOZ REAL
+// ============================================================
+router.post('/voz/generar', async (req, res) => {
+  try {
+    const { texto, voiceId } = req.body;
+    if (!texto) return res.status(400).json({ error: 'Texto requerido' });
+
+    const apiKey = process.env.ELEVENLABS_API_KEY;
+    const voice = voiceId || process.env.ELEVENLABS_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL';
+
+    if (!apiKey || apiKey.includes('xxxx')) {
+      return res.status(400).json({ error: 'ELEVENLABS_API_KEY no configurada' });
+    }
+
+    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'xi-api-key': apiKey,
+      },
+      body: JSON.stringify({
+        text: texto,
+        model_id: 'eleven_multilingual_v2',
+        voice_settings: { stability: 0.45, similarity_boost: 0.9, style: 0.35, use_speaker_boost: true },
+      }),
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      return res.status(response.status).json({ error: 'ElevenLabs error: ' + err });
+    }
+
+    const buffer = Buffer.from(await response.arrayBuffer());
+    res.set({ 'Content-Type': 'audio/mpeg', 'Content-Length': buffer.length });
+    res.send(buffer);
+  } catch (e) {
+    res.status(500).json({ error: 'Error generando voz' });
+  }
+});
+
+// Listar voces disponibles
+router.get('/voz/voces', async (req, res) => {
+  try {
+    const apiKey = process.env.ELEVENLABS_API_KEY;
+    if (!apiKey || apiKey.includes('xxxx')) return res.json([]);
+    const response = await fetch('https://api.elevenlabs.io/v1/voices', {
+      headers: { 'xi-api-key': apiKey },
+    });
+    const data = await response.json();
+    res.json((data.voices || []).map(v => ({ id: v.voice_id, name: v.name, category: v.category, language: v.fine_tuning?.language })));
+  } catch (e) {
+    res.status(500).json({ error: 'Error obteniendo voces' });
+  }
+});
+
 module.exports = router;
