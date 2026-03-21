@@ -1,42 +1,50 @@
 {
-  "name": "siniestros-ai-backend",
-  "version": "2.0.0",
-  "description": "Backend completo para SiniestrosAI - Sistema Autonomo de Gestion de Siniestros",
-  "main": "server.js",
+  "name": "siniestrosai-backend",
+  "version": "1.0.0",
+  "description": "SiniestrosAI - Motor de gestión autónoma de siniestros con IA",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js",
-    "seed": "node database/db.js",
-    "test": "node tests/runner.js",
-    "backup": "node -e \"require('./services/backupService').backupNow().then(r=>console.log('Backup:',r))\"",
-    "migrate:supabase": "node -e \"require('./database/supabase').migrateFromSQLite().then(()=>console.log('Migrado'))\"",
-    "health": "curl -s http://localhost:3001/api/health/detailed | node -e \"process.stdin.on('data',d=>console.log(JSON.parse(d)))\""
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "migrate": "node src/database/migrate.js",
+    "seed": "node src/database/seed.js",
+    "setup": "npm run migrate && npm run seed",
+    "test": "jest --coverage --forceExit",
+    "test:unit": "jest tests/unit --forceExit",
+    "test:integration": "jest tests/integration --forceExit",
+    "docs": "node docs/generate.js",
+    "lint": "eslint src/ --ext .js"
   },
   "dependencies": {
-    "bcrypt": "^6.0.0",
-    "compression": "^1.8.1",
-    "cookie-parser": "^1.4.7",
+    "express": "^4.18.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.21.1",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "compression": "^1.7.4",
+    "express-rate-limit": "^7.1.5",
     "jsonwebtoken": "^9.0.2",
-    "multer": "^2.0.0",
-    "socket.io": "^4.8.1",
-    "sqlite3": "^6.0.1",
-    "twilio": "^5.4.0",
-    "uuid": "^11.0.3",
-    "xlsx": "^0.18.5"
+    "bcryptjs": "^2.4.3",
+    "pg": "^8.12.0",
+    "knex": "^3.1.0",
+    "uuid": "^9.0.1",
+    "@anthropic-ai/sdk": "^0.39.0",
+    "joi": "^17.11.0",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.8",
+    "swagger-ui-express": "^5.0.0",
+    "winston": "^3.11.0",
+    "dotenv": "^16.3.1",
+    "cron": "^3.1.6",
+    "sharp": "^0.33.2",
+    "express-slow-down": "^2.0.1"
   },
-  "optionalDependencies": {
-    "@supabase/supabase-js": "^2.45.0"
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "nodemon": "^3.0.2",
+    "eslint": "^8.56.0"
   },
-  "keywords": [
-    "siniestros",
-    "seguros",
-    "ia",
-    "gestion",
-    "saas",
-    "multitenancy"
-  ],
-  "license": "MIT"
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }

@@ -1,200 +1,197 @@
-# SiniestrosAI - Backend v2.0
+# SiniestrosAI — Backend
 
-Backend empresarial completo para el sistema autonomo de gestion de siniestros.
-
-## Instalacion rapida
-
-```bash
-cd /workspaces/PRUEBA-IA-
-chmod +x install.sh && ./install.sh
-```
-
-## Instalacion manual
-
-```bash
-cd backend
-cp .env.example .env
-npm install
-npm run dev
-```
-
-El servidor arranca en `http://localhost:3001`
+Motor de gestión autónoma de siniestros con inteligencia artificial para aseguradoras.
 
 ## Arquitectura
 
 ```
-backend/
-├── server.js                    # Express + Socket.IO + todos los servicios
-├── package.json
-├── .env.example
-│
-├── database/
-│   ├── db.js                    # SQLite + seed (15 registros)
-│   └── supabase.js              # Supabase cloud + migracion
-│
-├── middleware/
-│   ├── auth.js                  # JWT + roles (admin, gestor, perito)
-│   ├── security.js              # Rate limiting, brute force, sanitizacion, CSP
-│   └── tenant.js                # Multitenancy por dominio/header/API key
-│
-├── routes/
-│   ├── auth.js                  # Login, registro, perfil
-│   ├── siniestros.js            # CRUD + busqueda
-│   ├── clientes.js              # CRUD
-│   ├── metricas.js              # Dashboard, ranking, tendencias
-│   └── agentes.js               # CRUD peritos/agentes
-│
-├── controllers/
-│   ├── authController.js
-│   ├── siniestrosController.js
-│   ├── clientesController.js
-│   └── metricasController.js
-│
-├── services/
-│   ├── fraudeService.js         # Anti-fraude 8 dimensiones
-│   ├── whatsappService.js       # Twilio WhatsApp
-│   ├── voiceService.js          # Twilio Voice + ElevenLabs
-│   ├── backupService.js         # Backups horarios + diarios comprimidos
-│   ├── logService.js            # Logging 5 niveles + rotacion
-│   ├── healthService.js         # Health checks + circuit breaker
-│   ├── queueService.js          # Cola de tareas con prioridad
-│   ├── permissionsService.js    # RBAC granular por modulo
-│   ├── webhookService.js        # Webhooks con HMAC-SHA256
-│   ├── rulesEngine.js           # Motor de reglas configurable
-│   ├── templateService.js       # Plantillas con variables dinamicas
-│   ├── slaService.js            # Gestion de SLAs con escalado
-│   ├── voiceBiometricService.js # Biometria vocal
-│   ├── blockchainService.js     # Auditoria blockchain simulada
-│   ├── callQueueService.js      # Cola de llamadas
-│   └── learningService.js       # Aprendizaje continuo
-│
-├── agents/
-│   └── mainAgent.js             # Agente IA principal (Claude API ready)
-│
-├── tests/
-│   ├── runner.js                # Test runner con reporte
-│   ├── siniestros.test.js       # 21 tests
-│   ├── auth.test.js             # 12 tests
-│   ├── fraude.test.js           # 10 tests
-│   └── agentes.test.js          # 10 tests
-│
-└── docs/
-    └── api.html                 # Documentacion interactiva (41 endpoints)
+Cliente → API REST → Orquestador → Agentes IA (Claude) → Resolución automática
+                         ↓
+                    PostgreSQL (persistencia)
 ```
 
-## API Endpoints (70+)
+### Agentes IA Especializados
 
-### Core
-| Metodo | Ruta | Descripcion |
-|--------|------|-------------|
-| POST | `/api/auth/login` | Login |
-| POST | `/api/auth/registro` | Registro |
-| GET | `/api/auth/perfil` | Perfil (token) |
-| GET/POST/PUT/DELETE | `/api/siniestros` | CRUD siniestros |
-| GET | `/api/siniestros/buscar?q=` | Busqueda |
-| GET/POST/PUT/DELETE | `/api/clientes` | CRUD clientes |
-| GET | `/api/metricas/dashboard` | KPIs |
-| GET | `/api/metricas/ranking-peritos` | Ranking |
-| GET/POST/PUT | `/api/agentes` | CRUD agentes |
+| Agente | Función |
+|--------|---------|
+| **Recepcionista** | Recibe el siniestro, verifica póliza, extrae datos clave |
+| **Clasificador** | Determina tipo, prioridad y complejidad |
+| **Antifraude** | Analiza indicadores de fraude y score de riesgo |
+| **Legal** | Verifica coberturas, exclusiones y normativa |
+| **Valorador** | Estima el coste de los daños con desglose |
+| **Perito Virtual** | Peritaje remoto con análisis de documentación |
+| **Negociador** | Selecciona taller y negocia precios |
+| **Comunicaciones** | Genera mensajes personalizados para el cliente |
+| **Pagos** | Procesa y verifica la orden de pago |
+| **Calidad** | Programa encuestas y mide satisfacción |
 
-### IA y Fraude
-| POST | `/api/fraude/analizar/:id` | Analisis anti-fraude |
-| POST | `/api/agente/clasificar/:id` | Clasificacion IA |
-| POST | `/api/agente/consultar` | Consulta libre IA |
-| POST | `/api/agente/chat/:id` | Chat expediente |
+### Flujo de procesamiento
 
-### Admin
-| GET/POST | `/api/admin/backups` | Backups |
-| POST | `/api/admin/backups/restore` | Restaurar backup |
-| GET | `/api/admin/logs` | Logs (filtros: level, category, date) |
-| GET | `/api/admin/logs/stats` | Estadisticas de logs |
-| GET | `/api/admin/queue` | Estado de la cola |
-| POST | `/api/admin/queue/enqueue` | Encolar tarea |
+1. Cliente reporta siniestro (web, app, WhatsApp, teléfono, email)
+2. **Recepcionista** verifica póliza y extrae datos
+3. **Clasificador** categoriza y prioriza
+4. **Legal** + **Antifraude** analizan en paralelo
+5. **Valorador** estima daños
+6. **Perito Virtual** evalúa si necesita perito presencial
+7. **Negociador** negocia con talleres (auto)
+8. Si importe < límite de autonomía → **auto-aprobación + pago**
+9. Si importe > límite → escalado a gestor humano
+10. **Comunicaciones** informa al cliente en cada paso
+11. **Calidad** programa encuesta post-resolución
 
-### Rules Engine
-| GET/POST | `/api/rules` | CRUD reglas |
-| PUT/DELETE | `/api/rules/:id` | Actualizar/eliminar regla |
-| POST | `/api/rules/:id/test` | Test de regla |
+## Inicio rápido
 
-### Templates
-| GET/POST | `/api/templates` | CRUD plantillas |
-| POST | `/api/templates/:id/preview` | Preview |
-| POST | `/api/templates/:id/send` | Enviar |
-| GET | `/api/templates/history` | Historial |
+### Requisitos
 
-### SLA
-| GET | `/api/sla` | Lista SLAs |
-| GET | `/api/sla/dashboard` | Dashboard SLA |
-| GET | `/api/sla/breaches` | Incumplimientos |
+- Node.js 18+
+- PostgreSQL 16+
+- API key de Anthropic (Claude)
 
-### Webhooks
-| GET/POST | `/api/webhooks` | CRUD webhooks |
-| DELETE | `/api/webhooks/:id` | Eliminar |
-| GET | `/api/webhooks/:id/log` | Log de entregas |
-
-### Blockchain Audit
-| GET | `/api/audit/chain` | Cadena completa |
-| GET | `/api/audit/verify/:id` | Verificar expediente |
-| GET | `/api/audit/verify` | Verificar integridad |
-
-### Biometria Vocal
-| POST | `/api/biometric/enroll` | Registrar huella vocal |
-| POST | `/api/biometric/identify` | Identificar por voz |
-| POST | `/api/biometric/verify` | Verificar cliente |
-
-### Learning
-| GET | `/api/learning/report` | Informe semanal |
-| GET | `/api/learning/evolution` | Evolucion del modelo |
-| GET | `/api/learning/patterns` | Patrones detectados |
-
-### Health
-| GET | `/api/health` | Health check basico |
-| GET | `/api/health/detailed` | Health detallado |
-
-### Otros
-| GET | `/api/tenants` | Listar tenants |
-| GET | `/api/permissions/:userId` | Permisos usuario |
-| GET | `/api/callqueue` | Cola de llamadas |
-| GET | `/api/docs` | Documentacion API |
-
-## Scripts
+### Con Docker (recomendado)
 
 ```bash
-npm start          # Produccion
-npm run dev        # Desarrollo (auto-reload)
-npm test           # Ejecutar 53 tests
-npm run backup     # Backup manual
-npm run health     # Estado del sistema
+# 1. Clonar y configurar
+cp .env.example .env
+# Editar .env con tu ANTHROPIC_API_KEY
+
+# 2. Levantar todo
+docker compose up -d
+
+# 3. Migrar y sembrar datos
+docker compose exec backend node src/database/migrate.js
+docker compose exec backend node src/database/seed.js
 ```
 
-## Servicios activos en background
-
-- **Health Monitor** - Verifica todos los servicios cada 30s
-- **Backup Service** - Backup automatico cada hora
-- **SLA Monitor** - Verifica cumplimiento cada 60s
-- **Queue Processor** - 3 workers paralelos procesando tareas
-- **Blockchain** - Registro inmutable de decisiones
-
-## Base de datos
-
-SQLite local (desarrollo) + Supabase (produccion opcional).
-8 tablas: usuarios, clientes, siniestros, expedientes, agentes, llamadas, mensajes_whatsapp, documentos.
-15 registros de ejemplo realistas en espanol.
-
-## Tests
-
-53 tests automaticos cubriendo: siniestros (21), auth (12), fraude (10), agentes (10).
+### Sin Docker
 
 ```bash
-npm test
+# 1. Instalar dependencias
+npm install
+
+# 2. Configurar
+cp .env.example .env
+# Editar .env (DB, JWT_SECRET, ANTHROPIC_API_KEY)
+
+# 3. Crear base de datos PostgreSQL
+createdb siniestrosai
+
+# 4. Migrar y sembrar
+npm run setup
+
+# 5. Arrancar
+npm start       # producción
+npm run dev     # desarrollo (con nodemon)
+```
+
+### Credenciales de demo
+
+| Rol | Email | Password |
+|-----|-------|----------|
+| Admin | admin@segurcaixa.demo | Demo2024! |
+| Gestor | gestor@segurcaixa.demo | Demo2024! |
+| Perito | perito@segurcaixa.demo | Demo2024! |
+| Cliente | maria.lopez@demo.com | Demo2024! |
+
+## API
+
+Base URL: `http://localhost:3001/api/v1`
+
+Documentación Swagger: `http://localhost:3001/api/docs` (solo en desarrollo)
+
+### Endpoints principales
+
+**Autenticación**
+- `POST /auth/login` — Iniciar sesión
+- `POST /auth/refresh` — Renovar token
+- `GET /auth/me` — Perfil actual
+
+**Siniestros**
+- `GET /siniestros` — Listar (con filtros y paginación)
+- `POST /siniestros` — Crear (activa procesamiento IA automático)
+- `GET /siniestros/:id` — Detalle completo (con tareas IA, docs, historial)
+- `PATCH /siniestros/:id` — Actualizar (gestor/admin)
+- `POST /siniestros/:id/reprocesar` — Relanzar IA
+- `GET /siniestros/:id/timeline` — Timeline cronológico
+
+**Pólizas**
+- `GET /polizas` — Listar
+- `GET /polizas/:id` — Detalle con siniestros
+- `GET /polizas/numero/:numero` — Buscar por número
+
+**Agentes IA**
+- `GET /agentes` — Estado y estadísticas
+- `GET /agentes/:nombre/tareas` — Tareas de un agente
+- `PATCH /agentes/:nombre` — Configurar agente
+
+**Dashboard**
+- `GET /dashboard` — KPIs (tasa automatización, tiempo medio, costes, fraude)
+- `GET /dashboard/rendimiento-agentes` — Rendimiento por agente
+
+**Admin**
+- `GET /admin/usuarios` — Gestión de usuarios
+- `GET /admin/audit-log` — Registro de auditoría RGPD
+- `GET /admin/rgpd/export/:userId` — Exportación RGPD
+- `GET /admin/stats/sistema` — Estadísticas del sistema
+
+### Ejemplo: Crear siniestro
+
+```bash
+# 1. Login
+TOKEN=$(curl -s -X POST http://localhost:3001/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"maria.lopez@demo.com","password":"Demo2024!"}' \
+  | jq -r '.token')
+
+# 2. Crear siniestro (la IA lo procesa automáticamente)
+curl -X POST http://localhost:3001/api/v1/siniestros \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "tipo": "auto_colision",
+    "descripcion": "Colisión por alcance en la M-30. Frené pero el coche de atrás me golpeó. Daños en paragolpes trasero y maletero. Sin heridos.",
+    "numero_poliza": "AUT-2024-001234",
+    "fecha_ocurrencia": "2024-06-15T10:30:00Z",
+    "lugar_ocurrencia": "M-30, Madrid, km 12",
+    "canal_entrada": "app_movil"
+  }'
 ```
 
 ## Seguridad
 
-- JWT con roles y permisos granulares (10 modulos x 6 acciones)
-- Rate limiting por IP y API key
-- Proteccion brute force con lockout
-- Sanitizacion de inputs (SQL injection, XSS)
-- Security headers (CSP, HSTS, X-Frame-Options)
-- HMAC-SHA256 para webhooks
-- Blockchain audit trail
+- JWT con expiración configurable + refresh tokens
+- Bcrypt (12 rounds) para passwords
+- Rate limiting (100 req/15min por IP)
+- Helmet (headers de seguridad)
+- Validación estricta con Joi en todos los inputs
+- CORS configurado por dominio
+- Bloqueo de cuenta tras 5 intentos fallidos (30 min)
+- Audit log completo (RGPD compliance)
+- Encriptación AES-256-CBC para datos sensibles
+- Exportación RGPD de datos del usuario
+
+## Tests
+
+```bash
+npm test              # Todos los tests + coverage
+npm run test:unit     # Solo unitarios
+npm run test:integration  # Solo integración (requiere DB)
+```
+
+## Variables de entorno
+
+Ver `.env.example` para la lista completa. Las mínimas necesarias:
+
+| Variable | Descripción |
+|----------|-------------|
+| `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | PostgreSQL |
+| `JWT_SECRET` | Secret para JWT (min 64 chars) |
+| `ANTHROPIC_API_KEY` | API key de Claude |
+
+## Tipos de siniestros soportados
+
+**Auto:** colisión, robo, incendio, cristales, asistencia
+**Negocio:** agua, incendio, robo, responsabilidad civil, daños eléctricos, pérdida de beneficios
+
+## Licencia
+
+Propietario — © 2024 SiniestrosAI

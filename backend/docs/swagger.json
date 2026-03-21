@@ -1,0 +1,116 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "SiniestrosAI API",
+    "description": "API para la gestión autónoma de siniestros con inteligencia artificial. Plataforma SaaS multi-tenant para aseguradoras.",
+    "version": "1.0.0",
+    "contact": { "name": "SiniestrosAI", "email": "contacto@siniestrosai.com" }
+  },
+  "servers": [
+    { "url": "http://localhost:3001/api/v1", "description": "Desarrollo local" },
+    { "url": "https://api.siniestrosai.com/api/v1", "description": "Producción" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+    },
+    "schemas": {
+      "Siniestro": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "numero_expediente": { "type": "string", "example": "SIN-2024-AUT-12345" },
+          "tipo": { "type": "string", "enum": ["auto_colision","auto_robo","auto_incendio","auto_cristales","auto_asistencia","negocio_agua","negocio_incendio","negocio_robo","negocio_responsabilidad","negocio_danos_electricos","negocio_perdida_beneficios"] },
+          "estado": { "type": "string", "enum": ["recibido","clasificando","en_analisis","verificando_fraude","peritaje","valoracion","negociacion","aprobado","rechazado","en_pago","pagado","cerrado","reabierto"] },
+          "prioridad": { "type": "string", "enum": ["baja","media","alta","urgente","critica"] },
+          "descripcion": { "type": "string" },
+          "valoracion_ia": { "type": "number" },
+          "importe_aprobado": { "type": "number" },
+          "auto_resuelto": { "type": "boolean" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CrearSiniestro": {
+        "type": "object",
+        "required": ["tipo", "descripcion"],
+        "properties": {
+          "tipo": { "type": "string" },
+          "descripcion": { "type": "string", "minLength": 10 },
+          "numero_poliza": { "type": "string" },
+          "fecha_ocurrencia": { "type": "string", "format": "date-time" },
+          "lugar_ocurrencia": { "type": "string" },
+          "canal_entrada": { "type": "string", "enum": ["web","app_movil","whatsapp","telefono","email","api_externa"] },
+          "datos_adicionales": { "type": "object" }
+        }
+      },
+      "Login": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string", "minLength": 6 }
+        }
+      }
+    }
+  },
+  "security": [{ "bearerAuth": [] }],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": ["Autenticación"],
+        "summary": "Iniciar sesión",
+        "security": [],
+        "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Login" } } } },
+        "responses": { "200": { "description": "Token JWT + datos usuario" }, "401": { "description": "Credenciales incorrectas" } }
+      }
+    },
+    "/auth/me": {
+      "get": { "tags": ["Autenticación"], "summary": "Obtener usuario actual", "responses": { "200": { "description": "Datos del usuario autenticado" } } }
+    },
+    "/siniestros": {
+      "get": {
+        "tags": ["Siniestros"],
+        "summary": "Listar siniestros",
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 20 } },
+          { "name": "estado", "in": "query", "schema": { "type": "string" } },
+          { "name": "tipo", "in": "query", "schema": { "type": "string" } },
+          { "name": "buscar", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Lista paginada de siniestros" } }
+      },
+      "post": {
+        "tags": ["Siniestros"],
+        "summary": "Crear siniestro (activa procesamiento IA automático)",
+        "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CrearSiniestro" } } } },
+        "responses": { "201": { "description": "Siniestro creado, procesamiento IA iniciado" } }
+      }
+    },
+    "/siniestros/{id}": {
+      "get": { "tags": ["Siniestros"], "summary": "Detalle completo de siniestro", "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Detalle con tareas IA, documentos, historial, pagos" } } },
+      "patch": { "tags": ["Siniestros"], "summary": "Actualizar siniestro (gestor/admin)", "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Siniestro actualizado" } } }
+    },
+    "/siniestros/{id}/reprocesar": {
+      "post": { "tags": ["Siniestros"], "summary": "Relanzar procesamiento IA", "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Reprocesamiento iniciado" } } }
+    },
+    "/siniestros/{id}/timeline": {
+      "get": { "tags": ["Siniestros"], "summary": "Timeline del siniestro (estados + agentes)", "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Timeline cronológico" } } }
+    },
+    "/polizas": {
+      "get": { "tags": ["Pólizas"], "summary": "Listar pólizas", "responses": { "200": { "description": "Lista paginada" } } }
+    },
+    "/agentes": {
+      "get": { "tags": ["Agentes IA"], "summary": "Estado y estadísticas de los agentes IA", "responses": { "200": { "description": "Lista de agentes con stats" } } }
+    },
+    "/dashboard": {
+      "get": { "tags": ["Dashboard"], "summary": "KPIs principales", "responses": { "200": { "description": "KPIs, distribuciones y métricas" } } }
+    },
+    "/admin/audit-log": {
+      "get": { "tags": ["Admin"], "summary": "Registro de auditoría (RGPD)", "responses": { "200": { "description": "Log de acciones" } } }
+    },
+    "/admin/rgpd/export/{userId}": {
+      "get": { "tags": ["Admin"], "summary": "Exportación RGPD de datos de un usuario", "parameters": [{ "name": "userId", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Datos completos del usuario" } } }
+    }
+  }
+}
