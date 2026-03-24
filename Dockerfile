@@ -1,17 +1,34 @@
-FROM node:20-alpine AS builder
-WORKDIR /app
-COPY backend/package*.json ./backend/
-RUN cd backend && npm ci --omit=dev
-COPY backend/ ./backend/
-COPY *.html *.js *.css ./
+# SiniestrosAI - Production Dockerfile
+FROM node:20-alpine AS base
 
-FROM node:20-alpine
+# Security: run as non-root
+RUN addgroup -g 1001 -S siniestros && \
+    adduser -S siniestros -u 1001 -G siniestros
+
 WORKDIR /app
-RUN apk add --no-cache tini
-COPY --from=builder /app .
-RUN mkdir -p backend/uploads backend/backups backend/logs backend/database
-EXPOSE 3001
+
+# Install dependencies first (better caching)
+COPY backend/package*.json ./backend/
+RUN cd backend && npm ci --only=production
+
+# Copy backend source
+COPY backend/ ./backend/
+
+# Copy frontend files
+COPY *.html *.js *.css ./
+COPY js/ ./js/
+
+# Security headers
 ENV NODE_ENV=production
-USER node
-ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["node", "backend/server.js"]
+ENV PORT=3001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3001/api/v1/health || exit 1
+
+# Non-root user
+USER siniestros
+
+EXPOSE 3001
+
+CMD ["node", "backend/src/server.js"]

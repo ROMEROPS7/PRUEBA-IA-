@@ -1,46 +1,42 @@
 version: '3.8'
+
 services:
-  backend:
+  app:
     build: .
     ports:
-      - "3001:3001"
+      - "${PORT:-3001}:3001"
     environment:
-      - NODE_ENV=production
-      - JWT_SECRET=${JWT_SECRET:-change-this-in-production}
-      - FRONTEND_URL=http://localhost:8080
+      - NODE_ENV=${NODE_ENV:-production}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@db:5432/siniestrosai}
+      - JWT_SECRET=${JWT_SECRET}
+      - AI_API_KEY=${AI_API_KEY}
       - PORT=3001
-    volumes:
-      - db-data:/app/backend/database
-      - uploads:/app/backend/uploads
-      - backups:/app/backend/backups
-      - logs:/app/backend/logs
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/api/health"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001/api/v1/health"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
 
-  frontend:
-    image: nginx:alpine
-    ports:
-      - "8080:80"
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: siniestrosai
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     volumes:
-      - ./index.html:/usr/share/nginx/html/index.html:ro
-      - ./app.js:/usr/share/nginx/html/app.js:ro
-      - ./styles.css:/usr/share/nginx/html/styles.css:ro
-      - ./backend-connector.js:/usr/share/nginx/html/backend-connector.js:ro
-      - ./portal-gestor.html:/usr/share/nginx/html/portal-gestor.html:ro
-      - ./portal-perito.html:/usr/share/nginx/html/portal-perito.html:ro
-      - ./portal-cliente.html:/usr/share/nginx/html/portal-cliente.html:ro
-      - ./portal-taller.html:/usr/share/nginx/html/portal-taller.html:ro
-      - ./portal-reparador.html:/usr/share/nginx/html/portal-reparador.html:ro
-      - ./vista-direccion.html:/usr/share/nginx/html/vista-direccion.html:ro
-      - ./saas-panel.html:/usr/share/nginx/html/saas-panel.html:ro
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
 volumes:
-  db-data:
-  uploads:
-  backups:
-  logs:
+  pgdata:
