@@ -8,3 +8,4 @@ backend/database/*.db-shm
 backend/database/*.db-wal
 .env
 *.log
+*.bak

@@ -1,6 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <script src="config.js"></script>
+    <script src="secure-token-manager.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SiniestrosAI — Demo en Vivo · SegurCaixa Adeslas</title>
@@ -156,6 +159,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--white);overflow-x:
   </div>
 </div>
 
+<!-- ====== CREDENCIALES DEMO ====== -->
+<div style="margin:64px 24px 0;padding:16px 20px;background:var(--card);border:1px solid var(--border);border-radius:14px;display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+  <div style="font-size:12px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px">Credenciales Demo</div>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px;font-family:var(--mono)">
+    <span><span style="color:var(--gray)">Admin:</span> <span style="color:var(--white)">admin@segurcaixa.demo</span></span>
+    <span><span style="color:var(--gray)">Gestor:</span> <span style="color:var(--white)">gestor@segurcaixa.demo</span></span>
+    <span><span style="color:var(--gray)">Perito:</span> <span style="color:var(--white)">perito@segurcaixa.demo</span></span>
+    <span><span style="color:var(--gray)">Cliente:</span> <span style="color:var(--white)">maria.lopez@demo.com</span></span>
+  </div>
+  <div style="font-size:12px;font-family:var(--mono);color:var(--yellow)">Password: Demo2024!</div>
+</div>
+
 <!-- ====== PANEL 1: GESTOR ====== -->
 <div class="panel active" id="panel-gestor">
   <div class="kpi-grid" id="kpis">
@@ -245,7 +260,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--white);overflow-x:
 // ============================================
 const API_BASE = window.location.hostname === 'localhost'
   ? 'http://localhost:3001/api/v1'
-  : `${window.location.origin}/api/v1`;
+  : window.location.origin.replace('-8080.', '-3001.') + '/api/v1';
 
 let authToken = null;
 let adminToken = null;
