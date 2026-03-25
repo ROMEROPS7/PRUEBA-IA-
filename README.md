@@ -82,6 +82,30 @@ PRUEBA-IA-/
 - **SuperAdmin** - Control total del sistema
 - **Panel Empresa** - Dashboard empresarial
 
+## Configuracion de Prompts de IA
+
+Los prompts de los agentes IA son privados y no se incluyen en el repositorio.
+Debes configurarlos como variables de entorno antes de arrancar el backend.
+
+**Pasos:**
+
+1. Consulta `prompts/prompts.example.json` para ver la estructura esperada de cada prompt.
+2. En tu archivo `.env` (backend) define cada prompt con el prefijo `PROMPT_`:
+
+```env
+PROMPT_RECEPCIONISTA=Eres el agente RECEPCIONISTA...
+PROMPT_CLASIFICADOR=Eres el agente CLASIFICADOR...
+PROMPT_ANTIFRAUDE=Eres el agente ANTIFRAUDE...
+PROMPT_VALORADOR=Eres el agente VALORADOR...
+PROMPT_PERITO_VIRTUAL=Eres el agente PERITO VIRTUAL...
+PROMPT_NEGOCIADOR=Eres el agente NEGOCIADOR...
+PROMPT_COMUNICACIONES=Eres el agente de COMUNICACIONES...
+PROMPT_LEGAL=Eres el agente LEGAL...
+PROMPT_PAGOS=Eres el agente de PAGOS...
+```
+
+3. El sistema lanzara un error explicito si falta alguna variable al iniciar un agente.
+
 ## Seguridad
 
 - Tokens JWT con gestion segura (SecureTokenManager)

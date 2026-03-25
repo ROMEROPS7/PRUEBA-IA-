@@ -1,36 +1,13 @@
 const AgenteBase = require('./base');
 const db = require('../../config/database');
 const { v4: uuid } = require('uuid');
+const { loadPrompt } = require('../../utils/promptLoader');
 
 class AgenteComunicaciones extends AgenteBase {
   constructor(client, modelo) { super(client, modelo, 'comunicaciones'); }
 
   async ejecutar(input) {
-    const systemPrompt = `Eres el agente de COMUNICACIONES de una aseguradora española (SegurCaixa Adeslas). 
-Generas mensajes empáticos, profesionales y claros para los clientes.
-
-Tono: Cercano pero profesional. En español. Usa "usted" salvo en WhatsApp donde puedes tutear.
-Incluye siempre el número de expediente si está disponible.
-Sé transparente sobre plazos y próximos pasos.
-
-TIPOS DE COMUNICACIÓN:
-- recepcion_siniestro: Confirmar que hemos recibido el parte
-- solicitud_documentacion: Pedir fotos/documentos faltantes
-- asignacion_perito: Informar de la asignación de un perito
-- resolucion_aprobada: Comunicar aprobación y pago
-- rechazo_cobertura: Comunicar rechazo con motivo claro
-- actualizacion_estado: Informar de cambio de estado
-- encuesta_satisfaccion: Enviar enlace a encuesta
-
-RESPONDE en JSON:
-{
-  "asunto": "asunto del email",
-  "mensaje_email": "contenido HTML del email",
-  "mensaje_sms": "versión corta para SMS (max 160 chars)",
-  "mensaje_whatsapp": "versión para WhatsApp",
-  "mensaje_push": "versión para notificación push (max 100 chars)",
-  "canales_recomendados": ["email", "push"]
-}`;
+    const systemPrompt = loadPrompt('comunicaciones');
 
     const respuesta = await this.llamarIA(systemPrompt, `
 TIPO COMUNICACIÓN: ${input.tipo}

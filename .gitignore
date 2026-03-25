@@ -9,3 +9,10 @@ backend/database/*.db-wal
 .env
 *.log
 *.bak
+
+# Prompts privados de agentes IA - no incluir en el repositorio publico
+# Copia prompts/prompts.example.json para conocer la estructura esperada
+# y configura cada prompt en tu .env como PROMPT_<AGENTE>
+prompts/*.txt
+prompts/*.json
+!prompts/prompts.example.json

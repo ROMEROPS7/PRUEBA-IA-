@@ -1,4 +1,5 @@
 const AgenteBase = require('./base');
+const { loadPrompt } = require('../../utils/promptLoader');
 
 class AgenteRecepcionista extends AgenteBase {
   constructor(client, modelo) {
@@ -6,30 +7,7 @@ class AgenteRecepcionista extends AgenteBase {
   }
 
   async ejecutar(input) {
-    const systemPrompt = `Eres el agente RECEPCIONISTA de una aseguradora española. Tu función es:
-1. Verificar que el cliente tiene una póliza activa
-2. Extraer los datos clave del siniestro de la descripción
-3. Verificar que la fecha y lugar son coherentes
-4. Identificar la urgencia inicial
-5. Generar un resumen estructurado
-
-RESPONDE SIEMPRE en JSON con esta estructura:
-{
-  "poliza_verificada": true/false,
-  "datos_extraidos": {
-    "que_paso": "resumen breve",
-    "cuando": "fecha/hora aproximada",
-    "donde": "lugar",
-    "danos_declarados": ["lista de daños"],
-    "terceros_implicados": true/false,
-    "lesionados": true/false,
-    "servicios_emergencia": true/false
-  },
-  "urgencia": "baja|media|alta|urgente",
-  "documentos_necesarios": ["lista de documentos que necesitamos"],
-  "mensaje_cliente": "Mensaje empático y profesional para el cliente confirmando la recepción",
-  "alertas": ["cualquier inconsistencia o dato faltante"]
-}`;
+    const systemPrompt = loadPrompt('recepcionista');
 
     const respuesta = await this.llamarIA(systemPrompt, `
 DATOS DEL SINIESTRO:

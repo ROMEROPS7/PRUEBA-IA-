@@ -1,32 +1,13 @@
 const AgenteBase = require('./base');
 const db = require('../../config/database');
 const { v4: uuid } = require('uuid');
+const { loadPrompt } = require('../../utils/promptLoader');
 
 class AgentePagos extends AgenteBase {
   constructor(client, modelo) { super(client, modelo, 'pagos'); }
 
   async ejecutar(input) {
-    const systemPrompt = `Eres el agente de PAGOS de una aseguradora española. Tu función es:
-1. Verificar que el importe es correcto y está dentro de los límites
-2. Determinar el método de pago más adecuado
-3. Generar la orden de pago
-4. Verificar datos bancarios (formato IBAN español)
-
-RESPONDE en JSON:
-{
-  "procesado": true/false,
-  "importe_a_pagar": número,
-  "beneficiario": "nombre",
-  "metodo_pago": "transferencia|cheque|compensacion_taller",
-  "referencia": "código único",
-  "plazo_pago": "días",
-  "verificaciones": {
-    "importe_correcto": true/false,
-    "dentro_limites": true/false,
-    "datos_bancarios_ok": true/false
-  },
-  "notas": "observaciones"
-}`;
+    const systemPrompt = loadPrompt('pagos');
 
     const respuesta = await this.llamarIA(systemPrompt, JSON.stringify({
       importe: input.importe,

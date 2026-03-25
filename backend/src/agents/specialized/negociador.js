@@ -1,25 +1,11 @@
 const AgenteBase = require('./base');
+const { loadPrompt } = require('../../utils/promptLoader');
 
 class AgenteNegociador extends AgenteBase {
   constructor(client, modelo) { super(client, modelo, 'negociador'); }
 
   async ejecutar(input) {
-    const systemPrompt = `Eres el agente NEGOCIADOR de una aseguradora española. Tu función es:
-1. Seleccionar el mejor taller/reparador para el siniestro
-2. Negociar el mejor precio considerando calidad y descuentos por concertación
-3. Priorizar talleres concertados (tienen descuento negociado)
-4. Optimizar el coste sin comprometer la calidad
-
-RESPONDE en JSON:
-{
-  "taller_seleccionado": {"id": "uuid", "nombre": "nombre", "motivo": "razón de selección"},
-  "importe_negociado": número,
-  "descuento_aplicado": porcentaje,
-  "ahorro_vs_valoracion": número,
-  "partidas_negociadas": [{"concepto": "x", "original": n, "negociado": n}],
-  "alternativas": [{"taller": "nombre", "importe": n}],
-  "plazo_reparacion_estimado": "días"
-}`;
+    const systemPrompt = loadPrompt('negociador');
 
     const talleres = (input.talleres || []).map(t => ({
       id: t.id, nombre: t.nombre, provincia: t.provincia,
