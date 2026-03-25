@@ -1,0 +1,21 @@
+{
+  "server": {
+    "host": "0.0.0.0",
+    "port": 8765
+  },
+  "engine": {
+    "scenario_interval_min": 6,
+    "scenario_interval_max": 12,
+    "workflow_interval": 30,
+    "max_conversation_history": 100
+  },
+  "agents": {
+    "count": 10,
+    "auto_simulation": true
+  },
+  "branding": {
+    "company": "SegurCaixa Adeslas",
+    "primary_color": "#0F77AE",
+    "secondary_color": "#0A5A85"
+  }
+}
