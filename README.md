@@ -92,4 +92,4 @@ PRUEBA-IA-/
 
 ## Licencia
 
-MIT License - Ver [LICENSE](LICENSE) para mas detalles.
+Propietario / Privado - Ver [LICENSE](LICENSE) para mas detalles.

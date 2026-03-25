@@ -2,6 +2,8 @@
   "name": "siniestrosai-backend",
   "version": "1.0.0",
   "description": "SiniestrosAI - Motor de gestión autónoma de siniestros con IA",
+  "license": "UNLICENSED",
+  "private": true,
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
