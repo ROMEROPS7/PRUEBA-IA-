@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  siniestros-ai:
+    build: .
+    container_name: siniestros-ai
+    ports:
+      - "8765:8765"
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8765/api/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
