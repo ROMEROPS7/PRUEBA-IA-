@@ -1,0 +1,397 @@
+{
+  "name": "Flujo Completo de Gestión de Siniestros",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "siniestro",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook_trigger",
+      "name": "Trigger: Nuevo Siniestro",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ],
+      "webhookId": "abc123"
+    },
+    {
+      "parameters": {
+        "url": "http://api:8000/api/v1/agentes/classifier/invoke",
+        "method": "POST",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "bodyParametersUi": "json",
+        "body": "{\n  \"siniestro_id\": \"{{ $json.body.siniestro_id }}\",\n  \"descripcion\": \"{{ $json.body.descripcion }}\",\n  \"tipo_reclamacion\": \"{{ $json.body.tipo_reclamacion }}\"\n}",
+        "options": {}
+      },
+      "id": "classifier_node",
+      "name": "HTTP: Clasificar Siniestro",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        500,
+        250
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "{{ $json.body.priority }}",
+              "operation": "equals",
+              "value2": "alta"
+            }
+          ]
+        },
+        "combineOperation": "any"
+      },
+      "id": "priority_check",
+      "name": "Decisión: ¿Prioridad Alta?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        750,
+        250
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://api:8000/api/v1/agentes/assignment/invoke",
+        "method": "POST",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "bodyParametersUi": "json",
+        "body": "{\n  \"siniestro_id\": \"{{ $json.body.siniestro_id }}\",\n  \"priority\": \"{{ $json.body.priority }}\",\n  \"categoria\": \"{{ $json.body.categoria }}\"\n}",
+        "options": {}
+      },
+      "id": "assignment_node",
+      "name": "HTTP: Asignar a Gestor",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1000,
+        250
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://api:8000/api/v1/siniestros/{{ $json.body.siniestro_id }}/notificar",
+        "method": "POST",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "bodyParametersUi": "json",
+        "body": "{\n  \"tipo\": \"asignacion\",\n  \"gestor_id\": \"{{ $json.body.gestor_id }}\",\n  \"siniestro_id\": \"{{ $json.body.siniestro_id }}\",\n  \"cliente_id\": \"{{ $json.body.cliente_id }}\"\n}",
+        "options": {}
+      },
+      "id": "notification_node",
+      "name": "HTTP: Notificar Gestor",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1250,
+        250
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "expressionUI",
+        "jsonOutput": "{\n  \"siniestro_id\": \"{{ $json.body.siniestro_id }}\",\n  \"estado\": \"asignado\",\n  \"clasificacion\": \"{{ $json.body.priority }}\",\n  \"gestor_asignado\": \"{{ $json.body.gestor_id }}\",\n  \"timestamp\": \"{{ $now.toIso() }}\",\n  \"flujo_completado\": true\n}",
+        "options": {}
+      },
+      "id": "set_response",
+      "name": "Construir Respuesta",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1500,
+        250
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "success_response",
+      "name": "Responder al Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1750,
+        250
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://api:8000/api/v1/siniestros/{{ $json.body.siniestro_id }}/timeline",
+        "method": "POST",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "bodyParametersUi": "json",
+        "body": "{\n  \"tipo\": \"clasificacion\",\n  \"descripcion\": \"Siniestro clasificado automáticamente como {{ $json.body.priority }} prioridad, categoría {{ $json.body.categoria }}\",\n  \"agente_id\": \"classifier_agent\"\n}",
+        "options": {}
+      },
+      "id": "timeline_classification",
+      "name": "Registrar: Clasificación",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        500,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://api:8000/api/v1/siniestros/{{ $json.body.siniestro_id }}/timeline",
+        "method": "POST",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "bodyParametersUi": "json",
+        "body": "{\n  \"tipo\": \"asignacion\",\n  \"descripcion\": \"Siniestro asignado al gestor {{ $json.body.nombre_gestor }} ({{ $json.body.gestor_id }})\",\n  \"agente_id\": \"assignment_agent\"\n}",
+        "options": {}
+      },
+      "id": "timeline_assignment",
+      "name": "Registrar: Asignación",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1000,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://api:8000/api/v1/siniestros/{{ $json.body.siniestro_id }}/timeline",
+        "method": "POST",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "bodyParametersUi": "json",
+        "body": "{\n  \"tipo\": \"notificacion\",\n  \"descripcion\": \"Notificación enviada al gestor {{ $json.body.nombre_gestor }}\",\n  \"agente_id\": \"orchestrator_agent\"\n}",
+        "options": {}
+      },
+      "id": "timeline_notification",
+      "name": "Registrar: Notificación",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1250,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "{{ $json.body.priority }}",
+              "operation": "notEquals",
+              "value2": "alta"
+            }
+          ]
+        },
+        "combineOperation": "any"
+      },
+      "id": "low_priority_handler",
+      "name": "Manejo: Baja Prioridad",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        750,
+        550
+      ]
+    }
+  ],
+  "connections": {
+    "webhook_trigger": {
+      "main": [
+        [
+          {
+            "node": "classifier_node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "classifier_node": {
+      "main": [
+        [
+          {
+            "node": "timeline_classification",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "priority_check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "priority_check": {
+      "main": [
+        [
+          {
+            "node": "assignment_node",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "low_priority_handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "assignment_node": {
+      "main": [
+        [
+          {
+            "node": "timeline_assignment",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "notification_node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "notification_node": {
+      "main": [
+        [
+          {
+            "node": "timeline_notification",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "set_response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "timeline_classification": {
+      "main": [
+        [
+          {
+            "node": "priority_check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "timeline_assignment": {
+      "main": [
+        [
+          {
+            "node": "notification_node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "timeline_notification": {
+      "main": [
+        [
+          {
+            "node": "set_response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set_response": {
+      "main": [
+        [
+          {
+            "node": "success_response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "low_priority_handler": {
+      "main": [
+        [
+          {
+            "node": "assignment_node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1",
+  "meta": {
+    "templateId": "siniestro_workflow_v1"
+  }
+}

@@ -1,0 +1,237 @@
+version: '3.8'
+
+services:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Ollama - LLM On-Premise (LOPD/RGPD Compliant)
+  # Los datos NUNCA salen de la infraestructura
+  # ═══════════════════════════════════════════════════════════════════════════
+  ollama:
+    image: ollama/ollama:latest
+    container_name: segurcaixa-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    networks:
+      - segurcaixa_network
+    restart: unless-stopped
+    # GPU support (uncomment for NVIDIA GPU acceleration)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    labels:
+      - "com.segurcaixa.service=ollama"
+      - "com.segurcaixa.compliance=lopd-rgpd"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Model Loader - Descarga el modelo LLM al iniciar
+  # ═══════════════════════════════════════════════════════════════════════════
+  ollama-init:
+    image: curlimages/curl:latest
+    container_name: segurcaixa-ollama-init
+    depends_on:
+      ollama:
+        condition: service_healthy
+    networks:
+      - segurcaixa_network
+    entrypoint: >
+      sh -c "
+        echo '🤖 Descargando modelo LLM: ${OLLAMA_MODEL:-llama3.1}...' &&
+        curl -s http://ollama:11434/api/pull -d '{\"name\": \"${OLLAMA_MODEL:-llama3.1}\"}' &&
+        echo '✅ Modelo listo para usar'
+      "
+    restart: "no"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # FastAPI Backend Service
+  # ═══════════════════════════════════════════════════════════════════════════
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: segurcaixa-api
+    ports:
+      - "8000:8000"
+    environment:
+      # Application Settings
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - LOG_LEVEL=info
+
+      # API Configuration
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - API_RELOAD=false
+
+      # Database Configuration
+      - DATABASE_URL=sqlite+aiosqlite:///./data/siniestros.db
+      - DATABASE_POOL_SIZE=5
+      - DATABASE_ECHO=false
+
+      # LLM Local (Ollama) — LOPD Compliant
+      - LLM_PROVIDER=ollama
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.1}
+      - LLM_TIMEOUT=60
+      - LLM_TEMPERATURE=0.7
+      - LLM_MAX_TOKENS=2048
+
+      # N8N Integration
+      - N8N_URL=http://n8n:5678
+      - N8N_API_KEY=${N8N_API_KEY:-}
+      - N8N_WEBHOOK_URL=http://api:8000/webhooks/n8n
+
+      # Redis Configuration
+      - REDIS_URL=redis://redis:6379/0
+
+      # Security & CORS
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8000,http://127.0.0.1:3000,http://127.0.0.1:8000
+      - CORS_CREDENTIALS=true
+
+      # Feature Flags
+      - ENABLE_VOICE_AGENT=true
+      - ENABLE_DOCUMENT_AGENT=true
+      - ENABLE_CHAT_AGENT=true
+      - ENABLE_CLASSIFIER_AGENT=true
+      - ENABLE_ASSIGNMENT_AGENT=true
+      - ENABLE_ORCHESTRATOR_AGENT=true
+
+    volumes:
+      - siniestros_data:/app/data
+
+    networks:
+      - segurcaixa_network
+
+    depends_on:
+      ollama:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      n8n:
+        condition: service_started
+
+    restart: unless-stopped
+
+    labels:
+      - "com.segurcaixa.service=api"
+      - "com.segurcaixa.version=2.0.0"
+      - "com.segurcaixa.compliance=lopd-rgpd"
+
+  # N8N Workflow Orchestration Service
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: segurcaixa-n8n
+    ports:
+      - "5678:5678"
+    environment:
+      # N8N Configuration
+      - N8N_HOST=n8n
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://api:8000/webhooks/n8n
+
+      # Database (N8N uses SQLite by default)
+      - DB_TYPE=sqlite
+      - DB_SQLITE_PATH=/home/node/n8n/database.sqlite
+
+      # Security
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD:-password}
+
+      # Logging
+      - LOG_LEVEL=info
+      - LOG_OUTPUT=console
+
+      # API Keys for N8N nodes
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+
+    volumes:
+      # N8N data persistence
+      - n8n_data:/home/node/n8n
+      # N8N workflows
+      - ./n8n-flows:/home/node/n8n/workflows:ro
+
+    networks:
+      - segurcaixa_network
+
+    depends_on:
+      - redis
+
+    restart: unless-stopped
+
+    labels:
+      - "com.segurcaixa.service=n8n"
+      - "com.segurcaixa.version=latest"
+
+  # Redis Cache Service
+  redis:
+    image: redis:7-alpine
+    container_name: segurcaixa-redis
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_LOGLEVEL=notice
+
+    volumes:
+      # Redis data persistence
+      - redis_data:/data
+
+    networks:
+      - segurcaixa_network
+
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+    labels:
+      - "com.segurcaixa.service=redis"
+      - "com.segurcaixa.version=7-alpine"
+
+# Named volumes for data persistence
+volumes:
+  siniestros_data:
+    driver: local
+    labels:
+      - "com.segurcaixa.volume=siniestros_data"
+
+  ollama_models:
+    driver: local
+    labels:
+      - "com.segurcaixa.volume=ollama_models"
+      - "com.segurcaixa.note=Modelos LLM descargados localmente"
+
+  n8n_data:
+    driver: local
+    labels:
+      - "com.segurcaixa.volume=n8n_data"
+
+  redis_data:
+    driver: local
+    labels:
+      - "com.segurcaixa.volume=redis_data"
+
+# Shared network for inter-service communication
+networks:
+  segurcaixa_network:
+    driver: bridge
+    labels:
+      - "com.segurcaixa.network=backend"

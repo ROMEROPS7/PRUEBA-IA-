@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SegurCaixa Adeslas - Sistema IA de Siniestros</title>
+
+    <!-- React & Babel from CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #0333FC;
+            --dark: #232323;
+            --gray: #7B7B7B;
+            --light-bg: #f7f8fc;
+            --white: #FFFFFF;
+            --success-green: #00b167;
+            --warning: #f5a623;
+            --danger: #e53935;
+            --accent-purple: #7c3aed;
+            --info-cyan: #0891b2;
+            --orange: #ea580c;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--light-bg);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+        }
+
+        #root {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: var(--white);
+            border-bottom: 2px solid var(--primary-blue);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            cursor: pointer;
+        }
+
+        .navbar-brand i {
+            font-size: 2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--dark);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.3s;
+            border-bottom: 2px solid transparent;
+            padding-bottom: 0.5rem;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--primary-blue);
+            border-bottom-color: var(--primary-blue);
+        }
+
+        .nav-spacer {
+            flex: 1;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--light-bg);
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* Main Container */
+        .container {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary-blue), #0020aa);
+            color: var(--white);
+            padding: 4rem 2rem;
+            border-radius: 1rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(3, 51, 252, 0.15);
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Poppins', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: #0024cc;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(3, 51, 252, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--white);
+            color: var(--primary-blue);
+            border: 2px solid var(--primary-blue);
+        }
+
+        .btn-secondary:hover {
+            background: var(--light-bg);
+        }
+
+        .btn-success {
+            background: var(--success-green);
+            color: var(--white);
+        }
+
+        .btn-success:hover {
+            background: #009656;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: var(--white);
+        }
+
+        .btn-danger:hover {
+            background: #c9302c;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--white);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+            margin-bottom: 1.5rem;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-subtitle {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-primary {
+            background: rgba(3, 51, 252, 0.1);
+            color: var(--primary-blue);
+        }
+
+        .badge-success {
+            background: rgba(0, 177, 103, 0.1);
+            color: var(--success-green);
+        }
+
+        .badge-warning {
+            background: rgba(245, 166, 35, 0.1);
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background: rgba(229, 57, 53, 0.1);
+            color: var(--danger);
+        }
+
+        .badge-purple {
+            background: rgba(124, 58, 237, 0.1);
+            color: var(--accent-purple);
+        }
+
+        .badge-cyan {
+            background: rgba(8, 145, 178, 0.1);
+            color: var(--info-cyan);
+        }
+
+        .badge-orange {
+            background: rgba(234, 88, 12, 0.1);
+            color: var(--orange);
+        }
+
+        /* KPI Cards */
+        .kpi-card {
+            background: var(--white);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin: 1rem 0;
+        }
+
+        .kpi-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Agent Card */
+        .agent-card {
+            background: var(--white);
+            border-left: 4px solid var(--primary-blue);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+        }
+
+        .agent-info {
+            flex: 1;
+        }
+
+        .agent-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .agent-role {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 0.75rem;
+        }
+
+        .agent-stats {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin-top: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .agent-icon {
+            font-size: 1.5rem;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+            margin-left: 1rem;
+            background: var(--light-bg);
+        }
+
+        .agent-status {
+            font-size: 0.75rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 0.25rem;
+            margin-top: 0.5rem;
+            display: inline-block;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .modal {
+            background: var(--white);
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--light-bg);
+            padding-bottom: 1rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 0.5rem;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(3, 51, 252, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        /* Table */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--white);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .table th {
+            background: var(--light-bg);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .table td {
+            padding: 1rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .table tr:hover {
+            background: rgba(3, 51, 252, 0.02);
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .clickable-row {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        /* Chat */
+        .chat-container {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            width: 350px;
+            height: 500px;
+            background: var(--white);
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            z-index: 999;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chat-header {
+            background: var(--primary-blue);
+            color: var(--white);
+            padding: 1rem;
+            border-radius: 1rem 1rem 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .chat-message {
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            max-width: 90%;
+            word-wrap: break-word;
+        }
+
+        .chat-message.user {
+            background: var(--primary-blue);
+            color: var(--white);
+            align-self: flex-end;
+        }
+
+        .chat-message.assistant {
+            background: var(--light-bg);
+            color: var(--dark);
+            align-self: flex-start;
+        }
+
+        .chat-input-group {
+            display: flex;
+            gap: 0.5rem;
+            padding: 1rem;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .chat-input-group input {
+            flex: 1;
+        }
+
+        /* Loading */
+        .spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid rgba(3, 51, 252, 0.1);
+            border-top-color: var(--primary-blue);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--gray);
+            padding: 2rem;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--dark);
+            color: var(--white);
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            animation: slideInUp 0.3s ease-out;
+            z-index: 2000;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .toast.success {
+            background: var(--success-green);
+        }
+
+        .toast.error {
+            background: var(--danger);
+        }
+
+        .toast.warning {
+            background: var(--warning);
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: -2rem;
+            top: 0;
+            width: 0.75rem;
+            height: 0.75rem;
+            background: var(--primary-blue);
+            border-radius: 50%;
+            border: 3px solid var(--white);
+            box-shadow: 0 0 0 2px var(--primary-blue);
+        }
+
+        .timeline-item:after {
+            content: '';
+            position: absolute;
+            left: -1.63rem;
+            top: 1.5rem;
+            width: 2px;
+            height: calc(100% + 1.5rem);
+            background: #e0e0e0;
+        }
+
+        .timeline-item:last-child:after {
+            display: none;
+        }
+
+        .timeline-time {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-content {
+            background: var(--light-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+
+        /* Success/Error States */
+        .success-message {
+            background: rgba(0, 177, 103, 0.1);
+            border: 1px solid var(--success-green);
+            color: var(--success-green);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .error-message {
+            background: rgba(229, 57, 53, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-1 { margin-top: 0.5rem; }
+        .mt-2 { margin-top: 1rem; }
+        .mt-3 { margin-top: 1.5rem; }
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .mb-3 { margin-bottom: 1.5rem; }
+        .flex { display: flex; }
+        .gap-1 { gap: 0.5rem; }
+        .gap-2 { gap: 1rem; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+
+        @media (max-width: 1024px) {
+            .nav-links {
+                gap: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .nav-spacer {
+                display: none;
+            }
+
+            .user-info {
+                display: none;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .chat-container {
+                width: 100vw;
+                height: 100vh;
+                bottom: 0;
+                right: 0;
+                border-radius: 0;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // ========== API SERVICE LAYER ==========
+        const API = {
+            baseUrl: window.location.origin,
+
+            async get(path) {
+                try {
+                    const response = await fetch(`${this.baseUrl}${path}`);
+                    if (!response.ok) {
+                        if (response.status === 404) return null;
+                        throw new Error(`API error: ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    console.error(`API GET failed for ${path}:`, error);
+                    return null;
+                }
+            },
+
+            async post(path, data) {
+                try {
+                    const response = await fetch(`${this.baseUrl}${path}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    if (!response.ok) {
+                        throw new Error(`API error: ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    console.error(`API POST failed for ${path}:`, error);
+                    return null;
+                }
+            },
+
+            async patch(path, data) {
+                try {
+                    const response = await fetch(`${this.baseUrl}${path}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    if (!response.ok) {
+                        throw new Error(`API error: ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    console.error(`API PATCH failed for ${path}:`, error);
+                    return null;
+                }
+            },
+
+            // Client endpoints
+            clientes: {
+                list: () => API.get('/api/clientes'),
+                get: (id) => API.get(`/api/clientes/${id}`),
+                getByDni: (dni) => API.get(`/api/clientes/dni/${dni}`),
+                create: (data) => API.post('/api/clientes', data),
+            },
+
+            // Siniestro endpoints
+            siniestros: {
+                list: (filters = {}) => {
+                    const params = new URLSearchParams(filters);
+                    return API.get(`/api/siniestros?${params.toString()}`);
+                },
+                get: (id) => API.get(`/api/siniestros/${id}`),
+                create: (data) => API.post('/api/siniestros', data),
+                update: (id, data) => API.patch(`/api/siniestros/${id}`, data),
+                approve: (id) => API.post(`/api/siniestros/${id}/aprobar`, {}),
+                reject: (id) => API.post(`/api/siniestros/${id}/rechazar`, {}),
+                getComunicaciones: (id) => API.get(`/api/siniestros/${id}/comunicaciones`),
+            },
+
+            // Agent endpoints
+            agentes: {
+                list: (tipo = null) => {
+                    if (tipo) {
+                        return API.get(`/api/agentes?tipo=${tipo}`);
+                    }
+                    return API.get('/api/agentes');
+                },
+                stats: () => API.get('/api/agentes/stats'),
+                chat: (data) => API.post('/api/agentes/chat', data),
+                voice: (data) => API.post('/api/agentes/voice', data),
+            },
+
+            // Dashboard endpoints
+            dashboard: {
+                gestor: () => API.get('/api/dashboard/gestor'),
+                cliente: (clienteId) => API.get(`/api/dashboard/cliente/${clienteId}`),
+            }
+        };
+
+        // ========== UTILITY COMPONENTS ==========
+
+        const Toast = ({ message, type = 'info', onClose }) => {
+            React.useEffect(() => {
+                const timer = setTimeout(onClose, 3000);
+                return () => clearTimeout(timer);
+            }, [onClose]);
+
+            return (
+                <div className={`toast ${type}`}>
+                    {message}
+                </div>
+            );
+        };
+
+        const StatusBadge = ({ estado }) => {
+            const statusMap = {
+                'abierto': 'badge-primary',
+                'en_proceso': 'badge-warning',
+                'pendiente_info': 'badge-warning',
+                'resuelto': 'badge-success',
+                'rechazado': 'badge-danger',
+                'cancelado': 'badge-danger',
+                'Abierto': 'badge-primary',
+                'En análisis': 'badge-warning',
+                'Resuelto': 'badge-success'
+            };
+            return <span className={`badge ${statusMap[estado] || 'badge-primary'}`}>{estado}</span>;
+        };
+
+        const PriorityBadge = ({ prioridad }) => {
+            const priorityMap = {
+                'baja': 'badge-primary',
+                'media': 'badge-warning',
+                'alta': 'badge-danger',
+                'critica': 'badge-danger'
+            };
+            return <span className={`badge ${priorityMap[prioridad] || 'badge-primary'}`}>{prioridad}</span>;
+        };
+
+        // ========== LANDING PAGE ==========
+
+        const LandingPage = ({ onNavigate }) => {
+            const agentes = [
+                { id: 'agente_chat', nombre: 'Chat Agent', icono: 'fa-comments', color: '#0891b2', rol: 'Comunicación' },
+                { id: 'agente_voice', nombre: 'Voice Agent', icono: 'fa-phone-volume', color: '#00b167', rol: 'Análisis de Voz' },
+                { id: 'agente_docs', nombre: 'Documents Agent', icono: 'fa-file-circle-check', color: '#ea580c', rol: 'Documentos' },
+                { id: 'agente_assignment', nombre: 'Assignment Agent', icono: 'fa-route', color: '#f5a623', rol: 'Asignación' },
+                { id: 'agente_orchestrator', nombre: 'Orchestrator Agent', icono: 'fa-brain', color: '#0333FC', rol: 'Coordinación' },
+            ];
+
+            return (
+                <div>
+                    <div className="hero">
+                        <h1><i className="fas fa-shield-alt"></i> Sistema IA de Siniestros</h1>
+                        <p>Automatización inteligente con multi-agentes para gestión de reclamaciones</p>
+                        <div className="hero-buttons">
+                            <button className="btn btn-secondary" onClick={() => onNavigate('cliente')}>
+                                <i className="fas fa-user"></i> Portal Cliente
+                            </button>
+                            <button className="btn btn-secondary" onClick={() => onNavigate('gestor')}>
+                                <i className="fas fa-chart-line"></i> Panel Gestor
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="container">
+                        <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                            <i className="fas fa-network-wired"></i> Sistema Multi-Agente
+                        </h2>
+
+                        <div className="card-grid">
+                            {agentes.map(agent => (
+                                <div key={agent.id} className="card">
+                                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+                                        <i className={`fas ${agent.icono}`} style={{
+                                            fontSize: '2rem',
+                                            color: agent.color,
+                                            marginRight: '1rem'
+                                        }}></i>
+                                        <div>
+                                            <h3>{agent.nombre}</h3>
+                                            <p className="card-subtitle">{agent.rol}</p>
+                                        </div>
+                                    </div>
+                                    <p>Especializado en {agent.rol.toLowerCase()} y coordinación de procesos.</p>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="card" style={{ marginTop: '2rem', background: 'rgba(3, 51, 252, 0.05)', border: '2px solid rgba(3, 51, 252, 0.2)' }}>
+                            <h3>¿Por qué multi-agentes?</h3>
+                            <p>Los agentes IA especializados trabajan en paralelo y coordinadamente para:</p>
+                            <ul style={{ marginLeft: '1.5rem', marginTop: '1rem', lineHeight: '1.8' }}>
+                                <li>Reducir tiempo de procesamiento de 3 semanas a 48 horas</li>
+                                <li>Mejorar precisión en análisis de fraude (95% accuracy)</li>
+                                <li>Automatizar tareas repetitivas liberando equipo humano</li>
+                                <li>Proporcionar decisiones respaldadas por IA con trazabilidad completa</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // ========== CLIENT PORTAL ==========
+
+        const ClientPortal = ({ clienteId, onNavigate }) => {
+            const [cliente, setCliente] = React.useState(null);
+            const [siniestros, setSiniestros] = React.useState([]);
+            const [loading, setLoading] = React.useState(true);
+            const [selectedSiniestro, setSelectedSiniestro] = React.useState(null);
+            const [showNewSiniestroModal, setShowNewSiniestroModal] = React.useState(false);
+            const [showChat, setShowChat] = React.useState(false);
+            const [toast, setToast] = React.useState(null);
+
+            const loadData = async () => {
+                setLoading(true);
+                const dashboardData = await API.dashboard.cliente('cli_001');
+                if (dashboardData) {
+                    setCliente({
+                        id: 'cli_001',
+                        nombre: 'Juan García López',
+                        email: 'juan@example.com',
+                        polizas_activas: 1,
+                    });
+                    setSiniestros(dashboardData.siniestros_activos || []);
+                } else {
+                    setToast({ message: 'Error al cargar datos del cliente', type: 'error' });
+                }
+                setLoading(false);
+            };
+
+            React.useEffect(() => {
+                loadData();
+                const interval = setInterval(loadData, 30000); // Auto-refresh every 30 seconds
+                return () => clearInterval(interval);
+            }, []);
+
+            const handleCreateSiniestro = async (formData) => {
+                setLoading(true);
+                const result = await API.siniestros.create(formData);
+                setLoading(false);
+                if (result) {
+                    setToast({ message: 'Siniestro creado exitosamente', type: 'success' });
+                    setSiniestros([...siniestros, result]);
+                    setShowNewSiniestroModal(false);
+                } else {
+                    setToast({ message: 'Error al crear siniestro', type: 'error' });
+                }
+            };
+
+            if (loading && !cliente) {
+                return <div className="container loading"><div className="spinner"></div>Cargando...</div>;
+            }
+
+            if (!cliente) {
+                return <div className="container"><div className="error-message">No se pudieron cargar los datos del cliente</div></div>;
+            }
+
+            const openSiniestros = siniestros.filter(s => s.estado !== 'resuelto');
+            const resolvedSiniestros = siniestros.filter(s => s.estado === 'resuelto');
+
+            return (
+                <div className="container">
+                    <div className="card" style={{ marginBottom: '2rem', background: 'linear-gradient(135deg, rgba(3, 51, 252, 0.05), rgba(124, 58, 237, 0.05))' }}>
+                        <h2>Bienvenido, {cliente.nombre}</h2>
+                        <p style={{ color: 'var(--gray)', marginTop: '0.5rem' }}>ID de Cliente: {cliente.id} | {cliente.email}</p>
+                    </div>
+
+                    <div className="card-grid">
+                        <div className="kpi-card">
+                            <div className="kpi-label">Pólizas Activas</div>
+                            <div className="kpi-value">{cliente.polizas_activas || 0}</div>
+                        </div>
+                        <div className="kpi-card">
+                            <div className="kpi-label">Siniestros Abiertos</div>
+                            <div className="kpi-value" style={{ color: 'var(--warning)' }}>{openSiniestros.length}</div>
+                        </div>
+                        <div className="kpi-card">
+                            <div className="kpi-label">Siniestros Resueltos</div>
+                            <div className="kpi-value" style={{ color: 'var(--success-green)' }}>{resolvedSiniestros.length}</div>
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                        <h3>Mis Siniestros</h3>
+                        <button className="btn btn-primary" onClick={() => setShowNewSiniestroModal(true)}>
+                            <i className="fas fa-plus"></i> Nuevo Siniestro
+                        </button>
+                    </div>
+
+                    <div className="card">
+                        {siniestros.length === 0 ? (
+                            <p className="text-center">No hay siniestros</p>
+                        ) : (
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th>Número Siniestro</th>
+                                        <th>Estado</th>
+                                        <th>Prioridad</th>
+                                        <th>Canal</th>
+                                        <th>Fecha Creación</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {siniestros.map(s => (
+                                        <tr key={s.id}>
+                                            <td style={{ fontWeight: 'bold' }}>{s.numero_siniestro}</td>
+                                            <td><StatusBadge estado={s.estado} /></td>
+                                            <td><PriorityBadge prioridad={s.prioridad} /></td>
+                                            <td>{s.canal}</td>
+                                            <td>{new Date(s.fecha_creacion).toLocaleDateString('es-ES')}</td>
+                                            <td>
+                                                <button className="btn btn-sm btn-primary" onClick={() => setSelectedSiniestro(s)}>
+                                                    Ver detalles
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+
+                    {selectedSiniestro && (
+                        <SiniestroDetail siniestro={selectedSiniestro} onClose={() => setSelectedSiniestro(null)} />
+                    )}
+
+                    {showNewSiniestroModal && (
+                        <NewSiniestroModal onCreate={handleCreateSiniestro} onClose={() => setShowNewSiniestroModal(false)} />
+                    )}
+
+                    {showChat && (
+                        <ChatPanel clienteId={cliente.id} onClose={() => setShowChat(false)} />
+                    )}
+
+                    <button
+                        className="btn btn-primary"
+                        style={{
+                            position: 'fixed',
+                            bottom: '2rem',
+                            right: '2rem',
+                            borderRadius: '50%',
+                            width: '60px',
+                            height: '60px',
+                            padding: '0',
+                            justifyContent: 'center',
+                            fontSize: '1.5rem',
+                            zIndex: '500'
+                        }}
+                        onClick={() => setShowChat(!showChat)}
+                    >
+                        <i className="fas fa-comment"></i>
+                    </button>
+
+                    {toast && <Toast {...toast} onClose={() => setToast(null)} />}
+                </div>
+            );
+        };
+
+        // ========== SINIESTRO DETAIL MODAL ==========
+
+        const SiniestroDetail = ({ siniestro, onClose }) => {
+            const [fullData, setFullData] = React.useState(null);
+            const [loading, setLoading] = React.useState(true);
+
+            React.useEffect(() => {
+                const loadData = async () => {
+                    const data = await API.siniestros.get(siniestro.id);
+                    setFullData(data);
+                    setLoading(false);
+                };
+                loadData();
+            }, [siniestro.id]);
+
+            if (loading) {
+                return (
+                    <div className="modal-overlay" onClick={onClose}>
+                        <div className="modal" onClick={e => e.stopPropagation()}>
+                            <div className="loading"><div className="spinner"></div>Cargando...</div>
+                        </div>
+                    </div>
+                );
+            }
+
+            const data = fullData || siniestro;
+
+            return (
+                <div className="modal-overlay" onClick={onClose}>
+                    <div className="modal" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">{data.numero_siniestro}</h2>
+                            <button className="modal-close" onClick={onClose}><i className="fas fa-times"></i></button>
+                        </div>
+
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <p><strong>Estado:</strong> <StatusBadge estado={data.estado} /></p>
+                            <p><strong>Prioridad:</strong> <PriorityBadge prioridad={data.prioridad} /></p>
+                            <p><strong>Canal:</strong> {data.canal}</p>
+                            <p><strong>Descripción:</strong> {data.descripcion}</p>
+                            <p><strong>Fecha Creación:</strong> {new Date(data.fecha_creacion).toLocaleDateString('es-ES')}</p>
+                            {data.porcentaje_completitud !== undefined && (
+                                <p><strong>Completitud:</strong> {data.porcentaje_completitud}%</p>
+                            )}
+                        </div>
+
+                        {data.timeline && data.timeline.length > 0 && (
+                            <>
+                                <h3 style={{ marginBottom: '1rem' }}>Línea de Tiempo</h3>
+                                <div className="timeline">
+                                    {data.timeline.map(entry => (
+                                        <div key={entry.id} className="timeline-item">
+                                            <div className="timeline-time">{new Date(entry.timestamp).toLocaleDateString('es-ES')} {new Date(entry.timestamp).toLocaleTimeString('es-ES')}</div>
+                                            <div className="timeline-content">
+                                                <strong>{entry.tipo}</strong>
+                                                <p style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>{entry.descripcion}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // ========== NEW SINIESTRO MODAL ==========
+
+        const NewSiniestroModal = ({ onCreate, onClose }) => {
+            const [formData, setFormData] = React.useState({
+                cliente_id: 'cli_001',
+                poliza_id: 'pol_001',
+                canal: 'web',
+                descripcion: '',
+                prioridad_sugerida: 'media'
+            });
+            const [loading, setLoading] = React.useState(false);
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                await onCreate(formData);
+                setLoading(false);
+            };
+
+            return (
+                <div className="modal-overlay" onClick={onClose}>
+                    <div className="modal" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">Crear Nuevo Siniestro</h2>
+                            <button className="modal-close" onClick={onClose}><i className="fas fa-times"></i></button>
+                        </div>
+
+                        <form onSubmit={handleSubmit}>
+                            <div className="form-group">
+                                <label className="form-label">Canal</label>
+                                <select
+                                    className="form-select"
+                                    value={formData.canal}
+                                    onChange={(e) => setFormData({...formData, canal: e.target.value})}
+                                >
+                                    <option value="web">Web</option>
+                                    <option value="whatsapp">WhatsApp</option>
+                                    <option value="email">Email</option>
+                                    <option value="phone">Teléfono</option>
+                                    <option value="oficina">Oficina</option>
+                                </select>
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label">Descripción</label>
+                                <textarea
+                                    className="form-textarea"
+                                    value={formData.descripcion}
+                                    onChange={(e) => setFormData({...formData, descripcion: e.target.value})}
+                                    required
+                                ></textarea>
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label">Prioridad Sugerida</label>
+                                <select
+                                    className="form-select"
+                                    value={formData.prioridad_sugerida}
+                                    onChange={(e) => setFormData({...formData, prioridad_sugerida: e.target.value})}
+                                >
+                                    <option value="baja">Baja</option>
+                                    <option value="media">Media</option>
+                                    <option value="alta">Alta</option>
+                                    <option value="critica">Crítica</option>
+                                </select>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                <button type="submit" className="btn btn-primary" disabled={loading}>
+                                    {loading ? 'Creando...' : 'Crear Siniestro'}
+                                </button>
+                                <button type="button" className="btn btn-secondary" onClick={onClose}>
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+
+        // ========== CHAT PANEL ==========
+
+        const ChatPanel = ({ clienteId, onClose }) => {
+            const [messages, setMessages] = React.useState([]);
+            const [input, setInput] = React.useState('');
+            const [loading, setLoading] = React.useState(false);
+
+            const handleSendMessage = async () => {
+                if (!input.trim()) return;
+
+                setMessages([...messages, { type: 'user', text: input }]);
+                setLoading(true);
+
+                const response = await API.agentes.chat({
+                    message: input,
+                    canal: 'web',
+                    cliente_id: clienteId
+                });
+
+                setLoading(false);
+
+                if (response) {
+                    setMessages(prev => [...prev, { type: 'assistant', text: response.respuesta }]);
+                }
+
+                setInput('');
+            };
+
+            return (
+                <div className="chat-container">
+                    <div className="chat-header">
+                        <span><i className="fas fa-comments"></i> Asistente IA</span>
+                        <button className="modal-close" onClick={onClose} style={{ color: 'white' }}>
+                            <i className="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <div className="chat-messages">
+                        {messages.length === 0 && (
+                            <div style={{ textAlign: 'center', color: 'var(--gray)', fontSize: '0.9rem' }}>
+                                Inicia una conversación con nuestro asistente IA
+                            </div>
+                        )}
+                        {messages.map((msg, idx) => (
+                            <div key={idx} className={`chat-message ${msg.type}`}>
+                                {msg.text}
+                            </div>
+                        ))}
+                        {loading && (
+                            <div className="chat-message assistant">
+                                <div className="spinner"></div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="chat-input-group">
+                        <input
+                            type="text"
+                            className="form-input"
+                            placeholder="Escribe tu mensaje..."
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                            disabled={loading}
+                        />
+                        <button className="btn btn-primary btn-sm" onClick={handleSendMessage} disabled={loading}>
+                            <i className="fas fa-send"></i>
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        // ========== GESTOR DASHBOARD ==========
+
+        const GestorDashboard = ({ onNavigate }) => {
+            const [dashboard, setDashboard] = React.useState(null);
+            const [loading, setLoading] = React.useState(true);
+            const [toast, setToast] = React.useState(null);
+
+            const loadData = async () => {
+                setLoading(true);
+                const data = await API.dashboard.gestor();
+                if (data) {
+                    setDashboard(data);
+                } else {
+                    setToast({ message: 'Error al cargar datos del dashboard', type: 'error' });
+                }
+                setLoading(false);
+            };
+
+            React.useEffect(() => {
+                loadData();
+                const interval = setInterval(loadData, 30000); // Auto-refresh every 30 seconds
+                return () => clearInterval(interval);
+            }, []);
+
+            if (loading && !dashboard) {
+                return <div className="container loading"><div className="spinner"></div>Cargando...</div>;
+            }
+
+            if (!dashboard) {
+                return <div className="container"><div className="error-message">No se pudieron cargar los datos del dashboard</div></div>;
+            }
+
+            const { kpis, siniestros_pendientes, actividad_agentes } = dashboard;
+
+            return (
+                <div className="container">
+                    <div className="card" style={{ marginBottom: '2rem', background: 'linear-gradient(135deg, rgba(3, 51, 252, 0.05), rgba(124, 58, 237, 0.05))' }}>
+                        <h2>Panel de Gestor</h2>
+                        <p style={{ color: 'var(--gray)', marginTop: '0.5rem' }}>KPIs y siniestros pendientes en tiempo real</p>
+                    </div>
+
+                    <h3 style={{ marginBottom: '1rem' }}>Indicadores Clave (KPIs)</h3>
+                    <div className="card-grid">
+                        <div className="kpi-card">
+                            <div className="kpi-label">Siniestros Abiertos</div>
+                            <div className="kpi-value">{kpis.siniestros_abiertos}</div>
+                        </div>
+                        <div className="kpi-card">
+                            <div className="kpi-label">En Proceso</div>
+                            <div className="kpi-value" style={{ color: 'var(--warning)' }}>{kpis.siniestros_en_proceso}</div>
+                        </div>
+                        <div className="kpi-card">
+                            <div className="kpi-label">Resueltos Hoy</div>
+                            <div className="kpi-value" style={{ color: 'var(--success-green)' }}>{kpis.siniestros_resueltos_hoy}</div>
+                        </div>
+                        <div className="kpi-card">
+                            <div className="kpi-label">Tiempo Promedio Resolución</div>
+                            <div className="kpi-value" style={{ fontSize: '1.8rem' }}>{kpis.tiempo_promedio_resolucion_horas.toFixed(1)}h</div>
+                        </div>
+                    </div>
+
+                    <h3 style={{ marginBottom: '1rem', marginTop: '2rem' }}>Siniestros Pendientes</h3>
+                    <div className="card">
+                        {siniestros_pendientes.length === 0 ? (
+                            <p className="text-center">No hay siniestros pendientes</p>
+                        ) : (
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th>Número Siniestro</th>
+                                        <th>Cliente</th>
+                                        <th>Estado</th>
+                                        <th>Prioridad</th>
+                                        <th>Días Abierto</th>
+                                        <th>Tarea Pendiente</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {siniestros_pendientes.map(s => (
+                                        <tr key={s.id}>
+                                            <td style={{ fontWeight: 'bold' }}>{s.numero_siniestro}</td>
+                                            <td>{s.cliente_nombre}</td>
+                                            <td><StatusBadge estado={s.estado} /></td>
+                                            <td><PriorityBadge prioridad={s.prioridad} /></td>
+                                            <td>{s.dias_abierto}</td>
+                                            <td style={{ fontSize: '0.9rem' }}>{s.tarea_pendiente}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+
+                    <h3 style={{ marginBottom: '1rem', marginTop: '2rem' }}>Actividad de Agentes</h3>
+                    <div>
+                        {actividad_agentes.map(agent => (
+                            <div key={agent.agente_id || agent.id} className="agent-card">
+                                <div className="agent-info">
+                                    <div className="agent-name">{agent.nombre}</div>
+                                    <div className="agent-role">{agent.tipo}</div>
+                                    <div className="agent-stats">
+                                        <p>Llamadas hoy: {agent.llamadas_hoy}</p>
+                                        <p>Documentos analizados: {agent.documentos_analizados}</p>
+                                        <p>Tasa de éxito: {(agent.tasa_exito * 100).toFixed(1)}%</p>
+                                        <p>Respuesta promedio: {agent.tiempo_promedio_respuesta_ms.toFixed(0)}ms</p>
+                                    </div>
+                                    <span className={`agent-status badge badge-success ${agent.estado === 'activo' ? 'pulse' : ''}`}>
+                                        {agent.estado}
+                                    </span>
+                                </div>
+                                <div className="agent-icon">
+                                    <i className="fas fa-robot"></i>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {toast && <Toast {...toast} onClose={() => setToast(null)} />}
+                </div>
+            );
+        };
+
+        // ========== MAIN APP COMPONENT ==========
+
+        const App = () => {
+            const [currentPage, setCurrentPage] = React.useState('landing');
+
+            return (
+                <>
+                    <nav className="navbar">
+                        <div className="navbar-brand" onClick={() => setCurrentPage('landing')}>
+                            <i className="fas fa-shield-alt"></i> SegurCaixa Adeslas
+                        </div>
+                        <div className="nav-spacer"></div>
+                        <ul className="nav-links">
+                            <a className={currentPage === 'landing' ? 'active' : ''} onClick={() => setCurrentPage('landing')}>
+                                Inicio
+                            </a>
+                            <a className={currentPage === 'cliente' ? 'active' : ''} onClick={() => setCurrentPage('cliente')}>
+                                Portal Cliente
+                            </a>
+                            <a className={currentPage === 'gestor' ? 'active' : ''} onClick={() => setCurrentPage('gestor')}>
+                                Panel Gestor
+                            </a>
+                        </ul>
+                        <div className="user-info">
+                            <i className="fas fa-user-circle"></i> Sistema IA
+                        </div>
+                    </nav>
+
+                    {currentPage === 'landing' && <LandingPage onNavigate={setCurrentPage} />}
+                    {currentPage === 'cliente' && <ClientPortal clienteId="cli_001" onNavigate={setCurrentPage} />}
+                    {currentPage === 'gestor' && <GestorDashboard onNavigate={setCurrentPage} />}
+                </>
+            );
+        };
+
+        // ========== RENDER APP ==========
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
