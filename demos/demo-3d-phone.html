@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SegurCaixa Adeslas — Plataforma Siniestros IA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --sca-green:#00A651;--sca-green-dark:#007A3D;--sca-green-light:#E8F5E9;
+  --sca-blue:#003DA5;--sca-blue-light:#E3EDF7;--sca-blue-dark:#002B75;
+  --sca-orange:#F39200;--sca-red:#E63312;
+  --white:#fff;--g50:#F8FAFC;--g100:#F1F5F9;--g200:#E2E8F0;--g300:#CBD5E1;--g400:#94A3B8;--g500:#64748B;--g700:#334155;--g900:#0F172A;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08);--shadow-md:0 4px 12px rgba(0,0,0,.1);--shadow-lg:0 10px 30px rgba(0,0,0,.15);
+}
+body{font-family:'Inter',system-ui,sans-serif;background:#f0f2f5;min-height:100vh;color:var(--g900);}
+
+/* ═══ TOP BAR — SegurCaixa Adeslas ═══ */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:64px;background:var(--white);border-bottom:1px solid var(--g200);box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100;}
+.topbar-left{display:flex;align-items:center;gap:16px;}
+.sca-logo{display:flex;align-items:center;gap:10px;}
+.sca-logo-box{width:42px;height:42px;background:linear-gradient(135deg,var(--sca-green),var(--sca-blue));border-radius:10px;display:flex;align-items:center;justify-content:center;}
+.sca-logo-box svg{width:26px;height:26px;}
+.sca-logo-text{font-size:17px;font-weight:700;color:var(--g900);line-height:1.15;}
+.sca-logo-text .green{color:var(--sca-green);}
+.sca-logo-text .sub{font-size:11px;font-weight:500;color:var(--g400);letter-spacing:.5px;}
+.topbar-divider{width:1px;height:32px;background:var(--g200);}
+.topbar-title{font-size:14px;font-weight:600;color:var(--sca-blue);}
+
+.topbar-tabs{display:flex;gap:2px;background:var(--g100);border-radius:10px;padding:3px;}
+.topbar-tab{padding:8px 20px;border-radius:8px;font-size:13px;font-weight:600;color:var(--g500);border:none;background:none;cursor:pointer;transition:all .25s;display:flex;align-items:center;gap:6px;}
+.topbar-tab:hover{color:var(--g700);background:var(--white);}
+.topbar-tab.active{color:var(--white);background:linear-gradient(135deg,var(--sca-green),var(--sca-green-dark));box-shadow:0 2px 8px rgba(0,166,81,.3);}
+.topbar-tab .ti{font-size:16px;}
+
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.ai-badge{display:flex;align-items:center;gap:6px;padding:6px 14px;background:var(--sca-green-light);border:1px solid rgba(0,166,81,.25);border-radius:20px;font-size:12px;font-weight:600;color:var(--sca-green-dark);}
+.ai-dot{width:7px;height:7px;background:var(--sca-green);border-radius:50%;animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ═══ VIEWS ═══ */
+.view{display:none;height:calc(100vh - 64px);overflow-y:auto;}
+.view.active{display:block;}
+
+/* ════════════════════════════════════════════════════
+   VIEW 1: CLIENTE — 3D Phone
+════════════════════════════════════════════════════ */
+.cliente-bg{background:linear-gradient(160deg,#0a1c3e 0%,#0e2952 40%,#0a1c3e 100%);color:#fff;display:flex;align-items:center;justify-content:center;gap:80px;padding:40px;perspective:1400px;}
+
+.phone-info{max-width:420px;}
+.phone-info .badge-label{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;background:rgba(0,166,81,.15);border:1px solid rgba(0,166,81,.3);border-radius:20px;font-size:12px;font-weight:600;color:#5DE8A0;margin-bottom:16px;}
+.phone-info h1{font-size:38px;font-weight:900;line-height:1.15;margin-bottom:14px;}
+.phone-info h1 .hl{background:linear-gradient(90deg,var(--sca-green),#5DE8A0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.phone-info p.sub{font-size:15px;color:rgba(255,255,255,.55);line-height:1.65;margin-bottom:28px;}
+.features{display:flex;flex-direction:column;gap:10px;}
+.feat{display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;transition:all .3s;}
+.feat:hover{background:rgba(0,166,81,.1);border-color:rgba(0,166,81,.3);}
+.feat-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.feat-icon.green{background:rgba(0,166,81,.2);}
+.feat-icon.blue{background:rgba(0,61,165,.3);}
+.feat-icon.orange{background:rgba(243,146,0,.2);}
+.feat-text b{display:block;font-size:14px;margin-bottom:1px;}
+.feat-text span{font-size:12px;color:rgba(255,255,255,.45);}
+
+/* 3D Phone */
+.phone-stage{transform-style:preserve-3d;animation:floatPhone 6s ease-in-out infinite;}
+@keyframes floatPhone{0%,100%{transform:rotateY(-14deg) rotateX(4deg) translateY(0)}50%{transform:rotateY(-9deg) rotateX(1deg) translateY(-12px)}}
+
+.phone{width:300px;height:620px;background:#111;border-radius:44px;border:3px solid #2a2a3a;position:relative;overflow:hidden;box-shadow:-25px 35px 70px rgba(0,0,0,.55),0 0 80px rgba(0,166,81,.08),inset 0 0 0 1px rgba(255,255,255,.05);}
+.phone-notch{width:120px;height:26px;background:#111;border-radius:0 0 16px 16px;margin:0 auto;position:relative;z-index:5;}
+.phone-notch::after{content:'';width:50px;height:4px;background:#222;border-radius:4px;position:absolute;bottom:7px;left:50%;transform:translateX(-50%);}
+.phone-screen{height:calc(100% - 26px);overflow-y:auto;background:#fff;color:var(--g900);}
+.phone-screen::-webkit-scrollbar{width:2px;}
+.phone-screen::-webkit-scrollbar-thumb{background:var(--sca-green);border-radius:2px;}
+
+/* ── Phone App UI ── */
+.app-bar{background:linear-gradient(135deg,var(--sca-green),var(--sca-green-dark));padding:14px 16px 12px;color:#fff;}
+.app-bar-row{display:flex;justify-content:space-between;align-items:center;}
+.app-greeting{font-size:12px;opacity:.85;}
+.app-greeting b{display:block;font-size:15px;opacity:1;}
+.app-avatar{width:34px;height:34px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;}
+.app-poliza{margin-top:8px;padding:7px 10px;background:rgba(255,255,255,.15);border-radius:8px;font-size:11px;display:flex;justify-content:space-between;align-items:center;}
+.app-poliza b{font-size:12px;}
+
+/* Quick Actions */
+.app-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:12px 12px 8px;}
+.qa{text-align:center;padding:10px 2px 8px;background:var(--g50);border-radius:10px;cursor:pointer;transition:all .2s;border:1px solid transparent;}
+.qa:hover{border-color:var(--sca-green);background:var(--sca-green-light);}
+.qa-ic{font-size:22px;margin-bottom:3px;}
+.qa-lb{font-size:9px;font-weight:600;color:var(--g500);line-height:1.2;}
+
+/* Estado Siniestro */
+.app-section{padding:10px 12px 6px;}
+.app-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--g400);margin-bottom:8px;}
+
+.sin-card{background:var(--white);border:1px solid var(--g200);border-radius:12px;padding:11px;margin-bottom:8px;box-shadow:var(--shadow-sm);}
+.sin-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.sin-ref{font-weight:700;font-size:12px;}
+.sin-badge{padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;}
+.b-green{background:#D1FAE5;color:#065F46;}
+.b-orange{background:#FEF3C7;color:#92400E;}
+.b-blue{background:#DBEAFE;color:#1E40AF;}
+.b-red{background:#FEE2E2;color:#991B1B;}
+.sin-desc{font-size:11px;color:var(--g500);margin-bottom:6px;}
+.sin-bar{height:4px;background:var(--g200);border-radius:2px;overflow:hidden;}
+.sin-fill{height:100%;border-radius:2px;}
+.fill-g{background:var(--sca-green);}
+.fill-o{background:var(--sca-orange);}
+.sin-meta{display:flex;justify-content:space-between;font-size:10px;color:var(--g400);margin-top:4px;}
+
+/* Chat/Llamada flotante */
+.app-fab{position:sticky;bottom:54px;display:flex;justify-content:flex-end;padding:0 12px 8px;gap:8px;z-index:5;}
+.fab-btn{width:44px;height:44px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2);transition:transform .2s;}
+.fab-btn:hover{transform:scale(1.1);}
+.fab-green{background:var(--sca-green);color:#fff;}
+.fab-blue{background:var(--sca-blue);color:#fff;}
+
+/* Bottom nav */
+.app-nav{display:flex;justify-content:space-around;padding:8px 0 10px;background:#fff;border-top:1px solid var(--g200);position:sticky;bottom:0;}
+.nav-item{text-align:center;font-size:9px;font-weight:600;color:var(--g400);cursor:pointer;}
+.nav-item.on{color:var(--sca-green);}
+.nav-item .ni{font-size:20px;display:block;}
+
+/* ════════════════════════════════════════════════════
+   VIEW 2: GESTOR
+════════════════════════════════════════════════════ */
+.gestor-layout{display:grid;grid-template-columns:300px 1fr 320px;gap:16px;padding:16px;height:100%;overflow:hidden;}
+.gestor-layout>div{overflow-y:auto;}
+
+.card{background:var(--white);border:1px solid var(--g200);border-radius:14px;box-shadow:var(--shadow-sm);overflow:hidden;}
+.card-head{padding:14px 16px;border-bottom:1px solid var(--g200);display:flex;justify-content:space-between;align-items:center;}
+.card-title{font-size:14px;font-weight:700;}
+.card-count{background:var(--sca-green);color:#fff;font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;}
+.card-body{padding:12px;}
+
+/* Claims list */
+.cl-item{padding:10px 12px;border-radius:10px;cursor:pointer;transition:all .2s;margin-bottom:4px;border:1px solid transparent;}
+.cl-item:hover,.cl-item.sel{background:var(--sca-green-light);border-color:rgba(0,166,81,.2);}
+.cl-row{display:flex;justify-content:space-between;align-items:center;}
+.cl-ref{font-weight:700;font-size:12px;}
+.cl-dot{width:9px;height:9px;border-radius:50%;}
+.dot-r{background:var(--sca-red);}
+.dot-o{background:var(--sca-orange);}
+.dot-g{background:var(--sca-green);}
+.cl-type{font-size:12px;color:var(--g500);margin-top:3px;}
+.cl-time{font-size:10px;color:var(--g400);margin-top:2px;}
+
+/* Detail */
+.det-section{margin-bottom:16px;}
+.det-title{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--g400);font-weight:700;margin-bottom:8px;}
+.det-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--g100);font-size:12px;}
+.det-label{color:var(--g500);}
+.det-val{font-weight:600;}
+
+/* Timeline */
+.timeline{position:relative;padding-left:20px;}
+.timeline::before{content:'';position:absolute;left:6px;top:4px;bottom:4px;width:2px;background:var(--g200);}
+.tl-item{position:relative;padding-bottom:14px;}
+.tl-item::before{content:'';position:absolute;left:-17px;top:3px;width:10px;height:10px;border-radius:50%;border:2px solid var(--sca-green);background:var(--white);}
+.tl-item.done::before{background:var(--sca-green);}
+.tl-item.current::before{background:var(--sca-orange);border-color:var(--sca-orange);box-shadow:0 0 0 3px rgba(243,146,0,.2);}
+.tl-label{font-size:11px;font-weight:600;color:var(--g700);}
+.tl-time{font-size:10px;color:var(--g400);}
+
+/* AI Box */
+.ai-box{background:linear-gradient(135deg,rgba(0,166,81,.08),rgba(0,61,165,.06));border:1px solid rgba(0,166,81,.2);border-radius:12px;padding:12px;margin-top:8px;}
+.ai-head{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--sca-green);margin-bottom:6px;}
+.ai-box p{font-size:12px;color:var(--g500);line-height:1.5;}
+
+/* Action btns */
+.act-row{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;}
+.btn{padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;border:none;cursor:pointer;transition:all .2s;}
+.btn-p{background:var(--sca-green);color:#fff;}
+.btn-p:hover{box-shadow:0 3px 10px rgba(0,166,81,.3);}
+.btn-s{background:var(--g100);color:var(--g700);border:1px solid var(--g200);}
+.btn-s:hover{background:var(--g200);}
+.btn-d{background:var(--sca-red);color:#fff;}
+
+/* Chat */
+.chat-body{display:flex;flex-direction:column;height:100%;}
+.chat-msgs{flex:1;overflow-y:auto;padding:0;display:flex;flex-direction:column;gap:8px;max-height:calc(100vh - 260px);}
+.msg{padding:8px 12px;border-radius:10px;font-size:12px;line-height:1.5;max-width:88%;}
+.msg-ai{background:var(--sca-green-light);border:1px solid rgba(0,166,81,.15);align-self:flex-start;}
+.msg-user{background:var(--sca-blue-light);border:1px solid rgba(0,61,165,.15);align-self:flex-end;}
+.msg-sender{font-size:10px;font-weight:700;color:var(--sca-green);margin-bottom:3px;}
+.chat-input-row{display:flex;gap:6px;padding-top:10px;border-top:1px solid var(--g200);margin-top:10px;}
+.chat-in{flex:1;padding:8px 12px;border-radius:8px;border:1px solid var(--g200);font-size:12px;outline:none;font-family:inherit;}
+.chat-in:focus{border-color:var(--sca-green);}
+.chat-send{width:36px;height:36px;border-radius:8px;background:var(--sca-green);border:none;color:#fff;font-size:16px;cursor:pointer;}
+
+/* ════════════════════════════════════════════════════
+   VIEW 3: GERENTE
+════════════════════════════════════════════════════ */
+.gerente-pad{padding:16px;display:flex;flex-direction:column;gap:16px;}
+
+/* KPI row */
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+.kpi{background:var(--white);border:1px solid var(--g200);border-radius:14px;padding:18px 16px;text-align:center;box-shadow:var(--shadow-sm);transition:all .25s;}
+.kpi:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.kpi-ic{font-size:26px;margin-bottom:6px;}
+.kpi-val{font-size:28px;font-weight:800;color:var(--g900);}
+.kpi-lab{font-size:11px;color:var(--g400);text-transform:uppercase;letter-spacing:.4px;margin-top:2px;}
+.kpi-ch{font-size:11px;font-weight:600;margin-top:4px;}
+.ch-up{color:var(--sca-green);}
+.ch-dn{color:var(--sca-red);}
+
+/* Charts grid */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.chart-card{background:var(--white);border:1px solid var(--g200);border-radius:14px;padding:18px;box-shadow:var(--shadow-sm);}
+.chart-title{font-size:13px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+
+/* Bar chart */
+.bars{display:flex;align-items:flex-end;justify-content:space-around;height:160px;border-bottom:1px solid var(--g200);padding-bottom:4px;}
+.bar-g{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.bar{width:28px;border-radius:4px 4px 0 0;transition:height .8s ease-out;}
+.bg{background:linear-gradient(180deg,var(--sca-green),rgba(0,166,81,.5));}
+.bb{background:linear-gradient(180deg,var(--sca-blue),rgba(0,61,165,.5));}
+.bo{background:linear-gradient(180deg,var(--sca-orange),rgba(243,146,0,.5));}
+.bar-lb{font-size:10px;color:var(--g400);}
+
+/* Donut */
+.donut-wrap{display:flex;align-items:center;justify-content:center;gap:24px;height:170px;}
+.donut{width:140px;height:140px;border-radius:50%;position:relative;}
+.donut-hole{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80px;height:80px;background:var(--white);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.donut-hole .big{font-size:24px;font-weight:800;}
+.donut-hole .sm{font-size:10px;color:var(--g400);}
+.legend{display:flex;flex-direction:column;gap:8px;}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--g700);}
+.leg-dot{width:9px;height:9px;border-radius:50%;}
+
+/* Agents */
+.agents-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;}
+.ag-card{background:var(--white);border:1px solid var(--g200);border-radius:12px;padding:14px 10px;text-align:center;box-shadow:var(--shadow-sm);}
+.ag-ic{font-size:26px;margin-bottom:4px;}
+.ag-name{font-size:11px;font-weight:700;margin-bottom:4px;}
+.ag-st{font-size:10px;padding:2px 8px;border-radius:10px;display:inline-block;}
+.st-on{background:var(--sca-green-light);color:var(--sca-green-dark);}
+.ag-info{font-size:10px;color:var(--g400);margin-top:4px;line-height:1.3;}
+
+/* Table */
+.tbl-wrap{overflow-x:auto;}
+table.dtable{width:100%;border-collapse:collapse;font-size:12px;}
+.dtable th{text-align:left;padding:8px 12px;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--g400);border-bottom:1px solid var(--g200);}
+.dtable td{padding:10px 12px;border-bottom:1px solid var(--g100);}
+.dtable tr:hover td{background:var(--g50);}
+
+.full{grid-column:1/-1;}
+
+/* Responsive */
+@media(max-width:1100px){.gestor-layout{grid-template-columns:1fr 1fr;}.kpi-row{grid-template-columns:repeat(3,1fr);}.agents-row{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:768px){.cliente-bg{flex-direction:column;gap:30px;}.gestor-layout{grid-template-columns:1fr;}.charts-grid,.kpi-row{grid-template-columns:1fr 1fr;}.agents-row{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+
+<!-- ═══ TOPBAR ═══ -->
+<nav class="topbar">
+  <div class="topbar-left">
+    <div class="sca-logo">
+      <div class="sca-logo-box">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5z" fill="rgba(255,255,255,.9)"/><path d="M12 6l5 3v6l-5 3-5-3V9l5-3z" fill="rgba(255,255,255,.3)"/></svg>
+      </div>
+      <div class="sca-logo-text">
+        Segur<span class="green">Caixa</span> Adeslas
+        <div class="sub">GRUPO MUTUA MADRILEÑA</div>
+      </div>
+    </div>
+    <div class="topbar-divider"></div>
+    <div class="topbar-title">Plataforma Siniestros IA</div>
+  </div>
+
+  <div class="topbar-tabs">
+    <button class="topbar-tab active" onclick="go('cliente',this)"><span class="ti">📱</span> App Cliente</button>
+    <button class="topbar-tab" onclick="go('gestor',this)"><span class="ti">👤</span> Gestor</button>
+    <button class="topbar-tab" onclick="go('gerente',this)"><span class="ti">📊</span> Gerente</button>
+  </div>
+
+  <div class="topbar-right">
+    <div class="ai-badge"><span class="ai-dot"></span> IA Activa · 6 Agentes</div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════
+     VIEW 1: CLIENTE — Teléfono 3D
+═══════════════════════════════════════════════════════ -->
+<div id="v-cliente" class="view active cliente-bg">
+
+  <div class="phone-info">
+    <div class="badge-label">🤖 Inteligencia Artificial</div>
+    <h1>Gestiona tus <span class="hl">siniestros</span> desde el móvil</h1>
+    <p class="sub">Reporta por voz o WhatsApp, sube documentos, sigue el estado en tiempo real y habla con nuestro asistente IA 24/7. Sin esperas, sin papeleos.</p>
+
+    <div class="features">
+      <div class="feat">
+        <div class="feat-icon green">📞</div>
+        <div class="feat-text"><b>Llamada o WhatsApp</b><span>Contacta directamente con tu gestor o con la IA</span></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon blue">📋</div>
+        <div class="feat-text"><b>Estado en tiempo real</b><span>Sigue cada paso de tu siniestro al minuto</span></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon green">📸</div>
+        <div class="feat-text"><b>Sube fotos y documentos</b><span>La IA los analiza y clasifica automáticamente</span></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon orange">🎙️</div>
+        <div class="feat-text"><b>Reporte por voz</b><span>Describe lo ocurrido hablando, la IA lo transcribe</span></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon blue">⚡</div>
+        <div class="feat-text"><b>Resolución exprés</b><span>Siniestros simples resueltos en minutos</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phone-stage">
+    <div class="phone">
+      <div class="phone-notch"></div>
+      <div class="phone-screen" id="phoneScreen">
+        <!-- App Bar -->
+        <div class="app-bar">
+          <div class="app-bar-row">
+            <div class="app-greeting">Hola, María 👋<b>Mis Siniestros</b></div>
+            <div class="app-avatar">👤</div>
+          </div>
+          <div class="app-poliza">
+            <span>Póliza Hogar Plus</span>
+            <b>POL-HG-4521</b>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="app-actions">
+          <div class="qa" onclick="showPhoneView('nuevo')">
+            <div class="qa-ic">🆕</div>
+            <div class="qa-lb">Nuevo<br>Siniestro</div>
+          </div>
+          <div class="qa" onclick="showPhoneView('llamar')">
+            <div class="qa-ic">📞</div>
+            <div class="qa-lb">Llamar<br>Gestor</div>
+          </div>
+          <div class="qa" onclick="showPhoneView('whatsapp')">
+            <div class="qa-ic">💬</div>
+            <div class="qa-lb">WhatsApp<br>IA</div>
+          </div>
+          <div class="qa" onclick="showPhoneView('docs')">
+            <div class="qa-ic">📎</div>
+            <div class="qa-lb">Subir<br>Docs</div>
+          </div>
+        </div>
+
+        <!-- Phone sub-views -->
+        <div id="phone-main">
+          <div class="app-section">
+            <div class="app-section-title">Siniestros activos</div>
+
+            <div class="sin-card">
+              <div class="sin-top">
+                <span class="sin-ref">SIN-2024-00847</span>
+                <span class="sin-badge b-blue">En curso</span>
+              </div>
+              <div class="sin-desc">Daño por agua en cocina — tubería rota</div>
+              <div class="sin-bar"><div class="sin-fill fill-g" style="width:65%"></div></div>
+              <div class="sin-meta"><span>🏠 Hogar</span><span>65% · Perito asignado</span></div>
+            </div>
+
+            <div class="sin-card">
+              <div class="sin-top">
+                <span class="sin-ref">SIN-2024-00812</span>
+                <span class="sin-badge b-orange">En revisión</span>
+              </div>
+              <div class="sin-desc">Accidente vehículo — golpe trasero</div>
+              <div class="sin-bar"><div class="sin-fill fill-o" style="width:40%"></div></div>
+              <div class="sin-meta"><span>🚗 Auto</span><span>40% · Docs pendientes</span></div>
+            </div>
+
+            <div class="sin-card">
+              <div class="sin-top">
+                <span class="sin-ref">SIN-2024-00798</span>
+                <span class="sin-badge b-green">Resuelto</span>
+              </div>
+              <div class="sin-desc">Cristal parabrisas roto — Luna Rápida</div>
+              <div class="sin-bar"><div class="sin-fill fill-g" style="width:100%"></div></div>
+              <div class="sin-meta"><span>🚗 Auto</span><span>100% · Cerrado</span></div>
+            </div>
+          </div>
+
+          <div class="app-section">
+            <div class="app-section-title">Última actividad</div>
+            <div style="font-size:11px;color:var(--g500);padding:6px 0;">
+              <div style="padding:5px 0;border-bottom:1px solid var(--g100);">🤖 <b>IA:</b> Perito confirmado para mañana 10:00 <span style="color:var(--g400);float:right;">14:32</span></div>
+              <div style="padding:5px 0;border-bottom:1px solid var(--g100);">📄 <b>Doc:</b> Factura fontanero procesada <span style="color:var(--g400);float:right;">12:15</span></div>
+              <div style="padding:5px 0;">📸 <b>Foto:</b> 3 imágenes analizadas por IA <span style="color:var(--g400);float:right;">10:03</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Llamar -->
+        <div id="phone-llamar" style="display:none;padding:16px;text-align:center;">
+          <div style="font-size:40px;margin:20px 0;">📞</div>
+          <div style="font-size:15px;font-weight:700;margin-bottom:4px;">Llamar a tu gestor</div>
+          <div style="font-size:12px;color:var(--g400);margin-bottom:20px;">Pedro Sánchez · Gestor asignado</div>
+          <div style="width:70px;height:70px;background:var(--sca-green);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:32px;color:#fff;margin-bottom:16px;cursor:pointer;">📞</div>
+          <div style="font-size:11px;color:var(--g400);margin-bottom:20px;">Lun-Vie 9:00-20:00</div>
+          <div style="text-align:left;font-size:12px;font-weight:700;margin-bottom:8px;">O contacta por:</div>
+          <div style="display:flex;gap:8px;">
+            <div style="flex:1;padding:12px;background:var(--g50);border-radius:10px;text-align:center;cursor:pointer;border:1px solid var(--g200);">
+              <div style="font-size:24px;">💬</div>
+              <div style="font-size:10px;font-weight:600;margin-top:2px;">WhatsApp</div>
+            </div>
+            <div style="flex:1;padding:12px;background:var(--g50);border-radius:10px;text-align:center;cursor:pointer;border:1px solid var(--g200);">
+              <div style="font-size:24px;">🤖</div>
+              <div style="font-size:10px;font-weight:600;margin-top:2px;">Chat IA</div>
+            </div>
+            <div style="flex:1;padding:12px;background:var(--g50);border-radius:10px;text-align:center;cursor:pointer;border:1px solid var(--g200);">
+              <div style="font-size:24px;">📧</div>
+              <div style="font-size:10px;font-weight:600;margin-top:2px;">Email</div>
+            </div>
+          </div>
+          <div style="margin-top:16px;"><button onclick="showPhoneView('main')" style="padding:8px 20px;border-radius:8px;border:1px solid var(--g200);background:var(--white);font-size:12px;font-weight:600;cursor:pointer;">← Volver</button></div>
+        </div>
+
+        <!-- WhatsApp IA -->
+        <div id="phone-whatsapp" style="display:none;">
+          <div style="background:var(--sca-green);padding:10px 14px;display:flex;align-items:center;gap:10px;color:#fff;">
+            <span style="cursor:pointer;font-size:18px;" onclick="showPhoneView('main')">←</span>
+            <div style="width:30px;height:30px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;">🤖</div>
+            <div><div style="font-size:13px;font-weight:700;">Asistente IA Adeslas</div><div style="font-size:10px;opacity:.8;">En línea</div></div>
+          </div>
+          <div style="padding:12px;background:#ECE5DD;min-height:300px;display:flex;flex-direction:column;gap:6px;">
+            <div style="background:#fff;padding:8px 10px;border-radius:0 10px 10px 10px;font-size:11px;max-width:85%;box-shadow:0 1px 2px rgba(0,0,0,.1);">
+              <div style="font-size:10px;font-weight:700;color:var(--sca-green);margin-bottom:2px;">🤖 Asistente IA</div>
+              ¡Hola María! Soy el asistente virtual de SegurCaixa Adeslas. ¿En qué puedo ayudarte hoy?
+              <div style="font-size:9px;color:var(--g400);text-align:right;margin-top:2px;">14:30 ✓✓</div>
+            </div>
+            <div style="background:#DCF8C6;padding:8px 10px;border-radius:10px 0 10px 10px;font-size:11px;max-width:85%;align-self:flex-end;box-shadow:0 1px 2px rgba(0,0,0,.1);">
+              Quiero saber el estado de mi siniestro de agua
+              <div style="font-size:9px;color:var(--g400);text-align:right;margin-top:2px;">14:31 ✓✓</div>
+            </div>
+            <div style="background:#fff;padding:8px 10px;border-radius:0 10px 10px 10px;font-size:11px;max-width:85%;box-shadow:0 1px 2px rgba(0,0,0,.1);">
+              <div style="font-size:10px;font-weight:700;color:var(--sca-green);margin-bottom:2px;">🤖 Asistente IA</div>
+              Tu siniestro <b>SIN-2024-00847</b> está al 65%. El perito José Fernández visitará tu domicilio <b>mañana a las 10:00</b>. ¿Necesitas cambiar la hora?
+              <div style="font-size:9px;color:var(--g400);text-align:right;margin-top:2px;">14:31 ✓✓</div>
+            </div>
+            <div style="background:#DCF8C6;padding:8px 10px;border-radius:10px 0 10px 10px;font-size:11px;max-width:85%;align-self:flex-end;box-shadow:0 1px 2px rgba(0,0,0,.1);">
+              No, perfecto. ¿Puedo subir la factura del fontanero?
+              <div style="font-size:9px;color:var(--g400);text-align:right;margin-top:2px;">14:32 ✓✓</div>
+            </div>
+            <div style="background:#fff;padding:8px 10px;border-radius:0 10px 10px 10px;font-size:11px;max-width:85%;box-shadow:0 1px 2px rgba(0,0,0,.1);">
+              <div style="font-size:10px;font-weight:700;color:var(--sca-green);margin-bottom:2px;">🤖 Asistente IA</div>
+              ¡Claro! Envíame la foto o PDF de la factura aquí mismo y la proceso automáticamente. 📎
+              <div style="font-size:9px;color:var(--g400);text-align:right;margin-top:2px;">14:32 ✓✓</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;padding:8px;background:#f0f0f0;align-items:center;">
+            <span style="font-size:18px;cursor:pointer;">📎</span>
+            <input style="flex:1;padding:7px 10px;border-radius:20px;border:none;font-size:11px;outline:none;" placeholder="Escribe un mensaje...">
+            <span style="font-size:18px;cursor:pointer;">🎙️</span>
+          </div>
+        </div>
+
+        <!-- Subir docs -->
+        <div id="phone-docs" style="display:none;padding:14px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+            <span style="cursor:pointer;font-size:18px;" onclick="showPhoneView('main')">←</span>
+            <span style="font-size:14px;font-weight:700;">Subir documentos</span>
+          </div>
+          <div style="text-align:center;padding:30px 16px;border:2px dashed var(--g300);border-radius:14px;margin-bottom:14px;cursor:pointer;">
+            <div style="font-size:40px;margin-bottom:8px;">📤</div>
+            <div style="font-size:13px;font-weight:600;">Toca para subir</div>
+            <div style="font-size:11px;color:var(--g400);">PDF, fotos, facturas</div>
+          </div>
+          <div style="font-size:11px;font-weight:700;margin-bottom:8px;">Documentos recientes</div>
+          <div style="background:var(--g50);border:1px solid var(--g200);border-radius:10px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:10px;">
+            <span style="font-size:24px;">📄</span>
+            <div style="flex:1;"><div style="font-size:11px;font-weight:600;">Factura_fontanero.pdf</div><div style="font-size:10px;color:var(--g400);">245 KB · Procesada por IA ✅</div></div>
+          </div>
+          <div style="background:var(--g50);border:1px solid var(--g200);border-radius:10px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:10px;">
+            <span style="font-size:24px;">📸</span>
+            <div style="flex:1;"><div style="font-size:11px;font-weight:600;">Foto_daño_cocina.jpg</div><div style="font-size:10px;color:var(--g400);">1.2 MB · Analizada por IA ✅</div></div>
+          </div>
+          <div style="background:var(--g50);border:1px solid var(--g200);border-radius:10px;padding:10px;display:flex;align-items:center;gap:10px;">
+            <span style="font-size:24px;">📋</span>
+            <div style="flex:1;"><div style="font-size:11px;font-weight:600;">Parte_amistoso.pdf</div><div style="font-size:10px;color:var(--g400);">180 KB · Pendiente ⏳</div></div>
+          </div>
+        </div>
+
+        <!-- Nuevo siniestro -->
+        <div id="phone-nuevo" style="display:none;padding:14px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+            <span style="cursor:pointer;font-size:18px;" onclick="showPhoneView('main')">←</span>
+            <span style="font-size:14px;font-weight:700;">Nuevo siniestro</span>
+          </div>
+          <div style="font-size:11px;font-weight:600;margin-bottom:6px;">¿Cómo quieres reportar?</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+            <div style="padding:14px;background:var(--sca-green-light);border:1px solid rgba(0,166,81,.2);border-radius:12px;display:flex;align-items:center;gap:10px;cursor:pointer;">
+              <span style="font-size:24px;">🎙️</span>
+              <div><div style="font-size:12px;font-weight:700;">Por voz</div><div style="font-size:10px;color:var(--g500);">Habla y la IA lo transcribe</div></div>
+            </div>
+            <div style="padding:14px;background:var(--g50);border:1px solid var(--g200);border-radius:12px;display:flex;align-items:center;gap:10px;cursor:pointer;">
+              <span style="font-size:24px;">✍️</span>
+              <div><div style="font-size:12px;font-weight:700;">Escribir</div><div style="font-size:10px;color:var(--g500);">Rellena el formulario</div></div>
+            </div>
+            <div style="padding:14px;background:var(--g50);border:1px solid var(--g200);border-radius:12px;display:flex;align-items:center;gap:10px;cursor:pointer;">
+              <span style="font-size:24px;">📸</span>
+              <div><div style="font-size:12px;font-weight:700;">Foto directa</div><div style="font-size:10px;color:var(--g500);">Haz foto y la IA evalúa el daño</div></div>
+            </div>
+          </div>
+          <div style="font-size:11px;font-weight:600;margin-bottom:6px;">Tipo de siniestro</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+            <div style="padding:12px;text-align:center;background:var(--g50);border:1px solid var(--g200);border-radius:10px;cursor:pointer;font-size:11px;font-weight:600;">🏠<br>Hogar</div>
+            <div style="padding:12px;text-align:center;background:var(--g50);border:1px solid var(--g200);border-radius:10px;cursor:pointer;font-size:11px;font-weight:600;">🚗<br>Auto</div>
+            <div style="padding:12px;text-align:center;background:var(--g50);border:1px solid var(--g200);border-radius:10px;cursor:pointer;font-size:11px;font-weight:600;">🏥<br>Salud</div>
+            <div style="padding:12px;text-align:center;background:var(--g50);border:1px solid var(--g200);border-radius:10px;cursor:pointer;font-size:11px;font-weight:600;">🛡️<br>Otros</div>
+          </div>
+        </div>
+
+        <!-- FABs -->
+        <div class="app-fab" id="app-fabs">
+          <button class="fab-btn fab-blue" title="WhatsApp" onclick="showPhoneView('whatsapp')">💬</button>
+          <button class="fab-btn fab-green" title="Llamar" onclick="showPhoneView('llamar')">📞</button>
+        </div>
+
+        <!-- Bottom Nav -->
+        <div class="app-nav">
+          <div class="nav-item on" onclick="showPhoneView('main')"><span class="ni">🏠</span>Inicio</div>
+          <div class="nav-item"><span class="ni">📋</span>Siniestros</div>
+          <div class="nav-item" onclick="showPhoneView('docs')"><span class="ni">📎</span>Docs</div>
+          <div class="nav-item" onclick="showPhoneView('whatsapp')"><span class="ni">💬</span>Chat</div>
+          <div class="nav-item"><span class="ni">👤</span>Perfil</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     VIEW 2: GESTOR
+═══════════════════════════════════════════════════════ -->
+<div id="v-gestor" class="view">
+  <div class="gestor-layout">
+    <!-- Left: Cola -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">Cola de Siniestros</span>
+        <span class="card-count">14</span>
+      </div>
+      <div class="card-body">
+        <div style="margin-bottom:8px;"><input style="width:100%;padding:7px 10px;border-radius:8px;border:1px solid var(--g200);font-size:11px;outline:none;font-family:inherit;" placeholder="🔍 Buscar siniestro..."></div>
+        <div class="cl-item sel">
+          <div class="cl-row"><span class="cl-ref">SIN-2024-00847</span><span class="cl-dot dot-r"></span></div>
+          <div class="cl-type">🏠 Daño por agua — María García</div>
+          <div class="cl-time">Hace 2h · Alta · Perito pendiente</div>
+        </div>
+        <div class="cl-item">
+          <div class="cl-row"><span class="cl-ref">SIN-2024-00848</span><span class="cl-dot dot-r"></span></div>
+          <div class="cl-type">🚗 Colisión múltiple — Juan Pérez</div>
+          <div class="cl-time">Hace 3h · Alta · Documentación</div>
+        </div>
+        <div class="cl-item">
+          <div class="cl-row"><span class="cl-ref">SIN-2024-00849</span><span class="cl-dot dot-o"></span></div>
+          <div class="cl-type">🏥 Asistencia sanitaria — Ana López</div>
+          <div class="cl-time">Hace 5h · Media · IA procesando</div>
+        </div>
+        <div class="cl-item">
+          <div class="cl-row"><span class="cl-ref">SIN-2024-00850</span><span class="cl-dot dot-g"></span></div>
+          <div class="cl-type">🏠 Robo menor — Carlos Ruiz</div>
+          <div class="cl-time">Hace 8h · Baja · En revisión</div>
+        </div>
+        <div class="cl-item">
+          <div class="cl-row"><span class="cl-ref">SIN-2024-00851</span><span class="cl-dot dot-o"></span></div>
+          <div class="cl-type">🚗 Parabrisas — Laura Martín</div>
+          <div class="cl-time">Hace 1d · Media · Taller asignado</div>
+        </div>
+        <div class="cl-item">
+          <div class="cl-row"><span class="cl-ref">SIN-2024-00852</span><span class="cl-dot dot-g"></span></div>
+          <div class="cl-type">🏠 Incendio menor — Roberto Díaz</div>
+          <div class="cl-time">Hace 1d · Baja · Cerrado por IA</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center: Detail -->
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">SIN-2024-00847 · Detalle</span>
+          <span style="font-size:11px;color:var(--g400);">Gestor: Pedro Sánchez</span>
+        </div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="det-section">
+              <div class="det-title">Datos del siniestro</div>
+              <div class="det-row"><span class="det-label">Cliente</span><span class="det-val">María García López</span></div>
+              <div class="det-row"><span class="det-label">Póliza</span><span class="det-val">POL-HG-2024-4521</span></div>
+              <div class="det-row"><span class="det-label">Tipo</span><span class="det-val">🏠 Daño por agua</span></div>
+              <div class="det-row"><span class="det-label">Fecha</span><span class="det-val">24 Mar 2024, 09:15</span></div>
+              <div class="det-row"><span class="det-label">Urgencia</span><span class="det-val" style="color:var(--sca-red);">⚠️ Alta</span></div>
+              <div class="det-row"><span class="det-label">Cobertura</span><span class="det-val" style="color:var(--sca-green);">✅ Cubierto</span></div>
+              <div class="det-row"><span class="det-label">Estimación IA</span><span class="det-val">€2,350 — €3,100</span></div>
+              <div class="det-row"><span class="det-label">Fraude IA</span><span class="det-val" style="color:var(--sca-green);">2.3% (muy bajo)</span></div>
+            </div>
+            <div class="det-section">
+              <div class="det-title">Progreso del siniestro</div>
+              <div class="timeline">
+                <div class="tl-item done"><div class="tl-label">Recepción y clasificación IA</div><div class="tl-time">24 Mar · 09:15 — Automático</div></div>
+                <div class="tl-item done"><div class="tl-label">Verificación de póliza</div><div class="tl-time">24 Mar · 09:16 — Agente Docs</div></div>
+                <div class="tl-item done"><div class="tl-label">Análisis de fotos por IA</div><div class="tl-time">24 Mar · 09:18 — 3 fotos procesadas</div></div>
+                <div class="tl-item current"><div class="tl-label">Asignación de perito</div><div class="tl-time">Pendiente visita — 25 Mar 10:00</div></div>
+                <div class="tl-item"><div class="tl-label">Valoración del daño</div><div class="tl-time">Pendiente</div></div>
+                <div class="tl-item"><div class="tl-label">Resolución y pago</div><div class="tl-time">Pendiente</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ai-box">
+            <div class="ai-head">🤖 Recomendación IA</div>
+            <p>Siniestro clasificado como <b>daño por agua grave</b>. Cobertura confirmada hasta €15,000. Perito José Fernández asignado para mañana. Se recomienda <b>tramitación exprés</b> — probabilidad de fraude muy baja (2.3%). Documentación completa al 80%.</p>
+          </div>
+
+          <div class="act-row">
+            <button class="btn btn-p">✅ Aprobar tramitación</button>
+            <button class="btn btn-s">📋 Asignar perito</button>
+            <button class="btn btn-s">📞 Llamar cliente</button>
+            <button class="btn btn-s">📎 Ver docs</button>
+            <button class="btn btn-d">🚫 Rechazar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Docs attached -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">📎 Documentación adjunta</span>
+          <span style="font-size:11px;color:var(--sca-green);font-weight:600;">3 archivos</span>
+        </div>
+        <div class="card-body" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:140px;padding:10px;background:var(--g50);border:1px solid var(--g200);border-radius:10px;font-size:11px;">
+            <div style="font-size:20px;margin-bottom:4px;">📸</div>
+            <b>Foto daño cocina</b><br><span style="color:var(--g400);">1.2 MB · IA: daño severo</span>
+          </div>
+          <div style="flex:1;min-width:140px;padding:10px;background:var(--g50);border:1px solid var(--g200);border-radius:10px;font-size:11px;">
+            <div style="font-size:20px;margin-bottom:4px;">📄</div>
+            <b>Factura fontanero</b><br><span style="color:var(--g400);">245 KB · IA: €1,200</span>
+          </div>
+          <div style="flex:1;min-width:140px;padding:10px;background:var(--g50);border:1px solid var(--g200);border-radius:10px;font-size:11px;">
+            <div style="font-size:20px;margin-bottom:4px;">📸</div>
+            <b>Foto tubería rota</b><br><span style="color:var(--g400);">980 KB · IA: causa confirmada</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Chat IA -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">🤖 Asistente IA Gestor</span>
+      </div>
+      <div class="card-body chat-body">
+        <div class="chat-msgs">
+          <div class="msg msg-ai">
+            <div class="msg-sender">🔍 Agente Clasificador</div>
+            SIN-00847 recibido. Tipo: <b>daño por agua</b>. Urgencia: <b>Alta</b>. Póliza verificada con cobertura completa.
+          </div>
+          <div class="msg msg-ai">
+            <div class="msg-sender">📄 Agente Documentos</div>
+            3 fotos analizadas. Daño visible en techo y pared cocina. Estimación: €2,350-€3,100. Factura fontanero: €1,200.
+          </div>
+          <div class="msg msg-user">¿Perito disponible para mañana?</div>
+          <div class="msg msg-ai">
+            <div class="msg-sender">👥 Agente Asignación</div>
+            Perito disponible: <b>José Fernández</b> (zona Madrid-Centro). Mañana 10:00-14:00. ¿Confirmo?
+          </div>
+          <div class="msg msg-user">Sí, confirma a las 10:00</div>
+          <div class="msg msg-ai">
+            <div class="msg-sender">👥 Agente Asignación</div>
+            ✅ Perito asignado. SMS enviado a cliente y perito. Visita: 25 Mar, 10:00.
+          </div>
+          <div class="msg msg-ai">
+            <div class="msg-sender">🧠 Orquestador</div>
+            Resumen: 3/6 pasos completados. Siguiente: valoración tras visita perito. Todo en orden, probabilidad de fraude baja.
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <input class="chat-in" placeholder="Pregunta al asistente IA...">
+          <button class="chat-send">→</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     VIEW 3: GERENTE — Dashboard
+═══════════════════════════════════════════════════════ -->
+<div id="v-gerente" class="view">
+  <div class="gerente-pad">
+
+    <!-- KPIs -->
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-ic">📋</div><div class="kpi-val">1,247</div><div class="kpi-lab">Siniestros / mes</div><div class="kpi-ch ch-up">↑ 12% vs anterior</div></div>
+      <div class="kpi"><div class="kpi-ic">⏱️</div><div class="kpi-val">2.3d</div><div class="kpi-lab">Tiempo medio</div><div class="kpi-ch ch-up">↓ 35% mejora</div></div>
+      <div class="kpi"><div class="kpi-ic">🤖</div><div class="kpi-val">78%</div><div class="kpi-lab">Automatizado</div><div class="kpi-ch ch-up">↑ 15%</div></div>
+      <div class="kpi"><div class="kpi-ic">😊</div><div class="kpi-val">4.6</div><div class="kpi-lab">Satisfacción</div><div class="kpi-ch ch-up">↑ 0.8 pts</div></div>
+      <div class="kpi"><div class="kpi-ic">💰</div><div class="kpi-val">€2.1M</div><div class="kpi-lab">Ahorro IA anual</div><div class="kpi-ch ch-up">↑ 340% ROI</div></div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">📊 Siniestros por tipo</div>
+        <div class="bars">
+          <div class="bar-g"><div class="bar bg" style="height:130px"></div><div class="bar-lb">Hogar<br><b style="font-size:11px;">423</b></div></div>
+          <div class="bar-g"><div class="bar bb" style="height:110px"></div><div class="bar-lb">Auto<br><b style="font-size:11px;">358</b></div></div>
+          <div class="bar-g"><div class="bar bg" style="height:75px"></div><div class="bar-lb">Salud<br><b style="font-size:11px;">245</b></div></div>
+          <div class="bar-g"><div class="bar bb" style="height:45px"></div><div class="bar-lb">Vida<br><b style="font-size:11px;">142</b></div></div>
+          <div class="bar-g"><div class="bar bo" style="height:25px"></div><div class="bar-lb">Otros<br><b style="font-size:11px;">79</b></div></div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">🎯 Estado resolución</div>
+        <div class="donut-wrap">
+          <div class="donut" style="background:conic-gradient(var(--sca-green) 0deg 194deg,var(--sca-blue) 194deg 266deg,var(--sca-orange) 266deg 313deg,var(--sca-red) 313deg 360deg);">
+            <div class="donut-hole"><div class="big">92%</div><div class="sm">resueltos</div></div>
+          </div>
+          <div class="legend">
+            <div class="leg-item"><span class="leg-dot" style="background:var(--sca-green)"></span>Resueltos 54%</div>
+            <div class="leg-item"><span class="leg-dot" style="background:var(--sca-blue)"></span>En curso 20%</div>
+            <div class="leg-item"><span class="leg-dot" style="background:var(--sca-orange)"></span>Revisión 13%</div>
+            <div class="leg-item"><span class="leg-dot" style="background:var(--sca-red)"></span>Pendientes 13%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agents -->
+    <div class="chart-card full">
+      <div class="chart-title">🤖 Agentes IA en producción</div>
+      <div class="agents-row">
+        <div class="ag-card"><div class="ag-ic">🔍</div><div class="ag-name">Clasificador</div><span class="ag-st st-on">● Activo</span><div class="ag-info">347 tareas hoy<br>99.1% éxito</div></div>
+        <div class="ag-card"><div class="ag-ic">💬</div><div class="ag-name">Chat IA</div><span class="ag-st st-on">● Activo</span><div class="ag-info">1,203 chats<br>4.7★ satisfacción</div></div>
+        <div class="ag-card"><div class="ag-ic">🎙️</div><div class="ag-name">Voz</div><span class="ag-st st-on">● Activo</span><div class="ag-info">89 llamadas<br>96% precisión</div></div>
+        <div class="ag-card"><div class="ag-ic">📄</div><div class="ag-name">Documentos</div><span class="ag-st st-on">● Activo</span><div class="ag-info">456 docs<br>98% éxito</div></div>
+        <div class="ag-card"><div class="ag-ic">👥</div><div class="ag-name">Asignación</div><span class="ag-st st-on">● Activo</span><div class="ag-info">78 asignaciones<br>94% óptimas</div></div>
+        <div class="ag-card"><div class="ag-ic">🧠</div><div class="ag-name">Orquestador</div><span class="ag-st st-on">● Activo</span><div class="ag-info">Coordinando 5<br>0 errores hoy</div></div>
+      </div>
+    </div>
+
+    <!-- Rendimiento gestores -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">👥 Rendimiento gestores</div>
+        <div class="tbl-wrap">
+          <table class="dtable">
+            <thead><tr><th>Gestor</th><th>Casos</th><th>Resueltos</th><th>Tiempo</th></tr></thead>
+            <tbody>
+              <tr><td><b>Pedro Sánchez</b></td><td>34</td><td style="color:var(--sca-green);">31 (91%)</td><td>1.8d</td></tr>
+              <tr><td><b>Laura Martínez</b></td><td>28</td><td style="color:var(--sca-green);">26 (93%)</td><td>2.1d</td></tr>
+              <tr><td><b>Carlos López</b></td><td>31</td><td style="color:var(--sca-green);">27 (87%)</td><td>2.5d</td></tr>
+              <tr><td><b>Ana Rodríguez</b></td><td>22</td><td style="color:var(--sca-green);">21 (95%)</td><td>1.5d</td></tr>
+              <tr><td><b>🤖 IA Automática</b></td><td>132</td><td style="color:var(--sca-green);">130 (98%)</td><td>0.3d</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">🚨 Alertas y fraude</div>
+        <div class="tbl-wrap">
+          <table class="dtable">
+            <thead><tr><th>Alerta</th><th>Siniestro</th><th>Riesgo</th><th>Estado</th></tr></thead>
+            <tbody>
+              <tr><td style="color:var(--sca-red);">⚠️ Fraude potencial</td><td>SIN-00839</td><td><b style="color:var(--sca-red);">87%</b></td><td><span class="sin-badge b-red" style="font-size:10px;">Investigar</span></td></tr>
+              <tr><td style="color:var(--sca-orange);">⏰ SLA próximo</td><td>SIN-00841</td><td><b style="color:var(--sca-orange);">—</b></td><td><span class="sin-badge b-orange" style="font-size:10px;">2h restantes</span></td></tr>
+              <tr><td style="color:var(--sca-orange);">📋 Docs incompletos</td><td>SIN-00843</td><td><b style="color:var(--sca-orange);">—</b></td><td><span class="sin-badge b-orange" style="font-size:10px;">Pendiente</span></td></tr>
+              <tr><td style="color:var(--sca-green);">✅ Fraude descartado</td><td>SIN-00837</td><td><b style="color:var(--sca-green);">3%</b></td><td><span class="sin-badge b-green" style="font-size:10px;">Cerrado</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Last claims table -->
+    <div class="chart-card full">
+      <div class="chart-title">📋 Últimos siniestros procesados</div>
+      <div class="tbl-wrap">
+        <table class="dtable">
+          <thead><tr><th>Ref.</th><th>Cliente</th><th>Tipo</th><th>Prioridad</th><th>Estado</th><th>IA Score</th><th>Gestor</th><th>Tiempo</th><th>Canal</th></tr></thead>
+          <tbody>
+            <tr><td><b>SIN-00847</b></td><td>María García</td><td>🏠 Agua</td><td><span style="color:var(--sca-red);">● Alta</span></td><td><span class="sin-badge b-blue" style="font-size:10px;">En curso</span></td><td style="color:var(--sca-green);">97.8%</td><td>Pedro S.</td><td>2h 15m</td><td>App</td></tr>
+            <tr><td><b>SIN-00848</b></td><td>Juan Pérez</td><td>🚗 Colisión</td><td><span style="color:var(--sca-red);">● Alta</span></td><td><span class="sin-badge b-blue" style="font-size:10px;">En curso</span></td><td style="color:var(--sca-green);">95.2%</td><td>Laura M.</td><td>3h 42m</td><td>Teléfono</td></tr>
+            <tr><td><b>SIN-00849</b></td><td>Ana López</td><td>🏥 Salud</td><td><span style="color:var(--sca-orange);">● Media</span></td><td><span class="sin-badge b-orange" style="font-size:10px;">Revisión</span></td><td style="color:var(--sca-green);">92.1%</td><td>IA Auto</td><td>45m</td><td>WhatsApp</td></tr>
+            <tr><td><b>SIN-00850</b></td><td>Carlos Ruiz</td><td>🏠 Robo</td><td><span style="color:var(--sca-green);">● Baja</span></td><td><span class="sin-badge b-green" style="font-size:10px;">Resuelto</span></td><td style="color:var(--sca-green);">98.5%</td><td>IA Auto</td><td>1h 12m</td><td>App</td></tr>
+            <tr><td><b>SIN-00851</b></td><td>Laura Martín</td><td>🚗 Cristales</td><td><span style="color:var(--sca-green);">● Baja</span></td><td><span class="sin-badge b-green" style="font-size:10px;">Resuelto</span></td><td style="color:var(--sca-green);">99.3%</td><td>IA Auto</td><td>22m</td><td>Email</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function go(v,el){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.topbar-tab').forEach(x=>x.classList.remove('active'));
+  document.getElementById('v-'+v).classList.add('active');
+  el.classList.add('active');
+}
+
+function showPhoneView(id){
+  ['main','llamar','whatsapp','docs','nuevo'].forEach(x=>{
+    const el=document.getElementById('phone-'+x);
+    if(el)el.style.display='none';
+  });
+  const target=document.getElementById('phone-'+id);
+  if(target)target.style.display='';
+  const fabs=document.getElementById('app-fabs');
+  fabs.style.display=id==='main'?'flex':'none';
+}
+</script>
+
+</body>
+</html>
