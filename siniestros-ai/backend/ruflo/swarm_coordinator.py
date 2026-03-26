@@ -413,9 +413,9 @@ class SwarmCoordinator:
 
         return result
 
-    def get_agent_metrics(self, agent_id: str) -> Optional[AgentMetrics]:
+    def get_agent_metrics(self, agent_id: str) -> AgentMetrics:
         """Get metrics for a specific agent."""
-        return self.state.agent_metrics.get(agent_id)
+        return self.state.agent_metrics.get(agent_id, AgentMetrics(agent_id=agent_id))
 
     async def reconfigure(self, topology: SwarmTopology) -> None:
         """

@@ -133,6 +133,17 @@ class WorkflowEngine:
                     max_concurrent=10,  # Limit concurrent tasks
                 )
 
+                # Call on_execute callbacks and update results
+                for task in executed_tasks:
+                    if task.on_execute and callable(task.on_execute):
+                        try:
+                            if asyncio.iscoroutinefunction(task.on_execute):
+                                await task.on_execute(task)
+                            else:
+                                task.on_execute(task)
+                        except Exception as e:
+                            logger.error(f"Error calling on_execute callback for task {task.id}: {e}")
+
                 # Update results
                 for task in executed_tasks:
                     if task.status == TaskStatus.COMPLETED:

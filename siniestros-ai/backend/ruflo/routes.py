@@ -462,7 +462,7 @@ async def reach_consensus_route(request: ConsensusRequest) -> Dict[str, Any]:
 
 
 @router.get("/health")
-async def health_check() -> Dict[str, str]:
+async def health_check() -> Dict[str, Any]:
     """
     Health check endpoint.
 
@@ -487,7 +487,7 @@ async def health_check() -> Dict[str, str]:
 
 
 @router.post("/initialize")
-async def initialize_route() -> Dict[str, str]:
+async def initialize_route() -> Dict[str, Any]:
     """
     Initialize the ruflo orchestrator.
 

@@ -9,7 +9,7 @@ Powered by ruflo (github.com/ruvnet/ruflo) - ported to Python for SegurCaixa Ade
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Callable, Dict, List, Optional, Set
 from datetime import datetime
 import uuid
 
@@ -126,6 +126,7 @@ class Task:
     retry_count: int = 0
     max_retries: int = 3
     metadata: Dict[str, Any] = field(default_factory=dict)
+    on_execute: Optional[Callable] = None
 
     def __post_init__(self):
         """Validate task configuration."""
